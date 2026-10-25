@@ -1,5 +1,12 @@
 # Changelog
 
+## Milestone 10 — FP16 RTL arithmetic (local preparation)
+
+- Original combinational SystemVerilog FP16 add/subtract, lossless fixed-width alignment, explicit GRS/nearest-even rounding, NaN/signed-zero policies, and all four indicators.
+- Separate Verilator lint/build/differential workflow, VCD output, strict flags/payloads, reproducible failure records, and read-only RTL CI.
+- 462,172 RTL transactions pass against TypeScript and directly against SoftFloat under the stated metadata policy; source-hashed recorded signals power optional browser inspection.
+- All 424 earlier tests remain unchanged; 430 tests now pass. No multiplication/FMA RTL, HLS, transformer hardware, area/power optimization, actual synthesis/device/timing claims, publication, or deployment. See [the RTL contract](rtl/README.md).
+
 ## Milestone 9 — attention precision (local preparation)
 
 - Bounded Q/K/V attention with five named precision policies, exact modeled arithmetic/normalization, stable and deliberately unstable naive softmax, and explicitly labeled binary64 exp/scaling approximations.
