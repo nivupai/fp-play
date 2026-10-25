@@ -52,3 +52,22 @@ export type {
 export { calculateFloat, addFloat, multiplyFloat } from './formatArithmetic'
 export { DOT_MODES, dotProduct, exactDot } from './dotProduct'
 export type { DotMode, ReductionOrder, DotResult, DotStep } from './dotProduct'
+export {
+  ATTENTION_POLICIES,
+  calculateAttention,
+  attentionSoftmax,
+  attentionValues,
+  binary64Attention,
+  validateAttentionInput,
+} from './attention'
+export type {
+  AttentionInput,
+  AttentionResult,
+  AttentionPolicy,
+  AttentionMode,
+  AttentionStage,
+  AttentionEvent,
+  AttentionOperation,
+  SoftmaxMethod,
+  Matrix,
+} from './attention'

@@ -78,3 +78,7 @@ The implementation and test oracle are original code based on public format sema
 ## Multi-precision extension
 
 Milestone 8 retains every FP16 API above and adds fixed format descriptors, direct BF16/FP32 conversion, exact arithmetic, and a typed mixed-precision dot-product engine. See [the complete multi-precision contract](../../../docs/MIXED_PRECISION.md) for API semantics, rounding boundaries, NaN/tininess policies, independent references, and reproduction instructions.
+
+## Attention extension
+
+Milestone 9 composes existing dot products into a bounded attention graph with explicit scaling/softmax/probability/value/output boundaries and an attention-specific exact-rational quotient helper. Existing APIs remain unchanged. See [the attention contract](../../../docs/ATTENTION_PRECISION.md) for policies, host transcendental limitations, stage flags, independent references, and reproduction.

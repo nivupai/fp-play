@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AttentionLab } from './components/attention/AttentionLab'
 import { FormatComparison } from './components/mixed/FormatComparison'
 import { DotProductLab } from './components/mixed/DotProductLab'
 import { ArithmeticExplorer } from './components/arithmetic/ArithmeticExplorer'
@@ -24,6 +25,7 @@ export default function App() {
         <ArithmeticExplorer />
         <FormatComparison />
         <DotProductLab />
+        <AttentionLab />
         <Roadmap />
         <section
           id="about"
@@ -36,8 +38,9 @@ export default function App() {
             through accessible, testable experiments. Explore IEEE 754
             representation, precision, and exact add/subtract/multiply/FMA
             traces, BF16/FP32 representations, and mixed-precision accumulation.
-            Transformer attention remains future work. All work uses public
-            standards and original, open-source implementations.
+            Explore bounded transformer attention with explicit softmax
+            policies. All work uses public standards and original, open-source
+            implementations.
           </p>
         </section>
       </main>

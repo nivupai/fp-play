@@ -1,0 +1,4921 @@
+{
+  "schema": 1,
+  "seed": 1635021934,
+  "source": "Independent Python Fraction oracle; Math.exp host approximation independently quantized; see docs/ATTENTION_PRECISION.md",
+  "cases": [
+    {
+      "id": "stable-naive",
+      "input": {
+        "q": [[1]],
+        "k": [[1000], [1001]],
+        "v": [[0], [1]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[25552, 25554]],
+            "logits": [[25552, 25554]],
+            "probabilities": [[13389, 14809]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[25552, 25554]],
+            "logits": [[25552, 25554]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[13390, 14809]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1148846080, 1148846080]],
+            "logits": [[1148846080, 1148846080]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1148846080, 1148846080]],
+            "logits": [[1148846080, 1148846080]],
+            "probabilities": [[32704, 32704]],
+            "output": [[32704]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[1049211569, 1060841128]],
+            "output": [[1060841128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[2143289344, 2143289344]],
+            "output": [[2143289344]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[13389, 14809]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1148846080, 1148862464]],
+            "logits": [[1148846080, 1148862464]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "exp-overflow",
+      "input": {
+        "q": [[1]],
+        "k": [[12], [11]],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[18944, 18816]],
+            "logits": [[18944, 18816]],
+            "probabilities": [[14809, 13389]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[18944, 18816]],
+            "logits": [[18944, 18816]],
+            "probabilities": [[32256, 0]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[14809, 13390]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[14809, 13390]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[16187, 16010]],
+            "output": [[16187]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[16187, 16010]],
+            "output": [[16187]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[1060841128, 1049211569]],
+            "output": [[1060841128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[1060841128, 1049211568]],
+            "output": [[1060841128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[14809, 13389]],
+            "output": [[14809]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1094713344, 1093664768]],
+            "logits": [[1094713344, 1093664768]],
+            "probabilities": [[32256, 0]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "dynamic-range",
+      "input": {
+        "q": [[65536]],
+        "k": [[1], [0]],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[31744, 32256]],
+            "logits": [[31744, 32256]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[31744, 32256]],
+            "logits": [[31744, 32256]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[2139095040, 2143289344]],
+            "logits": [[2139095040, 2143289344]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[2139095040, 2143289344]],
+            "logits": [[2139095040, 2143289344]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1199570944, 0]],
+            "logits": [[1199570944, 0]],
+            "probabilities": [[16256, 0]],
+            "output": [[16256]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1199570944, 0]],
+            "logits": [[1199570944, 0]],
+            "probabilities": [[32704, 0]],
+            "output": [[32704]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1199570944, 0]],
+            "logits": [[1199570944, 0]],
+            "probabilities": [[1065353216, 0]],
+            "output": [[1065353216]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1199570944, 0]],
+            "logits": [[1199570944, 0]],
+            "probabilities": [[2143289344, 0]],
+            "output": [[2143289344]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[2139095040, 2143289344]],
+            "logits": [[2139095040, 2143289344]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[2139095040, 2143289344]],
+            "logits": [[2139095040, 2143289344]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": true,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "qk-accumulation",
+      "input": {
+        "q": [[2048, 1, -2048, 0]],
+        "k": [
+          [1, 1, 1, 0],
+          [0, 0, 0, 0]
+        ],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[14587]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[14587]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[16159, 16065]],
+            "output": [[16159]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[16159, 16065]],
+            "output": [[16159]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[1059019135, 1052855555]],
+            "output": [[1059019135]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[1059019135, 1052855555]],
+            "output": [[1059019135]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[14587]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13835]],
+            "output": [[14587]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "near-tie",
+      "input": {
+        "q": [[1]],
+        "k": [[1], [1.000244140625]],
+        "v": [[0], [1]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[15360, 15360]],
+            "logits": [[15360, 15360]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[15360, 15360]],
+            "logits": [[15360, 15360]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065355264]],
+            "logits": [[1065353216, 1065355264]],
+            "probabilities": [[1056962560, 1056965632]],
+            "output": [[1056965632]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065355264]],
+            "logits": [[1065353216, 1065355264]],
+            "probabilities": [[1056962560, 1056965632]],
+            "output": [[1056965632]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "lost-probability",
+      "input": {
+        "q": [[1]],
+        "k": [[0], [-20]],
+        "v": [[0], [65504]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 52480]],
+            "logits": [[0, 52480]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 52480]],
+            "logits": [[0, 52480]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[16256, 12558]],
+            "output": [[14606]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[16256, 12558]],
+            "output": [[14606]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[1065353216, 822977587]],
+            "output": [[957190782]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[1065353216, 822977587]],
+            "output": [[957190782]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 3248488448]],
+            "logits": [[0, 3248488448]],
+            "probabilities": [[15360, 0]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": true,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "large-logits",
+      "input": {
+        "q": [[1]],
+        "k": [[10000], [9999]],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[28898, 28898]],
+            "logits": [[28898, 28898]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[28898, 28898]],
+            "logits": [[28898, 28898]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1176256512, 1176256512]],
+            "logits": [[1176256512, 1176256512]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1176256512, 1176256512]],
+            "logits": [[1176256512, 1176256512]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1176240128, 1176240128]],
+            "logits": [[1176240128, 1176240128]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1176240128, 1176240128]],
+            "logits": [[1176240128, 1176240128]],
+            "probabilities": [[32704, 32704]],
+            "output": [[32704]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1176256512, 1176255488]],
+            "logits": [[1176256512, 1176255488]],
+            "probabilities": [[1060841128, 1049211569]],
+            "output": [[1060841128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1176256512, 1176255488]],
+            "logits": [[1176256512, 1176255488]],
+            "probabilities": [[2143289344, 2143289344]],
+            "output": [[2143289344]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1176256512, 1176256512]],
+            "logits": [[1176256512, 1176256512]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1176256512, 1176256512]],
+            "logits": [[1176256512, 1176256512]],
+            "probabilities": [[32256, 32256]],
+            "output": [[32256]]
+          },
+          "flags": {
+            "invalid": true,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "dot-cancellation",
+      "input": {
+        "q": [[1.0009765625, -1.001953125, 0, 0]],
+        "k": [
+          [1.0009765625, 1, 0, 0],
+          [0, 0, 0, 0]
+        ],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[16128, 16128]],
+            "output": [[16128]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[1056964610, 1056964604]],
+            "output": [[1056964610]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[1056964610, 1056964604]],
+            "output": [[1056964610]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[897581056, 0]],
+            "logits": [[889192448, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "scaling",
+      "input": {
+        "q": [[1, 1, 1]],
+        "k": [
+          [1, 1, 1],
+          [0, 0, 0]
+        ],
+        "v": [[1], [0]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[16896, 0]],
+            "logits": [[16109, 0]],
+            "probabilities": [[15052, 12496]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[16896, 0]],
+            "logits": [[16109, 0]],
+            "probabilities": [[15052, 12496]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[15052, 12495]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[15052, 12495]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[16218, 15898]],
+            "output": [[16218]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[16218, 15898]],
+            "output": [[16218]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[1062831173, 1041886954]],
+            "output": [[1062831173]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[1062831173, 1041886954]],
+            "output": [[1062831173]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[15052, 12495]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077936128, 0]],
+            "logits": [[1071494103, 0]],
+            "probabilities": [[15052, 12495]],
+            "output": [[15052]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "value-aggregation",
+      "input": {
+        "q": [[0]],
+        "k": [[1], [1], [1]],
+        "v": [[2048], [1], [-2048]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[14336]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[13653]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[13653]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[16043, 16043, 16043]],
+            "output": [[16043]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[16043, 16043, 16043]],
+            "output": [[16043]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[1051372203, 1051372203, 1051372203]],
+            "output": [[1051371520]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[1051372203, 1051372203, 1051372203]],
+            "output": [[1051371520]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[13653]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0, 0]],
+            "logits": [[0, 0, 0]],
+            "probabilities": [[13653, 13653, 13653]],
+            "output": [[13653]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "output-impact",
+      "input": {
+        "q": [[2048, 1, -2048, 0]],
+        "k": [
+          [1, 1, 1, 0],
+          [0, 0, 0, 0]
+        ],
+        "v": [[1000], [-1000]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[0, 0]],
+            "logits": [[0, 0]],
+            "probabilities": [[14336, 14336]],
+            "output": [[0]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[23465]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[23465]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[16159, 16065]],
+            "output": [[17268]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[16159, 16065]],
+            "output": [[17268]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[1059019135, 1052855555]],
+            "output": [[1131735854]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[1059019135, 1052855555]],
+            "output": [[1131735854]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13834]],
+            "output": [[23465]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 0]],
+            "logits": [[1056964608, 0]],
+            "probabilities": [[14587, 13835]],
+            "output": [[23463]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "input-loss",
+      "input": {
+        "q": [[1]],
+        "k": [[1], [1.000244140625]],
+        "v": [[0], [1024]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[15360, 15360]],
+            "logits": [[15360, 15360]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[15360, 15360]],
+            "logits": [[15360, 15360]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[16128, 16128]],
+            "output": [[17408]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[16128, 16128]],
+            "output": [[17408]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065355264]],
+            "logits": [[1065353216, 1065355264]],
+            "probabilities": [[1056962560, 1056965632]],
+            "output": [[1140851712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065355264]],
+            "logits": [[1065353216, 1065355264]],
+            "probabilities": [[1056962560, 1056965632]],
+            "output": [[1140851712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1065353216, 1065353216]],
+            "logits": [[1065353216, 1065353216]],
+            "probabilities": [[14336, 14336]],
+            "output": [[24576]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-0",
+      "input": {
+        "q": [[1.91796875], [-0.1796875], [0.97265625]],
+        "k": [[1.7265625], [1.125], [0.26953125], [1.734375]],
+        "v": [[-1.51171875], [0.61328125], [-1.546875], [1.53515625]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [17055, 16465, 14371, 17063],
+              [46327, 45688, 43571, 46332],
+              [16056, 15456, 13362, 16063]
+            ],
+            "logits": [
+              [17055, 16465, 14371, 17063],
+              [46327, 45688, 43571, 46332],
+              [16056, 15456, 13362, 16063]
+            ],
+            "probabilities": [
+              [14000, 12346, 9870, 14027],
+              [13121, 13323, 13495, 13119],
+              [13748, 12889, 11656, 13758]
+            ],
+            "output": [[11232], [46268], [36864]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [17055, 16465, 14371, 17063],
+              [46327, 45688, 43571, 46332],
+              [16056, 15456, 13362, 16063]
+            ],
+            "logits": [
+              [17055, 16465, 14371, 17063],
+              [46327, 45688, 43571, 46332],
+              [16056, 15456, 13362, 16063]
+            ],
+            "probabilities": [
+              [14000, 12346, 9868, 14027],
+              [13120, 13322, 13494, 13118],
+              [13748, 12890, 11655, 13759]
+            ],
+            "output": [[11232], [46269], [4096]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [14001, 12344, 9867, 14026],
+              [13121, 13322, 13494, 13118],
+              [13747, 12890, 11655, 13758]
+            ],
+            "output": [[11198], [46268], [4338]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [14001, 12344, 9867, 14026],
+              [13121, 13322, 13494, 13118],
+              [13747, 12890, 11655, 13758]
+            ],
+            "output": [[11198], [46268], [4338]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1079270912, 1074421760, 1057266688, 1079333888],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079270912, 1074421760, 1057266688, 1079333888],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [16086, 15879, 15568, 16089],
+              [15976, 16001, 16023, 15976],
+              [16054, 15947, 15793, 16056]
+            ],
+            "output": [[15722], [48793], [47639]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1079270912, 1074421760, 1057266688, 1079333888],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079270912, 1074421760, 1057266688, 1079333888],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [16086, 15879, 15568, 16089],
+              [15976, 16001, 16023, 15976],
+              [16054, 15947, 15793, 16056]
+            ],
+            "output": [[15722], [48793], [47639]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [1054217026, 1040649877, 1020357975, 1054428831],
+              [1047009216, 1048660756, 1050068698, 1046987879],
+              [1052140958, 1045116076, 1035000070, 1052232138]
+            ],
+            "output": [[1031350752], [3197597761], [975816704]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [1054217026, 1040649876, 1020357975, 1054428831],
+              [1047009216, 1048660756, 1050068697, 1046987878],
+              [1052140958, 1045116075, 1035000070, 1052232138]
+            ],
+            "output": [[1031350752], [3197597760], [975815680]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [14000, 12346, 9870, 14027],
+              [13121, 13323, 13495, 13119],
+              [13748, 12889, 11656, 13758]
+            ],
+            "output": [[11225], [46268], [1096]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "logits": [
+              [1079242624, 1074403328, 1057249024, 1079305472],
+              [3198081024, 3192848384, 3175505920, 3198128128],
+              [1071052032, 1066143744, 1048984064, 1071115776]
+            ],
+            "probabilities": [
+              [14000, 12346, 9868, 14027],
+              [13120, 13322, 13494, 13118],
+              [13748, 12890, 11655, 13759]
+            ],
+            "output": [[11227], [46267], [4350]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-1",
+      "input": {
+        "q": [
+          [1.84765625, -1.7421875, 1.37890625],
+          [-1.875, -1.2890625, -0.171875]
+        ],
+        "k": [
+          [0.9296875, -1.51171875, 1.33984375],
+          [-0.91796875, 1.7109375, -0.23828125],
+          [0.1796875, 0.51171875, -0.12890625],
+          [0.39453125, 1.5078125, -1.8828125]
+        ],
+        "v": [[0.06640625], [-1.91015625], [-1.203125], [-0.07421875]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [17971, 50433, 47590, 50302],
+              [42608, 46872, 48076, 49336]
+            ],
+            "logits": [
+              [17192, 49607, 46799, 49455],
+              [41838, 46104, 47232, 48498]
+            ],
+            "probabilities": [
+              [15315, 5687, 9362, 6190],
+              [13850, 13515, 13070, 11864]
+            ],
+            "output": [[10540], [47758]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [17971, 50433, 47590, 50302],
+              [42608, 46872, 48076, 49336]
+            ],
+            "logits": [
+              [17192, 49607, 46799, 49455],
+              [41838, 46104, 47232, 48498]
+            ],
+            "probabilities": [
+              [15316, 5691, 9362, 6193],
+              [13849, 13515, 13069, 11864]
+            ],
+            "output": [[10542], [47758]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [15316, 5688, 9361, 6189],
+              [13850, 13514, 13069, 11862]
+            ],
+            "output": [[10542], [47757]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [15316, 5688, 9361, 6189],
+              [13850, 13514, 13069, 11862]
+            ],
+            "output": [[10542], [47757]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1086748928, 3231713152, 3208432128, 3230638208],
+              [3165061120, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080372526, 3224946994, 3201957549, 3223705755],
+              [3158365634, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [16251, 15047, 15506, 15110],
+              [16068, 16025, 15969, 15819]
+            ],
+            "output": [[15654], [48977]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1086748928, 3231713152, 3208432128, 3230638208],
+              [3165061120, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080372526, 3224946994, 3201957549, 3223705755],
+              [3158365634, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [16251, 15047, 15506, 15110],
+              [16068, 16025, 15969, 15819]
+            ],
+            "output": [[15654], [48977]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [1064994222, 986116398, 1016211264, 990224515],
+              [1052979926, 1050233420, 1046585519, 1036700189]
+            ],
+            "output": [[1025885095], [3209800506]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [1064994221, 986116396, 1016211262, 990224513],
+              [1052979925, 1050233419, 1046585519, 1036700188]
+            ],
+            "output": [[1025885097], [3209800506]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [15315, 5687, 9362, 6190],
+              [13850, 13514, 13070, 11863]
+            ],
+            "output": [[10540], [47757]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1086741984, 3231722624, 3208428800, 3230650400],
+              [3167404032, 3202547712, 3212407296, 3222734592]
+            ],
+            "logits": [
+              [1080364507, 3224957931, 3201953706, 3223719833],
+              [3161070995, 3196260090, 3205497967, 3215877168]
+            ],
+            "probabilities": [
+              [15316, 5688, 9362, 6191],
+              [13850, 13515, 13069, 11863]
+            ],
+            "output": [[10541], [47758]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-2",
+      "input": {
+        "q": [[0.828125], [-0.86328125]],
+        "k": [[-1.5390625], [1.66796875], [1.7890625]],
+        "v": [
+          [-0.703125, -1.76953125],
+          [0.6640625, -1.23046875],
+          [0.50390625, -1.71484375]
+        ]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [48409, 15750, 15853],
+              [15697, 48578, 48686]
+            ],
+            "logits": [
+              [48409, 15750, 15853],
+              [15697, 48578, 48686]
+            ],
+            "probabilities": [
+              [10274, 14170, 14353],
+              [15142, 11051, 10868]
+            ],
+            "output": [
+              [14415, 48634],
+              [47239, 48882]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [48409, 15750, 15853],
+              [15697, 48578, 48686]
+            ],
+            "logits": [
+              [48409, 15750, 15853],
+              [15697, 48578, 48686]
+            ],
+            "probabilities": [
+              [10274, 14171, 14353],
+              [15141, 11052, 10869]
+            ],
+            "output": [
+              [14415, 48634],
+              [47238, 48882]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [10274, 14171, 14353],
+              [15142, 11053, 10871]
+            ],
+            "output": [
+              [14415, 48634],
+              [47238, 48882]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [10274, 14171, 14353],
+              [15142, 11053, 10871]
+            ],
+            "output": [
+              [14415, 48634],
+              [47238, 48882]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3215139840, 1068578816, 1069392896],
+              [1068110080, 3216555520, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068578816, 1069392896],
+              [1068110080, 3216555520, 3217404160]
+            ],
+            "probabilities": [
+              [15620, 16108, 16130],
+              [16229, 15717, 15695]
+            ],
+            "output": [
+              [16138, 49088],
+              [48913, 49118]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3215139840, 1068578816, 1069392896],
+              [1068110080, 3216555520, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068578816, 1069392896],
+              [1068110080, 3216555520, 3217404160]
+            ],
+            "probabilities": [
+              [15620, 16108, 16130],
+              [16229, 15717, 15695]
+            ],
+            "output": [
+              [16138, 49088],
+              [48913, 49118]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [1023687739, 1055609596, 1057100479],
+              [1063565365, 1030071294, 1028577466]
+            ],
+            "output": [
+              [1057611354, 3216980686],
+              [3205547492, 3219015470]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [1023687739, 1055609596, 1057100479],
+              [1063565365, 1030071294, 1028577467]
+            ],
+            "output": [
+              [1057611354, 3216980686],
+              [3205547492, 3219015470]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [10274, 14170, 14353],
+              [15142, 11051, 10868]
+            ],
+            "output": [
+              [14415, 48634],
+              [47239, 48882]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "logits": [
+              [3215139840, 1068551680, 1069392896],
+              [1068110080, 3216527232, 3217404160]
+            ],
+            "probabilities": [
+              [10274, 14171, 14353],
+              [15141, 11052, 10869]
+            ],
+            "output": [
+              [14415, 48634],
+              [47238, 48881]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-3",
+      "input": {
+        "q": [[0.5859375, -1.38671875]],
+        "k": [
+          [0.37109375, -1.37109375],
+          [-1.22265625, 1.3515625],
+          [0.79296875, -1.12890625]
+        ],
+        "v": [
+          [1.55859375, -0.41015625, -1.1328125],
+          [-0.41015625, -1.859375, 1.6328125],
+          [-1.28125, -1.75390625, 0.421875]
+        ]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[16445, 49454, 16399]],
+            "logits": [[15870, 48979, 15805]],
+            "probabilities": [[14349, 9382, 14235]],
+            "output": [[12680, 48205, 46462]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[16445, 49454, 16399]],
+            "logits": [[15870, 48979, 15805]],
+            "probabilities": [[14350, 9382, 14236]],
+            "output": [[12684, 48206, 46464]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[14349, 9380, 14236]],
+            "output": [[12676, 48205, 46462]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[14349, 9380, 14236]],
+            "output": [[12676, 48205, 46462]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1074285184, 3223715328, 1073863808]],
+            "logits": [[1069596318, 3219832727, 1069000402]],
+            "probabilities": [[16130, 15508, 16114]],
+            "output": [[15929, 49033, 48817]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1074285184, 3223715328, 1073863808]],
+            "logits": [[1069596318, 3219832727, 1069000402]],
+            "probabilities": [[16130, 15508, 16114]],
+            "output": [[15929, 49033, 48817]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[1057070671, 1016362132, 1056144410]],
+            "output": [[1043369076, 3213469765, 3199192041]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[1057070671, 1016362133, 1056144410]],
+            "output": [[1043369076, 3213469765, 3199192041]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[14349, 9379, 14236]],
+            "output": [[12676, 48205, 46463]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1074239936, 3223702784, 1073868096]],
+            "logits": [[1069532328, 3219814987, 1069006467]],
+            "probabilities": [[14349, 9379, 14236]],
+            "output": [[12676, 48205, 46463]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-4",
+      "input": {
+        "q": [
+          [1.12890625, -1.13671875, -1.63671875, 0.5234375],
+          [-0.12109375, 1.8984375, 1.52734375, 1.3671875]
+        ],
+        "k": [
+          [-1.15234375, -0.015625, -1.234375, 0.51171875],
+          [-0.12890625, -1.203125, 0.421875, -0.796875],
+          [-1.55078125, 2, 1.16015625, 0.29296875]
+        ],
+        "v": [
+          [-1.140625, -1.171875, -1.0546875],
+          [-1.11328125, 1.41015625, -1.2421875],
+          [1.08203125, -0.4375, 0.390625]
+        ]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [15364, 12112, 50629],
+              [48206, 49517, 17961]
+            ],
+            "logits": [
+              [14340, 11088, 49605],
+              [47182, 48493, 16937]
+            ],
+            "probabilities": [
+              [14535, 13856, 9515],
+              [9886, 8660, 15283]
+            ],
+            "output": [
+              [48216, 45412, 48228],
+              [15358, 46839, 13658]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [15364, 12112, 50629],
+              [48206, 49517, 17961]
+            ],
+            "logits": [
+              [14340, 11088, 49605],
+              [47182, 48493, 16937]
+            ],
+            "probabilities": [
+              [14535, 13855, 9515],
+              [9885, 8661, 15284]
+            ],
+            "output": [
+              [48216, 45416, 48228],
+              [15360, 46840, 13659]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [14535, 13855, 9515],
+              [9888, 8663, 15284]
+            ],
+            "output": [
+              [48215, 45418, 48227],
+              [15359, 46840, 13659]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [14535, 13855, 9515],
+              [9888, 8663, 15284]
+            ],
+            "output": [
+              [48215, 45418, 48227],
+              [15359, 46840, 13659]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1065437440, 1039253504, 3233315776],
+              [3213509376, 3224211520, 1086650304]
+            ],
+            "logits": [
+              [1057048832, 1030864896, 3224927168],
+              [3205120768, 3215822912, 1078261696]
+            ],
+            "probabilities": [
+              [16153, 16068, 15525],
+              [15572, 15419, 16246]
+            ],
+            "output": [
+              [49035, 48687, 49037],
+              [16254, 48863, 16043]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1065437440, 1039253504, 3233315776],
+              [3213509376, 3224211520, 1086650304]
+            ],
+            "logits": [
+              [1057048832, 1030864896, 3224927168],
+              [3205120768, 3215822912, 1078261696]
+            ],
+            "probabilities": [
+              [16153, 16068, 15525],
+              [15572, 15419, 16246]
+            ],
+            "output": [
+              [49035, 48687, 49037],
+              [16254, 48863, 16043]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [1058595585, 1053025358, 1017469685],
+              [1020524335, 1010494489, 1064727703]
+            ],
+            "output": [
+              [3213552403, 3190634793, 3213652670],
+              [1065344405, 3202281383, 1051414688]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [1058595586, 1053025359, 1017469686],
+              [1020524335, 1010494490, 1064727702]
+            ],
+            "output": [
+              [3213552404, 3190634793, 3213652670],
+              [1065344403, 3202281382, 1051414688]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [14535, 13855, 9515],
+              [9886, 8666, 15283]
+            ],
+            "output": [
+              [48215, 45418, 48227],
+              [15358, 46839, 13658]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1065395584, 1038776320, 3233325248],
+              [3213472896, 3224218432, 1086654336]
+            ],
+            "logits": [
+              [1057006976, 1030387712, 3224936640],
+              [3205084288, 3215829824, 1078265728]
+            ],
+            "probabilities": [
+              [14535, 13855, 9515],
+              [9888, 8664, 15283]
+            ],
+            "output": [
+              [48215, 45418, 48227],
+              [15358, 46839, 13658]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-5",
+      "input": {
+        "q": [[-1.296875, 0.015625]],
+        "k": [[-1.90234375, -1.22265625]],
+        "v": [[-1.09765625, 1.578125, 0.125]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[16613]],
+            "logits": [[16108]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[16613]],
+            "logits": [[16108]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1075642368]],
+            "logits": [[1071515666]],
+            "probabilities": [[16256]],
+            "output": [[49036, 16330, 15872]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1075642368]],
+            "logits": [[1071515666]],
+            "probabilities": [[16256]],
+            "output": [[49036, 16330, 15872]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[1065353216]],
+            "output": [[3213656064, 1070202880, 1040187392]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[1065353216]],
+            "output": [[3213656064, 1070202880, 1040187392]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1075620864]],
+            "logits": [[1071485255]],
+            "probabilities": [[15360]],
+            "output": [[48228, 15952, 12288]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-6",
+      "input": {
+        "q": [[-0.26953125], [1.16015625], [-0.90234375]],
+        "k": [[0.31640625], [0.32421875]],
+        "v": [
+          [-0.6796875, -0.58203125],
+          [-1.921875, -1.36328125]
+        ]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [44405, 44440],
+              [13792, 13829],
+              [46225, 46254]
+            ],
+            "logits": [
+              [44405, 44440],
+              [13792, 13829],
+              [46225, 46254]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14327, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48072],
+              [48440, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [44405, 44440],
+              [13792, 13829],
+              [46225, 46254]
+            ],
+            "logits": [
+              [44405, 44440],
+              [13792, 13829],
+              [46225, 46254]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14326, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48072],
+              [48439, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14327, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48071],
+              [48439, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14327, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48071],
+              [48439, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052463104, 1052766208],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052463104, 1052766208],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [16128, 16128],
+              [16127, 16129],
+              [16128, 16127]
+            ],
+            "output": [
+              [49062, 49016],
+              [49063, 49018],
+              [49062, 49016]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052463104, 1052766208],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052463104, 1052766208],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [16128, 16128],
+              [16127, 16129],
+              [16128, 16127]
+            ],
+            "output": [
+              [49062, 49016],
+              [49063, 49018],
+              [49062, 49016]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [1056973440, 1056946944],
+              [1056888576, 1057002624],
+              [1056994176, 1056905472]
+            ],
+            "output": [
+              [3215354514, 3212371212],
+              [3215383612, 3212407812],
+              [3215341636, 3212355012]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [1056973440, 1056946944],
+              [1056888577, 1057002624],
+              [1056994176, 1056905471]
+            ],
+            "output": [
+              [3215354514, 3212371212],
+              [3215383612, 3212407812],
+              [3215341635, 3212355012]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14327, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48071],
+              [48439, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "logits": [
+              [3182340096, 3182622720],
+              [1052504576, 1052808704],
+              [3197251072, 3197487616]
+            ],
+            "probabilities": [
+              [14337, 14334],
+              [14326, 14341],
+              [14340, 14329]
+            ],
+            "output": [
+              [48435, 48071],
+              [48439, 48076],
+              [48434, 48070]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-7",
+      "input": {
+        "q": [[1.3125], [1.81640625], [1.48828125]],
+        "k": [[-0.05078125]],
+        "v": [[1.34375]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[44100], [44519], [44246]],
+            "logits": [[44100], [44519], [44246]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[44100], [44519], [44246]],
+            "logits": [[44100], [44519], [44246]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[3179839488], [3183247360], [3181010944]],
+            "logits": [[3179839488], [3183247360], [3181010944]],
+            "probabilities": [[16256], [16256], [16256]],
+            "output": [[16300], [16300], [16300]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[3179839488], [3183247360], [3181010944]],
+            "logits": [[3179839488], [3183247360], [3181010944]],
+            "probabilities": [[16256], [16256], [16256]],
+            "output": [[16300], [16300], [16300]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[1065353216], [1065353216], [1065353216]],
+            "output": [[1068236800], [1068236800], [1068236800]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[1065353216], [1065353216], [1065353216]],
+            "output": [[1068236800], [1068236800], [1068236800]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[3179839488], [3183273984], [3181037568]],
+            "logits": [[3179839488], [3183273984], [3181037568]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [[15712], [15712], [15712]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-8",
+      "input": {
+        "q": [
+          [-0.80078125, -1.83984375, 1.58984375],
+          [0.3984375, -1.26953125, 1.66796875],
+          [0.609375, 1.2265625, -0.1015625]
+        ],
+        "k": [[-0.03515625, -1.375, 1.09765625]],
+        "v": [[0.7890625, -1.75390625]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[17485], [17184], [48967]],
+            "logits": [[16631], [16413], [48179]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[17485], [17184], [48967]],
+            "logits": [[16631], [16413], [48179]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1082773152], [1080263296], [3219707392]],
+            "logits": [[1075781695], [1073961555], [3213258122]],
+            "probabilities": [[16256], [16256], [16256]],
+            "output": [
+              [16202, 49120],
+              [16202, 49120],
+              [16202, 49120]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1082773152], [1080263296], [3219707392]],
+            "logits": [[1075781695], [1073961555], [3213258122]],
+            "probabilities": [[16256], [16256], [16256]],
+            "output": [
+              [16202, 49120],
+              [16202, 49120],
+              [16202, 49120]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[1065353216], [1065353216], [1065353216]],
+            "output": [
+              [1061814272, 3219161088],
+              [1061814272, 3219161088],
+              [1061814272, 3219161088]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[1065353216], [1065353216], [1065353216]],
+            "output": [
+              [1061814272, 3219161088],
+              [1061814272, 3219161088],
+              [1061814272, 3219161088]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1082765952], [1080295232], [3219710720]],
+            "logits": [[1075773381], [1073979993], [3213260044]],
+            "probabilities": [[15360], [15360], [15360]],
+            "output": [
+              [14928, 48900],
+              [14928, 48900],
+              [14928, 48900]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-9",
+      "input": {
+        "q": [[-0.4453125, 1.8203125, 0.625, 0.328125]],
+        "k": [
+          [1.5390625, -1.9765625, -0.3046875, -1.24609375],
+          [-1.3984375, 1.14453125, -1.09375, -1.55859375],
+          [1.96875, -0.61328125, -1.08984375, 0.57421875],
+          [1.296875, 1.1171875, -0.52734375, 0.09765625]
+        ],
+        "v": [[0.375], [-0.61328125], [-0.6484375], [1.71484375]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[50402, 15884, 49400, 15521]],
+            "logits": [[49378, 14860, 48376, 14497]],
+            "probabilities": [[9522, 14322, 11343, 13991]],
+            "output": [[13813]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[50402, 15884, 49400, 15521]],
+            "logits": [[49378, 14860, 48376, 14497]],
+            "probabilities": [[9522, 14321, 11343, 13991]],
+            "output": [[13813]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[9522, 14321, 11342, 13992]],
+            "output": [[13816]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[9522, 14321, 11342, 13992]],
+            "output": [[13816]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[3231467776, 1069570560, 3223273344, 1066683392]],
+            "logits": [[3223079168, 1061181952, 3214884736, 1058294784]],
+            "probabilities": [[15527, 16126, 15754, 16086]],
+            "output": [[16066]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[3231467776, 1069570560, 3223273344, 1066683392]],
+            "logits": [[3223079168, 1061181952, 3214884736, 1058294784]],
+            "probabilities": [[15527, 16126, 15754, 16086]],
+            "output": [[16066]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[1017528444, 1056841281, 1032439378, 1054149666]],
+            "output": [[1052708637]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[1017528444, 1056841282, 1032439378, 1054149666]],
+            "output": [[1052708637]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[9521, 14320, 11342, 13992]],
+            "output": [[13816]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[3231465088, 1069640960, 3223263104, 1066683392]],
+            "logits": [[3223076480, 1061252352, 3214874496, 1058294784]],
+            "probabilities": [[9522, 14321, 11342, 13992]],
+            "output": [[13816]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-10",
+      "input": {
+        "q": [
+          [0.984375, 0.4375, 1.234375, 1.98046875],
+          [-0.5703125, -0.65625, 1.55078125, -1.17578125]
+        ],
+        "k": [
+          [-1.69921875, 0.7734375, 1.0859375, 1.25],
+          [-1.2578125, -1.60546875, 0.77734375, 0.1796875]
+        ],
+        "v": [
+          [-0.23828125, -0.16796875],
+          [-1.55078125, -0.71484375]
+        ]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [16632, 47360],
+              [14694, 16776]
+            ],
+            "logits": [
+              [15608, 46336],
+              [13670, 15752]
+            ],
+            "probabilities": [
+              [15003, 12693],
+              [13354, 14827]
+            ],
+            "output": [
+              [46970, 46135],
+              [48342, 47252]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [16632, 47360],
+              [14694, 16776]
+            ],
+            "logits": [
+              [15608, 46336],
+              [13670, 15752]
+            ],
+            "probabilities": [
+              [15002, 12692],
+              [13354, 14828]
+            ],
+            "output": [
+              [46968, 46134],
+              [48342, 47254]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [15002, 12694],
+              [13354, 14827]
+            ],
+            "output": [
+              [46970, 46135],
+              [48342, 47253]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [15002, 12694],
+              [13354, 14827]
+            ],
+            "output": [
+              [46970, 46135],
+              [48342, 47253]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1075766784, 3206564864],
+              [1059962880, 1076952064]
+            ],
+            "logits": [
+              [1067378176, 3198176256],
+              [1051574272, 1068563456]
+            ],
+            "probabilities": [
+              [16211, 15923],
+              [16005, 16189]
+            ],
+            "output": [
+              [48879, 48775],
+              [49050, 48914]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1075766784, 3206564864],
+              [1059962880, 1076952064]
+            ],
+            "logits": [
+              [1067378176, 3198176256],
+              [1051574272, 1068563456]
+            ],
+            "probabilities": [
+              [16211, 15923],
+              [16005, 16189]
+            ],
+            "output": [
+              [48879, 48775],
+              [49050, 48914]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [1062424110, 1043515208],
+              [1048920028, 1060986898]
+            ],
+            "output": [
+              [3203355335, 3196510846],
+              [3214591756, 3205664906]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [1062424110, 1043515207],
+              [1048920028, 1060986898]
+            ],
+            "output": [
+              [3203355335, 3196510846],
+              [3214591756, 3205664906]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [15003, 12694],
+              [13354, 14827]
+            ],
+            "output": [
+              [46971, 46135],
+              [48342, 47253]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [
+              [1075762432, 3206547968],
+              [1059914752, 1076951104]
+            ],
+            "logits": [
+              [1067373824, 3198159360],
+              [1051526144, 1068562496]
+            ],
+            "probabilities": [
+              [15002, 12694],
+              [13354, 14826]
+            ],
+            "output": [
+              [46970, 46135],
+              [48341, 47252]
+            ]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "seeded-11",
+      "input": {
+        "q": [[-1.80078125]],
+        "k": [[-1.59375]],
+        "v": [[1.36328125, -0.53515625]]
+      },
+      "results": [
+        {
+          "mode": "fp16",
+          "method": "stable",
+          "stages": {
+            "scores": [[16829]],
+            "logits": [[16829]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16",
+          "method": "naive",
+          "stages": {
+            "scores": [[16829]],
+            "logits": [[16829]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077364736]],
+            "logits": [[1077364736]],
+            "probabilities": [[16256]],
+            "output": [[16302, 48905]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "bf16-wide",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077364736]],
+            "logits": [[1077364736]],
+            "probabilities": [[16256]],
+            "output": [[16302, 48905]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[1065353216]],
+            "output": [[1068400640, 3205038080]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": false
+          }
+        },
+        {
+          "mode": "fp32",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[1065353216]],
+            "output": [[1068400640, 3205038080]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "stable",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        },
+        {
+          "mode": "fp16-softmax",
+          "method": "naive",
+          "stages": {
+            "scores": [[1077390848]],
+            "logits": [[1077390848]],
+            "probabilities": [[15360]],
+            "output": [[15732, 47176]]
+          },
+          "flags": {
+            "invalid": false,
+            "overflow": false,
+            "underflow": false,
+            "inexact": true
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1854,3 +1854,112 @@
     grid-template-columns: 1fr;
   }
 }
+
+.attention-editors,
+.attention-comparisons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.attention-editors {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.attention-editors label,
+.attention-selectors label {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.attention-editors textarea {
+  font-family: var(--font-mono);
+  min-height: 7rem;
+}
+.attention-selectors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.attention-selectors select,
+#attention-step,
+#attention select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--control-border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 0.5rem;
+  min-height: 44px;
+}
+#attention-step {
+  flex: 1;
+}
+.attention-notice {
+  border-left: 3px solid var(--accent);
+  padding: 1rem;
+}
+.attention-example {
+  margin-top: 1rem;
+}
+.attention-example p + p {
+  margin-top: 0.5rem;
+}
+.attention-policy {
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+.attention-map {
+  min-width: 0;
+  margin-bottom: 1rem;
+}
+.attention-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.attention-table caption {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  text-align: left;
+  margin-bottom: 0.6rem;
+}
+.attention-table td,
+.attention-table th {
+  padding: 0.6rem;
+  border: 1px solid var(--control-border);
+  min-width: 5rem;
+  max-width: 20rem;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.attention-table button {
+  min-height: 44px;
+  padding: 0.3rem;
+  width: 100%;
+  text-align: left;
+  border-radius: 0.3rem;
+  border: 1px solid transparent;
+}
+.attention-table button[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.attention-table small {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--muted);
+}
+.attention-table td[data-sign='special'] {
+  border-style: dashed;
+}
+#attention ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+@media (max-width: 900px) {
+  .attention-editors,
+  .attention-comparisons,
+  .attention-selectors {
+    grid-template-columns: 1fr;
+  }
+}

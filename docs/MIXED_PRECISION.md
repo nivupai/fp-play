@@ -2,6 +2,8 @@
 
 Milestone 8 adds fixed FP16, BF16, and FP32 models, a format comparison, and a bounded dot-product laboratory. Existing FP16 APIs and their computation-stage traces remain unchanged. These are public-format educational models, not a model of any particular accelerator or a full IEEE 754 conformance certification.
 
+Milestone 9 now builds a separate [Attention Precision Lab](ATTENTION_PRECISION.md) on these APIs. The scope limits below describe the Milestone 8 dot/format workspaces; the attention contract documents the new supported graph.
+
 ## Formats and representation
 
 | Format | Sign / exponent / stored fraction | Bias | Normal precision | Normal exponent range | Smallest positive subnormal | Maximum finite      |
