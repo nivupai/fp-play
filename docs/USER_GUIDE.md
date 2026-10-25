@@ -155,3 +155,13 @@ The dot lab accepts 1–64 comma/whitespace values in each equal-length vector. 
 Use **Previous step**, **Next step**, the native step range, or **Inspect error point** to read operands, exact intermediate, output encoding, tie/increment decisions, error, and flags. The log-error chart has a separate zero row; pairwise steps compare their subtree's terms. Expand **Quantized input encodings** for every converted operand. Tables and long numbers have their own keyboard-focusable scroll areas.
 
 C/D sequential modes use FP32 FMA per term; pairwise modes instead use FMA-with-zero leaves and rounded tree additions. B first rounds each product to FP16, even though the accumulator is FP32. Conversion flags are not part of the arithmetic flag union. Signed-zero seeding and nonfinite-reference limitations are explained beside the results. See [the mathematical contract](MIXED_PRECISION.md) for exact definitions, examples, and verified results.
+
+## Attention Precision Lab
+
+Open **Attention Precision Lab** from the landing links (`#attention`). Enter Q/K/V with newline/semicolon rows and comma/space columns. Q supports up to 4×8, K up to 8×8, V up to 8×4; matching dimensions are required. **Apply attention matrices** updates all three together; errors preserve the last calculation. Decimal text is binary64-first, including explicit -0/Infinity/NaN tokens.
+
+Select left/right precision policies and stable or deliberately unstable naive softmax. Choose **Attention stage view** to compare QK scores, scaled logits, probabilities, and output. Corresponding heatmaps share a scale and display signed values/hex rather than relying on tint. Left cells are native buttons: Tab then Space/Enter opens exact decimal, full bits, and classification. Any policy can be selected on the left to inspect all of its boundaries.
+
+Read stable FP32 and separate binary64 baselines, absolute/relative error maps, and **Final output difference · left minus right**. Select a probability row for its stored denominator, weights, and displayed sum. Quantized probabilities are not renormalized. Use previous/next/select stage controls to inspect actual operands, rounding ties/increments, encodings, and flags. The twelve experiments show expected outcomes and verification methods.
+
+Math.exp and reciprocal Math.sqrt are host binary64 computations followed by explicit quantization, not correctly rounded format-specific transcendental functions. A nonfinite result is retained with diagnostics; stable softmax cannot undo an overflowing input/score. Baselines in the UI are numerical estimates; the higher-precision Decimal reference is offline. See [the complete attention policy and reproduction guide](ATTENTION_PRECISION.md).

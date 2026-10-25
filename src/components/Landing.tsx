@@ -107,6 +107,7 @@ export function Landing() {
       <nav className="landing-links" aria-label="Multi-precision experiments">
         <a href="#formats">Compare FP16, BF16, and FP32 →</a>
         <a href="#dot-product">Dot Product Precision Lab →</a>
+        <a href="#attention">Attention Precision Lab →</a>
       </nav>
       <p className="landing-context">
         Why this matters: accelerator workloads combine many small numerical
@@ -114,9 +115,9 @@ export function Landing() {
         rounding influence a result—without assuming a particular chip design.
       </p>
       <p className="landing-limits text-small muted">
-        Educational FP16 models with nearest-even rounding. No full IEEE 754
-        conformance claim. FMA here produces an FP16 result; it is distinct from
-        FP32 accumulation.
+        Educational floating-point models with nearest-even rounding. No full
+        IEEE 754 conformance claim. The original FMA workspace produces FP16
+        output; the mixed-precision labs explicitly model FP32 accumulation.
       </p>
     </section>
   )

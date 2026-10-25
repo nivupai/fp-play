@@ -53,10 +53,17 @@ const stages = [
     title: 'Mixed-precision lab',
     detail:
       'FP16/BF16/FP32 representation, exact arithmetic, mixed-precision accumulation, and reduction order.',
-    status: 'Current milestone',
+    status: 'Complete',
   },
   {
     number: '09',
+    title: 'Attention precision',
+    detail:
+      'Bounded attention, stable/naive softmax, precision-stage traces, and reproducible error experiments.',
+    status: 'Current milestone',
+  },
+  {
+    number: '10',
     title: 'Connect to hardware',
     detail: 'Optional open RTL implementations and hardware validation.',
     status: 'Future / optional',
@@ -77,7 +84,7 @@ export function Roadmap() {
               <span aria-hidden="true" className="font-mono muted">
                 {stage.number}
               </span>
-              <span className={stage.number === '08' ? 'accent-text' : 'muted'}>
+              <span className={stage.number === '09' ? 'accent-text' : 'muted'}>
                 {stage.status}
               </span>
             </div>

@@ -1,5 +1,12 @@
 # Changelog
 
+## Milestone 9 — attention precision (local preparation)
+
+- Bounded Q/K/V attention with five named precision policies, exact modeled arithmetic/normalization, stable and deliberately unstable naive softmax, and explicitly labeled binary64 exp/scaling approximations.
+- Accessible matrix editing, dual-configuration/shared-scale heatmaps, raw encodings, probability rows, reference/error views, complete boundary inspection, and twelve verified experiments.
+- Preserve all 390 earlier tests; 424 now pass. Independent verification covers 240 pipelines, 12,916 stage results/flags, aligned NumPy FP32, and Decimal(100) references. Full deterministic JSON export is development-only.
+- No training, backpropagation, GPU kernels, benchmarking, RTL, publication, or deployment. Real-browser review remains unperformed. See [the attention contract](docs/ATTENTION_PRECISION.md).
+
 ## Milestone 8 — multi-precision lab (local preparation)
 
 - Typed FP16/BF16/FP32 conversion, raw decoding, exact dyadics, adjacency, and ULP; BF16 rounds directly from binary64.
