@@ -74,3 +74,7 @@ Public references:
 - [NVIDIA CUDA Math API: half representation](https://docs.nvidia.com/cuda/cuda-math-api/cuda_math_api/struct____half.html) and [public format ranges](https://docs.nvidia.com/cuda/archive/13.1.0/cuda-programming-guide/05-appendices/mathematical-functions.html).
 
 The implementation and test oracle are original code based on public format semantics; they contain no proprietary hardware designs or internal Broadcom information.
+
+## Multi-precision extension
+
+Milestone 8 retains every FP16 API above and adds fixed format descriptors, direct BF16/FP32 conversion, exact arithmetic, and a typed mixed-precision dot-product engine. See [the complete multi-precision contract](../../../docs/MIXED_PRECISION.md) for API semantics, rounding boundaries, NaN/tininess policies, independent references, and reproduction instructions.

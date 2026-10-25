@@ -46,14 +46,14 @@ const stages = [
     title: 'Public release preparation',
     detail:
       'Polished entry points, keyboard access, release documentation, and manual Pages readiness for v0.1.0.',
-    status: 'Current milestone',
+    status: 'Complete',
   },
   {
     number: '08',
-    title: 'Compare & experiment',
+    title: 'Mixed-precision lab',
     detail:
-      'Future FP16, BF16, FP32, and transformer attention precision experiments.',
-    status: 'Planned',
+      'FP16/BF16/FP32 representation, exact arithmetic, mixed-precision accumulation, and reduction order.',
+    status: 'Current milestone',
   },
   {
     number: '09',
@@ -77,7 +77,7 @@ export function Roadmap() {
               <span aria-hidden="true" className="font-mono muted">
                 {stage.number}
               </span>
-              <span className={stage.number === '07' ? 'accent-text' : 'muted'}>
+              <span className={stage.number === '08' ? 'accent-text' : 'muted'}>
                 {stage.status}
               </span>
             </div>
