@@ -17,6 +17,7 @@ export async function withArithmetic(callback) {
   try {
     for (const [relative, subdir, names] of [
       ['../src/lib/numerics/', 'numerics', null],
+      ['../src/lib/attention/', 'attention', ['examples.ts']],
       [
         '../src/tests/reference/',
         'reference',
@@ -51,6 +52,9 @@ export async function withArithmetic(callback) {
       ...(await load('numerics/formats.mjs')),
       ...(await load('numerics/formatArithmetic.mjs')),
       ...(await load('numerics/dotProduct.mjs')),
+      ...(await load('numerics/attention.mjs')),
+      ...(await load('numerics/attentionDivision.mjs')),
+      ...(await load('attention/examples.mjs')),
       ...(await load('reference/formatReference.mjs')),
       ...(await load('numerics/fp16Arithmetic.mjs')),
       ...(await load('numerics/fp16Multiply.mjs')),
