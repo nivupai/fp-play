@@ -1701,3 +1701,156 @@
 .bit-button {
   border-color: var(--field-color);
 }
+
+/* Mixed-precision experiments reuse the application's theme and field tokens. */
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.format-grid .panel,
+.mixed-data,
+.mixed-data > div {
+  min-width: 0;
+}
+.mixed-result {
+  font-size: 1.7rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.mixed-bits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-family: var(--font-mono, monospace);
+  padding: 0.75rem 0;
+  overflow-wrap: anywhere;
+}
+.mixed-bits .sign-text {
+  color: var(--sign);
+}
+.mixed-bits .exponent-text {
+  color: var(--exponent);
+}
+.mixed-bits .fraction-text {
+  color: var(--fraction);
+}
+.mixed-data {
+  display: grid;
+  gap: 0.8rem;
+}
+.mixed-data dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.mixed-data dd {
+  margin: 0.2rem 0 0;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+  max-height: 12rem;
+  overflow: auto;
+}
+.mixed-controls {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+.mixed-controls input,
+.mixed-controls textarea,
+.mixed-controls select,
+#error-step {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+}
+.mixed-controls textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.mixed-controls button {
+  justify-self: start;
+}
+.mixed-exact {
+  display: block;
+  overflow-wrap: anywhere;
+  max-height: 12rem;
+  overflow: auto;
+  font-family: monospace;
+}
+.mixed-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.mixed-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+.mixed-table th,
+.mixed-table td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--control-border);
+  min-width: 8rem;
+  max-width: 24rem;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.mixed-table caption {
+  text-align: left;
+  padding: 0.75rem 0;
+  font-weight: 650;
+}
+.mixed-step-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.mixed-step-controls input {
+  flex: 1;
+  min-width: 8rem;
+}
+.mixed-step-controls button,
+#error-step {
+  min-height: 44px;
+}
+.mixed-plot {
+  width: 100%;
+  min-width: 500px;
+  color: var(--text);
+}
+.mixed-header {
+  display: block;
+}
+.mixed-header > .muted {
+  margin-top: 0.5rem;
+  max-width: 75ch;
+}
+.mixed-content {
+  gap: 1rem;
+}
+.mixed-content > .panel {
+  margin: 0;
+}
+.mixed-step-controls button {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  background: var(--subtle);
+}
+.mixed-step-controls button:disabled {
+  color: var(--muted);
+}
+.mixed-controls textarea {
+  font: inherit;
+}
+@media (max-width: 1000px) {
+  .format-grid {
+    grid-template-columns: 1fr;
+  }
+}

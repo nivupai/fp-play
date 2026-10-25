@@ -47,8 +47,8 @@ export function Landing() {
           </h1>
           <p className="hero-tagline">Make precision visible.</p>
           <p className="hero-description">
-            A hands-on laboratory for understanding how sixteen bits become a
-            number—and what happens when we calculate with them.
+            A hands-on laboratory for understanding how bits become numbers, and
+            how representation and accumulation precision shape a result.
           </p>
           <div className="landing-links">
             <a className="primary-button" href="#explorer">
@@ -71,8 +71,8 @@ export function Landing() {
             computing and AI hardware.
           </p>
           <p className="muted text-small">
-            Exact binary16 models. Computation-derived traces. Public standards
-            and open-source code.
+            Exact FP16, BF16, and FP32 models. Computation-derived traces.
+            Public standards and open-source code.
           </p>
         </aside>
       </div>
@@ -103,6 +103,10 @@ export function Landing() {
             </span>
           </a>
         ))}
+      </nav>
+      <nav className="landing-links" aria-label="Multi-precision experiments">
+        <a href="#formats">Compare FP16, BF16, and FP32 →</a>
+        <a href="#dot-product">Dot Product Precision Lab →</a>
       </nav>
       <p className="landing-context">
         Why this matters: accelerator workloads combine many small numerical

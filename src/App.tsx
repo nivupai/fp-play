@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { FormatComparison } from './components/mixed/FormatComparison'
+import { DotProductLab } from './components/mixed/DotProductLab'
 import { ArithmeticExplorer } from './components/arithmetic/ArithmeticExplorer'
 import { PrecisionMicroscope } from './components/microscope/PrecisionMicroscope'
 import { FP16Explorer } from './components/FP16Explorer'
@@ -20,6 +22,8 @@ export default function App() {
         <FP16Explorer />
         <PrecisionMicroscope />
         <ArithmeticExplorer />
+        <FormatComparison />
+        <DotProductLab />
         <Roadmap />
         <section
           id="about"
@@ -31,9 +35,9 @@ export default function App() {
             FP Play connects numerical representations to their consequences
             through accessible, testable experiments. Explore IEEE 754
             representation, precision, and exact add/subtract/multiply/FMA
-            traces. AI accelerator precision experiments are planned future
-            work. All work uses public standards and original, open-source
-            implementations.
+            traces, BF16/FP32 representations, and mixed-precision accumulation.
+            Transformer attention remains future work. All work uses public
+            standards and original, open-source implementations.
           </p>
         </section>
       </main>

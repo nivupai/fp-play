@@ -31,3 +31,15 @@ Use a real desktop browser and at least one mobile browser, recording browser/OS
 9. **Production:** verify asset HTTP responses and MIME types at the deployed subpath, reload all hash entry points, and check browser console/network failures. An unrelated path such as `/fp-play/arithmetic` is not supported navigation.
 
 Record any failures and limitations in the release notes; do not mark unperformed items as passed. Screenshots should be added only after they are captured from and reviewed against a real browser.
+
+## Milestone 8 verification update
+
+`feature/mixed-precision` starts at main `977ccc8`, which includes Milestones 6/7. All 344 historical tests and the five historical FP16 numerical modules remain unchanged. The new typed format/arithmetic/dot modules run beside those APIs. The full suite now has **390 passing tests in 14 files**, including 46 new numerical and actual-engine UI tests. Node 22.9.0 and Node 24.22.0 execute the complete suite.
+
+New independent evidence: exhaustive 65,536 BF16 raw classifications/values/metadata; 195,840 BF16 midpoint-neighbor conversions; 20,000 binary64→FP32 native conversions; 20,000 native raw FP32 decodes/round trips; 2,540 signed FP32 exponent-boundary cases; 24,000 finite arithmetic comparisons; 2,000 reductions with intermediate bits/flags; all twelve experiment outputs; all ten mode/order combinations at 64 terms. The integer-distance reference imports no production code. See [the exact model and corpus definitions](MIXED_PRECISION.md).
+
+The extended public SoftFloat driver compares **169,011 FP32 operations, zero result/flag mismatches** under the documented NaN classification/flag comparison. Of 5,275 quiet NaN outputs, 369 differ in implementation-specific sign/payload selection; directed tests cover FP Play's policy. The historical FP16 corpus is also rerun unchanged using the extended driver: **536,888 operations, zero mismatches**, with 28,618 NaN-classification/flag comparisons. No reference library is bundled into the app.
+
+Lint, formatting, strict TypeScript, all tests, static contrast checks, production build, built asset checks, and workflow actionlint pass. Workflow triggers/permissions and dependencies remain unchanged. No push, merge, publication, or deployment is performed.
+
+There is no browser automation tool in the Milestone 8 environment; no new screenshot, real rendering, mobile/touch, native range-key behavior, theme appearance, or assistive-technology verification is claimed. Add `#formats` and `#dot-product` to the manual production review: submit valid/invalid/special values, compare formats, apply equal/mismatched/max-size vectors, select modes/orders/presets, navigate steps, read exact references and long values, and inspect error/table alternatives at narrow widths in all themes.

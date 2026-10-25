@@ -2,7 +2,7 @@
 
 [Back to the project overview](../README.md). Start the app with `npm run dev` and open `http://localhost:5173/fp-play/`.
 
-The landing page links to Bit Explorer, Precision Microscope, Arithmetic Pipeline, and FMA Comparison. The FMA entry opens a verified residual-preservation example. All experiences share the same validated binary16 numerical library.
+The landing page links to Bit Explorer, Precision Microscope, Arithmetic Pipeline, and FMA Comparison. The FMA entry opens a verified residual-preservation example. These four original experiences share the validated binary16 numerical library. The additional multi-precision entry links open Format Comparison and Dot Product Precision Lab; see their controls below.
 
 ## Multiplication and fused multiply-add
 
@@ -145,3 +145,13 @@ floatToFP16Bits(1 + 2 ** -11) // 0x3c00: exact halfway tie rounds to even
 Encoding rounds directly from the input binary64 Number to binary16 using round-to-nearest, ties-to-even, including gradual underflow and overflow. Raw-bit APIs accept integers from 0 to 65535 and throw `RangeError` for invalid patterns. Adjacent-value APIs accept and return **raw bit patterns**. ULP means sign-independent binade spacing: `2**-24` at zero/subnormals, 32 at maximum finite magnitude, Infinity at infinities, and NaN at NaNs.
 
 Raw NaN inspection preserves the sign, fraction, quiet/signaling bit, and payload. JavaScript Numbers cannot preserve the original FP16 NaN payload or sign through conversion; encoding any Number NaN produces positive quiet NaN `0x7e00`. Exact representability includes signed zeros and infinities but excludes NaN by policy. The conversion/introspection APIs do not expose exception flags or alternative rounding modes. Arithmetic is provided by the separate add/sub/multiply/FMA models described above. See the [full API contract, algorithms, validation, and limitations](../src/lib/numerics/README.md).
+
+## Format Comparison and Dot Product Precision Lab
+
+Follow the landing page's **Compare FP16, BF16, and FP32** and **Dot Product Precision Lab** links. In Format Comparison, enter a decimal/special value and press Enter or **Compare formats**. Three cards compare quantized values, complete S/E/F bits, exact decimals, ULP, range, and errors against the applied binary64 input.
+
+The dot lab accepts 1–64 comma/whitespace values in each equal-length vector. Apply both vectors together; invalid input leaves the prior calculation intact. Select any of twelve explained experiments, a precision configuration A–E, and sequential or balanced pairwise order. The comparison table always shows all five modes for the applied vectors/order. Inspect exact original and quantized references separately.
+
+Use **Previous step**, **Next step**, the native step range, or **Inspect error point** to read operands, exact intermediate, output encoding, tie/increment decisions, error, and flags. The log-error chart has a separate zero row; pairwise steps compare their subtree's terms. Expand **Quantized input encodings** for every converted operand. Tables and long numbers have their own keyboard-focusable scroll areas.
+
+C/D sequential modes use FP32 FMA per term; pairwise modes instead use FMA-with-zero leaves and rounded tree additions. B first rounds each product to FP16, even though the accumulator is FP32. Conversion flags are not part of the arithmetic flag union. Signed-zero seeding and nonfinite-reference limitations are explained beside the results. See [the mathematical contract](MIXED_PRECISION.md) for exact definitions, examples, and verified results.
