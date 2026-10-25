@@ -29,3 +29,26 @@ export type {
   MultiplyStage,
   NonfusedMultiplyAddResult,
 } from './fp16Multiply'
+export {
+  FORMATS,
+  encodeFloat,
+  decodeFloat,
+  floatHex,
+  floatBinary,
+  floatULP,
+  nextUp,
+  nextDown,
+  numberToDyadic,
+  roundDyadic,
+} from './formats'
+export type {
+  FormatName,
+  FloatFormat,
+  FloatValue,
+  DecodedFloat,
+  Dyadic,
+  RoundedFloat,
+} from './formats'
+export { calculateFloat, addFloat, multiplyFloat } from './formatArithmetic'
+export { DOT_MODES, dotProduct, exactDot } from './dotProduct'
+export type { DotMode, ReductionOrder, DotResult, DotStep } from './dotProduct'

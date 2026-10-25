@@ -20,7 +20,7 @@ export async function withArithmetic(callback) {
       [
         '../src/tests/reference/',
         'reference',
-        ['fp16Reference.ts', 'fp16MultiplyReference.ts'],
+        ['fp16Reference.ts', 'fp16MultiplyReference.ts', 'formatReference.ts'],
       ],
     ]) {
       const sourceDir = new URL(relative, import.meta.url)
@@ -48,6 +48,10 @@ export async function withArithmetic(callback) {
       import(pathToFileURL(join(temporary, relative)).href)
     return await callback({
       ...(await load('numerics/fp16.mjs')),
+      ...(await load('numerics/formats.mjs')),
+      ...(await load('numerics/formatArithmetic.mjs')),
+      ...(await load('numerics/dotProduct.mjs')),
+      ...(await load('reference/formatReference.mjs')),
       ...(await load('numerics/fp16Arithmetic.mjs')),
       ...(await load('numerics/fp16Multiply.mjs')),
       ...(await load('reference/fp16MultiplyReference.mjs')),
