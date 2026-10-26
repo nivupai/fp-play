@@ -2013,3 +2013,85 @@
     grid-template-columns: 1fr;
   }
 }
+
+.hardware-analysis {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.hardware-table {
+  overflow: auto;
+  max-width: 100%;
+}
+.hardware-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.hardware-table th,
+.hardware-table td {
+  padding: 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.hardware-table caption {
+  text-align: left;
+  padding-block: 0.75rem;
+}
+.hardware-analysis select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  max-width: 100%;
+}
+.hardware-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.hardware-charts figure {
+  margin: 0;
+  min-width: 0;
+}
+.hardware-charts svg {
+  width: 100%;
+  color: var(--text);
+  overflow: visible;
+}
+.hardware-charts svg text {
+  fill: currentColor;
+  font-size: 12px;
+}
+.hardware-baseline {
+  fill: var(--text);
+}
+.hardware-variant {
+  fill: var(--muted);
+}
+.hardware-depth {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0;
+  list-style: none;
+}
+.hardware-depth li div {
+  height: 0.5rem;
+  background: var(--text);
+  border-radius: 0.2rem;
+  margin-top: 0.2rem;
+}
+.hardware-analysis code {
+  overflow-wrap: anywhere;
+}
+.hardware-path {
+  max-height: 20rem;
+  overflow: auto;
+  padding-left: 1.5rem;
+}
+@media (max-width: 900px) {
+  .hardware-charts {
+    grid-template-columns: 1fr;
+  }
+}

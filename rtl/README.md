@@ -4,6 +4,8 @@ Milestone 10 adds an original, combinational SystemVerilog binary16 add/subtract
 
 Milestone 11 adds [multiplication, true FMA, nonfused comparison, and generic synthesis checks](MULTIPLY_FMA.md). The sections below retain the Milestone 10 adder contract and validation record.
 
+Milestone 12 adds [controlled synthesis, Nangate45 mapping, OpenSTA timing, and design-space analysis](../docs/HARDWARE_SYNTHESIS.md) with immutable baseline RTL.
+
 ## Interface and scope
 
 Top module: `rtl/src/fp16_addsub.sv`, `fp16_addsub`.
