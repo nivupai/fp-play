@@ -1,0 +1,1066 @@
+{
+  "metadata": {
+    "schema": 1,
+    "tool": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+    "seed": 1179660598,
+    "cases": 462172,
+    "counts": {
+      "directed": 28,
+      "exhaustive": 262144,
+      "randomized": 200000
+    },
+    "mismatches": 0,
+    "nanResults": 20268,
+    "signalComparisons": 441888,
+    "nanPolicy": "Strict raw equality including sign/payload; all four flags match exactly",
+    "sourceHashes": {
+      "src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+      "Makefile": "71c5e55b120302fe91f0be6f1f967f502927c89ef8c5cd19a8d9ea6bffbfffde",
+      "sim/main.cpp": "bb458bf7ce3c33b53c62e7e7970b9fa27572b5a98f61fd7f909fd7f9f968dfeb",
+      "scripts/verify.mjs": "dd347afd28327dfbc34de6052762656d7f6d3b9e24722c13f1adab7649f1ee99",
+      "vectors/directed.json": "95a452958c169accedae1cc9df156e09204322e5928548c1124dd10f7b08287c",
+      "../src/lib/numerics/fp16.ts": "0f7f5d1bde1c45dc74fbff2d2ae7d2790f93b1a738a26987886145d91324f619",
+      "../src/lib/numerics/fp16Arithmetic.ts": "dd979404985b467147b3285def8c7972ad88518589173a18d3eb94938a256f15",
+      "../src/lib/numerics/roundDyadicFP16.ts": "c5a4bf156f36463199b0392084e8c9eaa78380ceb40578666e381a3513050f17",
+      "../scripts/arithmetic-runtime.mjs": "7756b0cd931c73db698574f8b5e473977b9d383ca89e8610b3639ba4dd44f01a"
+    }
+  },
+  "samples": [
+    {
+      "name": "Exact addition",
+      "a": 15360,
+      "b": 14336,
+      "operation": "add",
+      "softwareBits": 15872,
+      "rtlBits": 15872,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 1,
+        "alignedA": "1000000",
+        "alignedB": "800000",
+        "magnitude": "1800000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "18000000000",
+        "discardCount": 14,
+        "retained": 1536,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Tie even stays",
+      "a": 15360,
+      "b": 4096,
+      "operation": "add",
+      "softwareBits": 15360,
+      "rtlBits": 15360,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "1000000",
+        "alignedB": "2000",
+        "magnitude": "1002000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10020000000",
+        "discardCount": 14,
+        "retained": 1024,
+        "guard": 1,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Tie odd increments",
+      "a": 15361,
+      "b": 4096,
+      "operation": "add",
+      "softwareBits": 15362,
+      "rtlBits": 15362,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "1004000",
+        "alignedB": "2000",
+        "magnitude": "1006000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10060000000",
+        "discardCount": 14,
+        "retained": 1025,
+        "guard": 1,
+        "round": 0,
+        "sticky": 0,
+        "increment": 1,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Sticky tiny addend",
+      "a": 15360,
+      "b": 1,
+      "operation": "add",
+      "softwareBits": 15360,
+      "rtlBits": 15360,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 14,
+        "alignedA": "1000000",
+        "alignedB": "1",
+        "magnitude": "1000001",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10000010000",
+        "discardCount": 14,
+        "retained": 1024,
+        "guard": 0,
+        "round": 0,
+        "sticky": 1,
+        "increment": 0,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "GRS above midpoint",
+      "a": 15360,
+      "b": 4097,
+      "operation": "add",
+      "softwareBits": 15361,
+      "rtlBits": 15361,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "1000000",
+        "alignedB": "2008",
+        "magnitude": "1002008",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10020080000",
+        "discardCount": 14,
+        "retained": 1024,
+        "guard": 1,
+        "round": 0,
+        "sticky": 1,
+        "increment": 1,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Round bit above midpoint",
+      "a": 15360,
+      "b": 4608,
+      "operation": "add",
+      "softwareBits": 15361,
+      "rtlBits": 15361,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "1000000",
+        "alignedB": "3000",
+        "magnitude": "1003000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10030000000",
+        "discardCount": 14,
+        "retained": 1024,
+        "guard": 1,
+        "round": 1,
+        "sticky": 0,
+        "increment": 1,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Significand carry",
+      "a": 16383,
+      "b": 4096,
+      "operation": "add",
+      "softwareBits": 16384,
+      "rtlBits": 16384,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "1ffc000",
+        "alignedB": "2000",
+        "magnitude": "1ffe000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "1ffe0000000",
+        "discardCount": 14,
+        "retained": 2047,
+        "guard": 1,
+        "round": 0,
+        "sticky": 0,
+        "increment": 1,
+        "exponentRounded": 16,
+        "special": false
+      }
+    },
+    {
+      "name": "Cancellation",
+      "a": 15361,
+      "b": 15360,
+      "operation": "subtract",
+      "softwareBits": 5120,
+      "rtlBits": 5120,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "1004000",
+        "alignedB": "1000000",
+        "magnitude": "4000",
+        "normalizationShift": 26,
+        "normalizedMagnitude": "10000000000",
+        "discardCount": 4,
+        "retained": 1024,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 5,
+        "special": false
+      }
+    },
+    {
+      "name": "Negative result",
+      "a": 15360,
+      "b": 16384,
+      "operation": "subtract",
+      "softwareBits": 48128,
+      "rtlBits": 48128,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 1,
+        "alignedA": "1000000",
+        "alignedB": "2000000",
+        "magnitude": "1000000",
+        "normalizationShift": 16,
+        "normalizedMagnitude": "10000000000",
+        "discardCount": 14,
+        "retained": 1024,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 15,
+        "special": false
+      }
+    },
+    {
+      "name": "Minimum subnormal sum",
+      "a": 1,
+      "b": 1,
+      "operation": "add",
+      "softwareBits": 2,
+      "rtlBits": 2,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "1",
+        "alignedB": "1",
+        "magnitude": "2",
+        "normalizationShift": 39,
+        "normalizedMagnitude": "10000000000",
+        "discardCount": 0,
+        "retained": 2,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Smallest normal transition",
+      "a": 1023,
+      "b": 1,
+      "operation": "add",
+      "softwareBits": 1024,
+      "rtlBits": 1024,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "3ff",
+        "alignedB": "1",
+        "magnitude": "400",
+        "normalizationShift": 30,
+        "normalizedMagnitude": "10000000000",
+        "discardCount": 0,
+        "retained": 1024,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 1,
+        "special": false
+      }
+    },
+    {
+      "name": "Normal to subnormal",
+      "a": 1024,
+      "b": 1,
+      "operation": "subtract",
+      "softwareBits": 1023,
+      "rtlBits": 1023,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "400",
+        "alignedB": "1",
+        "magnitude": "3ff",
+        "normalizationShift": 31,
+        "normalizedMagnitude": "1ff80000000",
+        "discardCount": 0,
+        "retained": 1023,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Tiny exact cancellation",
+      "a": 1024,
+      "b": 1023,
+      "operation": "subtract",
+      "softwareBits": 1,
+      "rtlBits": 1,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "400",
+        "alignedB": "3ff",
+        "magnitude": "1",
+        "normalizationShift": 40,
+        "normalizedMagnitude": "10000000000",
+        "discardCount": 0,
+        "retained": 1,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Overflow midpoint",
+      "a": 31743,
+      "b": 19456,
+      "operation": "add",
+      "softwareBits": 31744,
+      "rtlBits": 31744,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 11,
+        "alignedA": "ffe0000000",
+        "alignedB": "10000000",
+        "magnitude": "fff0000000",
+        "normalizationShift": 1,
+        "normalizedMagnitude": "1ffe0000000",
+        "discardCount": 29,
+        "retained": 2047,
+        "guard": 1,
+        "round": 0,
+        "sticky": 0,
+        "increment": 1,
+        "exponentRounded": 31,
+        "special": false
+      }
+    },
+    {
+      "name": "Exact unbounded overflow",
+      "a": 31743,
+      "b": 31743,
+      "operation": "add",
+      "softwareBits": 31744,
+      "rtlBits": 31744,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "ffe0000000",
+        "alignedB": "ffe0000000",
+        "magnitude": "1ffc0000000",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "1ffc0000000",
+        "discardCount": 30,
+        "retained": 2047,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 31,
+        "special": false
+      }
+    },
+    {
+      "name": "Negative overflow",
+      "a": 64511,
+      "b": 52224,
+      "operation": "add",
+      "softwareBits": 64512,
+      "rtlBits": 64512,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": true,
+        "underflow": false,
+        "inexact": true
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 11,
+        "alignedA": "ffe0000000",
+        "alignedB": "10000000",
+        "magnitude": "fff0000000",
+        "normalizationShift": 1,
+        "normalizedMagnitude": "1ffe0000000",
+        "discardCount": 29,
+        "retained": 2047,
+        "guard": 1,
+        "round": 0,
+        "sticky": 0,
+        "increment": 1,
+        "exponentRounded": 31,
+        "special": false
+      }
+    },
+    {
+      "name": "Positive zero",
+      "a": 0,
+      "b": 0,
+      "operation": "add",
+      "softwareBits": 0,
+      "rtlBits": 0,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Two negative zeros",
+      "a": 32768,
+      "b": 32768,
+      "operation": "add",
+      "softwareBits": 32768,
+      "rtlBits": 32768,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Negative zero minus positive zero",
+      "a": 32768,
+      "b": 0,
+      "operation": "subtract",
+      "softwareBits": 32768,
+      "rtlBits": 32768,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Signed zero cancellation",
+      "a": 32768,
+      "b": 32768,
+      "operation": "subtract",
+      "softwareBits": 0,
+      "rtlBits": 0,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": false
+      }
+    },
+    {
+      "name": "Finite plus infinity",
+      "a": 15360,
+      "b": 31744,
+      "operation": "add",
+      "softwareBits": 31744,
+      "rtlBits": 31744,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 16,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Subtract positive infinity",
+      "a": 15360,
+      "b": 31744,
+      "operation": "subtract",
+      "softwareBits": 64512,
+      "rtlBits": 64512,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 16,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Opposing infinities",
+      "a": 31744,
+      "b": 64512,
+      "operation": "add",
+      "softwareBits": 32256,
+      "rtlBits": 32256,
+      "softwareFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Infinity subtraction invalid",
+      "a": 31744,
+      "b": 31744,
+      "operation": "subtract",
+      "softwareBits": 32256,
+      "rtlBits": 32256,
+      "softwareFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 1,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Signaling A NaN",
+      "a": 31745,
+      "b": 15360,
+      "operation": "add",
+      "softwareBits": 32257,
+      "rtlBits": 32257,
+      "softwareFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 16,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Signaling B priority and original sign",
+      "a": 32258,
+      "b": 64529,
+      "operation": "subtract",
+      "softwareBits": 65041,
+      "rtlBits": 65041,
+      "softwareFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": true,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "First quiet NaN wins",
+      "a": 65041,
+      "b": 32258,
+      "operation": "add",
+      "softwareBits": 65041,
+      "rtlBits": 65041,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 0,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    },
+    {
+      "name": "Quiet B subtraction preserves sign",
+      "a": 15360,
+      "b": 65041,
+      "operation": "subtract",
+      "softwareBits": 65041,
+      "rtlBits": 65041,
+      "softwareFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "rtlFlags": {
+        "invalid": false,
+        "overflow": false,
+        "underflow": false,
+        "inexact": false
+      },
+      "signals": {
+        "effectiveBSign": 0,
+        "exponentDifference": 16,
+        "alignedA": "0",
+        "alignedB": "0",
+        "magnitude": "0",
+        "normalizationShift": 0,
+        "normalizedMagnitude": "0",
+        "discardCount": 0,
+        "retained": 0,
+        "guard": 0,
+        "round": 0,
+        "sticky": 0,
+        "increment": 0,
+        "exponentRounded": 0,
+        "special": true
+      }
+    }
+  ]
+}

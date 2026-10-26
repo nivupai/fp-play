@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Encoding } from './Encoding'
+import { RTLInspection } from './RTLInspection'
 import { FMAComparison } from './FMAComparison'
 import {
   compareMultiplyAddFP16,
@@ -473,6 +474,7 @@ export function ArithmeticExplorer() {
               : MULTIPLY_EXAMPLES[multiplyExample].explanation}
           </p>
         </section>
+        <RTLInspection />
         <p className="muted text-small">
           NaN policy: first signaling NaN, otherwise first quiet NaN in A/B
           order (A/B/C for FMA); quiet and preserve its original sign and nine

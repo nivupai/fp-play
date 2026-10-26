@@ -1,0 +1,226 @@
+[
+  {
+    "name": "Exact addition",
+    "a": 15360,
+    "b": 14336,
+    "subtract": false,
+    "expected": 15872,
+    "flags": 0
+  },
+  {
+    "name": "Tie even stays",
+    "a": 15360,
+    "b": 4096,
+    "subtract": false,
+    "expected": 15360,
+    "flags": 1
+  },
+  {
+    "name": "Tie odd increments",
+    "a": 15361,
+    "b": 4096,
+    "subtract": false,
+    "expected": 15362,
+    "flags": 1
+  },
+  {
+    "name": "Sticky tiny addend",
+    "a": 15360,
+    "b": 1,
+    "subtract": false,
+    "expected": 15360,
+    "flags": 1
+  },
+  {
+    "name": "GRS above midpoint",
+    "a": 15360,
+    "b": 4097,
+    "subtract": false,
+    "expected": 15361,
+    "flags": 1
+  },
+  {
+    "name": "Round bit above midpoint",
+    "a": 15360,
+    "b": 4608,
+    "subtract": false,
+    "expected": 15361,
+    "flags": 1
+  },
+  {
+    "name": "Significand carry",
+    "a": 16383,
+    "b": 4096,
+    "subtract": false,
+    "expected": 16384,
+    "flags": 1
+  },
+  {
+    "name": "Cancellation",
+    "a": 15361,
+    "b": 15360,
+    "subtract": true,
+    "expected": 5120,
+    "flags": 0
+  },
+  {
+    "name": "Negative result",
+    "a": 15360,
+    "b": 16384,
+    "subtract": true,
+    "expected": 48128,
+    "flags": 0
+  },
+  {
+    "name": "Minimum subnormal sum",
+    "a": 1,
+    "b": 1,
+    "subtract": false,
+    "expected": 2,
+    "flags": 0
+  },
+  {
+    "name": "Smallest normal transition",
+    "a": 1023,
+    "b": 1,
+    "subtract": false,
+    "expected": 1024,
+    "flags": 0
+  },
+  {
+    "name": "Normal to subnormal",
+    "a": 1024,
+    "b": 1,
+    "subtract": true,
+    "expected": 1023,
+    "flags": 0
+  },
+  {
+    "name": "Tiny exact cancellation",
+    "a": 1024,
+    "b": 1023,
+    "subtract": true,
+    "expected": 1,
+    "flags": 0
+  },
+  {
+    "name": "Overflow midpoint",
+    "a": 31743,
+    "b": 19456,
+    "subtract": false,
+    "expected": 31744,
+    "flags": 5
+  },
+  {
+    "name": "Exact unbounded overflow",
+    "a": 31743,
+    "b": 31743,
+    "subtract": false,
+    "expected": 31744,
+    "flags": 5
+  },
+  {
+    "name": "Negative overflow",
+    "a": 64511,
+    "b": 52224,
+    "subtract": false,
+    "expected": 64512,
+    "flags": 5
+  },
+  {
+    "name": "Positive zero",
+    "a": 0,
+    "b": 0,
+    "subtract": false,
+    "expected": 0,
+    "flags": 0
+  },
+  {
+    "name": "Two negative zeros",
+    "a": 32768,
+    "b": 32768,
+    "subtract": false,
+    "expected": 32768,
+    "flags": 0
+  },
+  {
+    "name": "Negative zero minus positive zero",
+    "a": 32768,
+    "b": 0,
+    "subtract": true,
+    "expected": 32768,
+    "flags": 0
+  },
+  {
+    "name": "Signed zero cancellation",
+    "a": 32768,
+    "b": 32768,
+    "subtract": true,
+    "expected": 0,
+    "flags": 0
+  },
+  {
+    "name": "Finite plus infinity",
+    "a": 15360,
+    "b": 31744,
+    "subtract": false,
+    "expected": 31744,
+    "flags": 0
+  },
+  {
+    "name": "Subtract positive infinity",
+    "a": 15360,
+    "b": 31744,
+    "subtract": true,
+    "expected": 64512,
+    "flags": 0
+  },
+  {
+    "name": "Opposing infinities",
+    "a": 31744,
+    "b": 64512,
+    "subtract": false,
+    "expected": 32256,
+    "flags": 8
+  },
+  {
+    "name": "Infinity subtraction invalid",
+    "a": 31744,
+    "b": 31744,
+    "subtract": true,
+    "expected": 32256,
+    "flags": 8
+  },
+  {
+    "name": "Signaling A NaN",
+    "a": 31745,
+    "b": 15360,
+    "subtract": false,
+    "expected": 32257,
+    "flags": 8
+  },
+  {
+    "name": "Signaling B priority and original sign",
+    "a": 32258,
+    "b": 64529,
+    "subtract": true,
+    "expected": 65041,
+    "flags": 8
+  },
+  {
+    "name": "First quiet NaN wins",
+    "a": 65041,
+    "b": 32258,
+    "subtract": false,
+    "expected": 65041,
+    "flags": 0
+  },
+  {
+    "name": "Quiet B subtraction preserves sign",
+    "a": 15360,
+    "b": 65041,
+    "subtract": true,
+    "expected": 65041,
+    "flags": 0
+  }
+]

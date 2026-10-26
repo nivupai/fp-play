@@ -53,7 +53,7 @@ NaN payload selection is a deterministic **FP Play policy**, distinct from requi
 
 Subnormals are never flushed to zero. Tiny FP16 add/sub results are exact multiples of the subnormal quantum and need no rounding; therefore no valid input pair can raise underflow. Input conversion can underflow but is a separate operation whose flags are not exposed here. Overflow sets inexact even if the unbounded significand happened to need no discarded bits (for example, 65504 + 65504).
 
-Multiplication and FMA are now provided by the [Milestone 6 extension](MULTIPLY_FMA.md). There are no division-by-zero indicators, global sticky state, traps, directed rounding modes, division, reductions, or RTL simulation.
+Multiplication and FMA are now provided by the [Milestone 6 extension](MULTIPLY_FMA.md). There are no division-by-zero indicators, global sticky state, traps, directed rounding modes, division or reductions in this original API. Milestone 10 adds a separate [FP16 RTL add/subtract unit and recorded inspection](../../../rtl/README.md), without changing this numerical model.
 
 ## Trace contract
 

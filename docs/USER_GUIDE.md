@@ -165,3 +165,11 @@ Select left/right precision policies and stable or deliberately unstable naive s
 Read stable FP32 and separate binary64 baselines, absolute/relative error maps, and **Final output difference · left minus right**. Select a probability row for its stored denominator, weights, and displayed sum. Quantized probabilities are not renormalized. Use previous/next/select stage controls to inspect actual operands, rounding ties/increments, encodings, and flags. The twelve experiments show expected outcomes and verification methods.
 
 Math.exp and reciprocal Math.sqrt are host binary64 computations followed by explicit quantization, not correctly rounded format-specific transcendental functions. A nonfinite result is retained with diagnostics; stable softmax cannot undo an overflowing input/score. Baselines in the UI are numerical estimates; the higher-precision Decimal reference is offline. See [the complete attention policy and reproduction guide](ATTENTION_PRECISION.md).
+
+## Optional RTL inspection
+
+In Arithmetic Explorer, expand **Inspect precomputed FP16 RTL simulations**. Select one of 28 recorded add/subtract examples; this selection is separate from the custom operands above. The panel recomputes the current software result and compares it against a real precomputed Verilator record, including all flags and NaN payload/sign bits. A disagreement is reported explicitly, including flag-only differences.
+
+Try **Tie even stays** and **Tie odd increments**: both show G/R/S = 1/0/0, but only the odd retained significand increments. **Sticky tiny addend** shows 0/0/1 and inexact. Read the aligned 40-bit magnitudes, 41-bit sum/difference, normalization/discard coordinates, and final rounding decision. Native selection and keyboard-scrollable values provide text alternatives. Special paths explain that finite-stage zeros are bypass defaults.
+
+The browser does not run Verilator, synthesize hardware, or simulate arbitrary operands. These are combinational observation stages; neither stage order nor VCD timestamps imply clock cycles or measured delay. See [the RTL guide](../rtl/README.md) for local tool installation, the full differential corpus, VCD generation, failure replay, and honest synthesis/browser limitations.
