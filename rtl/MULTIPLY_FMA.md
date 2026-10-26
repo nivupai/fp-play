@@ -77,7 +77,26 @@ Every triple checks multiplication, true FMA, and nonfused results and all flags
 
 Direct SoftFloat: **301,544 comparisons per operation**, **904,632 result comparisons total**, zero finite-result, quiet-classification, or flag mismatches. NaN results: multiplication 14,532; FMA 18,296; nonfused 18,300. Implementation-specific NaN sign/payload differences: **231 / 429 / 1,550**, respectively. For nonfused, SoftFloat's own rounded product feeds its adder and flags are unioned; FP Play's payload can differ at either stage.
 
-Yosys successfully reads the sources, synthesizes multiplier, FMA, and comparison tops with `synth -noabc`, then runs `check -assert` and asserts no latch/register cells. No unsupported constructs, inferred latches, or combinational-loop warnings were observed. This is generic logic synthesis, **not physical area, timing, power, placement, or device validation**. Distribution versions used in CI may differ; local 0.70 is the version actually tested.
+Yosys successfully reads the sources, synthesizes multiplier, FMA, and comparison tops with `synth -noabc`, then runs `check -assert` and asserts no latch/register cells. No unsupported constructs, inferred latches, or combinational-loop warnings were observed. This is generic logic synthesis, **not physical area, timing, power, placement, or device validation**. The initial local run used Homebrew Yosys 0.70. CI now uses the pinned toolchain below instead of Ubuntu's older distribution Yosys.
+
+## Reproducible CI synthesis toolchain
+
+Ubuntu 24.04 supplied **Yosys 0.33** (`2584903a060`, package `0.33-5build2`). It fails at `fp16_addsub.sv:123` on the built-in integer type cast `int'(discard_count)`. The same unsupported expression occurs at `fp16_round_grid48.sv:52`. The existing synthesis script already uses `read_verilog -sv`; the native frontend's **“Verilog-2005 frontend” banner also appears in successful SystemVerilog-mode runs**. This was a parser-version incompatibility, not a missing `-sv` switch. The old parser had already accepted the earlier `logic`, `always_comb`, `int unsigned` loop declarations, and explicit sized casts. Its [0.33 grammar](https://github.com/YosysHQ/yosys/blob/yosys-0.33/frontends/verilog/verilog_parser.y) lacks the built-in type-cast expression production supported by newer versions.
+
+`.github/workflows/rtl.yml` now downloads the official **[OSS CAD Suite 2026-10-24](https://github.com/YosysHQ/oss-cad-suite-build/releases/tag/2026-10-24)** Linux x64 archive, verifies its pinned SHA-256, and asserts **Yosys 0.70+219, git `5053d0e26`** before synthesis. The archive checksum is `f33dc250de5e3d2b4325c32dafc695c44e4f19cdc1e3bdb1fea7c78a7c5daa0a`. A changed archive or unexpected revision fails the job. CI passes the absolute suite Yosys path to `make`, so a system Yosys cannot be selected accidentally. The suite is installed only for synthesis; the existing Ubuntu Verilator installation, numerical corpora, Node checks, read-only permissions, and deployment behavior are unchanged. No new action or npm dependency is introduced.
+
+The newer **native `read_verilog -sv` frontend** accepts every construct in all six actual RTL source files, so no slang plugin, sv2v conversion, generated replacement, or RTL rewrite is necessary. The unchanged synthesis script still reads those sources directly for each of the multiplier, FMA, and comparison tops, retaining `synth -noabc`, `check -assert`, and latch/register absence assertions. Parsing and synthesis failures remain fatal. This validates the subset actually used, not arbitrary SystemVerilog support.
+
+For a matching local reproduction, install the same dated suite for your platform and run:
+
+```sh
+/path/to/oss-cad-suite/bin/yosys -V
+make -C rtl -f mul-fma.mk synth YOSYS=/path/to/oss-cad-suite/bin/yosys
+```
+
+The matching macOS ARM64 archive has SHA-256 `8342bb25039fb87ec585f32594fe55615b02cf25e9dad249154c05f0c91ece6e`. Its **0.70+219 / 5053d0e26** binary completed all three synthesis tops locally with zero check problems, latch assertions, or loop warnings; this additionally parses the second integer cast and all remaining SystemVerilog constructs. This differs from the initial Homebrew 0.70 run only in the toolchain build/version, not the sources or synthesis commands. The Linux archive checksum and embedded Yosys revision were also verified locally. Execution testing uses macOS ARM64; the Linux GitHub runner must still execute the corrected workflow after an authorized push.
+
+Correction validation also passed Verilator **5.052** lint, all **462,172** original add/sub transactions, all **301,544** multiplication/FMA/nonfused triples, both directed VCD flows, direct SoftFloat comparisons, **457 tests** on Node **22.9.0 and 24**, formatting, lint, contrast, TypeScript, production build, release checks, and actionlint. The failing CI's Verilator **5.020** had already passed its complete differential corpora; no simulator upgrade is required for this correction.
 
 ## Recorded inspection and limitations
 
