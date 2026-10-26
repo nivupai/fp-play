@@ -2,6 +2,8 @@
 
 Milestone 10 adds an original, combinational SystemVerilog binary16 add/subtract datapath and a separate Verilator simulation workflow. It uses public numerical semantics and independently developed logic. No employer designs, proprietary logic structures, or internal documentation are used. The existing software arithmetic and all 424 historical tests remain unchanged.
 
+Milestone 11 adds [multiplication, true FMA, nonfused comparison, and generic synthesis checks](MULTIPLY_FMA.md). The sections below retain the Milestone 10 adder contract and validation record.
+
 ## Interface and scope
 
 Top module: `rtl/src/fp16_addsub.sv`, `fp16_addsub`.
@@ -13,9 +15,9 @@ Top module: `rtl/src/fp16_addsub.sv`, `fp16_addsub`.
 | `result`                                      | 16      | Raw nearest-even result                                        |
 | `invalid`, `overflow`, `underflow`, `inexact` | 1 each  | Per-operation indicators, no sticky global state               |
 
-There is no clock, reset, handshake, pipeline register, or valid signal. Outputs settle combinationally. No clock-cycle latency, throughput, delay, area, power, or device timing claim is made. The design is intentionally wide and unoptimized. Multiplication, FMA, HLS, transformer hardware, and area/power optimization are not implemented.
+There is no clock, reset, handshake, pipeline register, or valid signal. Outputs settle combinationally. No clock-cycle latency, throughput, delay, area, power, or device timing claim is made. The design is intentionally wide and unoptimized. This adder module does not perform multiplication/FMA; those separate Milestone 11 modules are documented above. HLS, transformer hardware, and area/power optimization are not implemented.
 
-Additional **observation output ports** expose the logical stages below. They are ordinary synthesizable signals, not simulator-only floating-point hooks; an integrating design may leave them unconnected. There are no real-number operations, data-dependent unbounded loops, delays, latches, DPI numerical shortcuts, or inferred memories in the datapath. Fixed 41-iteration loops express a bounded priority encoder and sticky reduction. Verilator `--Wall` lint is strict/fatal, with no RTL warning waivers. This is not a netlist, place-and-route, timing, or formal equivalence certification; no synthesis tool was run.
+Additional **observation output ports** expose the logical stages below. They are ordinary synthesizable signals, not simulator-only floating-point hooks; an integrating design may leave them unconnected. There are no real-number operations, data-dependent unbounded loops, delays, latches, DPI numerical shortcuts, or inferred memories in the datapath. Fixed 41-iteration loops express a bounded priority encoder and sticky reduction. Verilator `--Wall` lint is strict/fatal, with no RTL warning waivers. This is not a netlist, place-and-route, timing, or formal equivalence certification; Milestone 10 did not run synthesis; Milestone 11 additionally synthesizes this adder within the nonfused comparison top.
 
 ## Exact fixed-width architecture
 
@@ -137,4 +139,4 @@ Arithmetic Explorer's optional **Inspect precomputed FP16 RTL simulations** pane
 
 `.github/workflows/rtl.yml` adds a separate read-only Ubuntu 24.04 job: install distribution Verilator, log its version, use Node 22.9.0/npm ci, lint/build/run the full corpus, then capture directed waveforms. Existing frontend CI and manual-only Pages deployment remain unchanged. Distribution tool versions can change and are recorded per run; only the local version above was executed during this milestone. Workflow syntax was checked with actionlint; the new workflow has not been run on GitHub because no branch was pushed. Local summaries/failures remain build outputs; no artifact/release publication is configured.
 
-The module is designed with synthesizable fixed-width constructs and passes strict RTL lint; actual synthesis/netlist validation, FPGA/ASIC implementation, formal equivalence, X/Z four-state behavior, timing closure, and all operand-pair exhaustion remain unperformed. Verilator runs a two-state model. No multiplication/FMA RTL, HLS, transformer datapath, area/power optimization, or silicon measurements are claimed. Existing software/UI features are preserved. No browser automation is available; the new panel has DOM/keyboard tests but no rendered-layout, theme, touch, or screen-reader verification claim. Nothing is pushed, merged, deployed, or published.
+The module is designed with synthesizable fixed-width constructs and passes strict RTL lint; Milestone 10 synthesis/netlist validation, FPGA/ASIC implementation, formal equivalence, X/Z four-state behavior, timing closure, and all operand-pair exhaustion remain unperformed. Verilator runs a two-state model. Milestone 10 did not include multiplication/FMA RTL; see the Milestone 11 guide above for the implemented extension and synthesis evidence. No HLS, transformer datapath, area/power optimization, or silicon measurements are claimed. Existing software/UI features are preserved. No browser automation is available; the new panel has DOM/keyboard tests but no rendered-layout, theme, touch, or screen-reader verification claim. Nothing is pushed, merged, deployed, or published.

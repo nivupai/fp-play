@@ -1,0 +1,18 @@
+design -reset
+read_verilog -sv src/fp16_addsub.sv src/fp16_round_grid48.sv src/fp16_mul_fma_core.sv src/fp16_mul.sv src/fp16_fma.sv src/fp16_mul_fma_compare.sv
+synth -top fp16_mul -noabc
+check -assert
+select -assert-none t:$dlatch t:$adlatch t:$dff t:$adff t:$_DLATCH_* t:$_DFF_*
+stat
+design -reset
+read_verilog -sv src/fp16_addsub.sv src/fp16_round_grid48.sv src/fp16_mul_fma_core.sv src/fp16_mul.sv src/fp16_fma.sv src/fp16_mul_fma_compare.sv
+synth -top fp16_fma -noabc
+check -assert
+select -assert-none t:$dlatch t:$adlatch t:$dff t:$adff t:$_DLATCH_* t:$_DFF_*
+stat
+design -reset
+read_verilog -sv src/fp16_addsub.sv src/fp16_round_grid48.sv src/fp16_mul_fma_core.sv src/fp16_mul.sv src/fp16_fma.sv src/fp16_mul_fma_compare.sv
+synth -top fp16_mul_fma_compare -noabc
+check -assert
+select -assert-none t:$dlatch t:$adlatch t:$dff t:$adff t:$_DLATCH_* t:$_DFF_*
+stat

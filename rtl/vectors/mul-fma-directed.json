@@ -1,0 +1,230 @@
+[
+  {
+    "name": "Exact multiplication",
+    "a": 15872,
+    "b": 16384,
+    "c": 0,
+    "multiply": 16896,
+    "fused": 16896,
+    "nonfused": 16896,
+    "multiplyFlags": 0,
+    "fusedFlags": 0,
+    "nonfusedFlags": 0
+  },
+  {
+    "name": "Lost product residual",
+    "a": 15361,
+    "b": 15361,
+    "c": 48130,
+    "multiply": 15362,
+    "fused": 16,
+    "nonfused": 0,
+    "multiplyFlags": 1,
+    "fusedFlags": 0,
+    "nonfusedFlags": 1
+  },
+  {
+    "name": "Avoid intermediate overflow",
+    "a": 31743,
+    "b": 16384,
+    "c": 64511,
+    "multiply": 31744,
+    "fused": 31743,
+    "nonfused": 31744,
+    "multiplyFlags": 5,
+    "fusedFlags": 0,
+    "nonfusedFlags": 5
+  },
+  {
+    "name": "Minimum exact subnormal product",
+    "a": 1024,
+    "b": 5120,
+    "c": 0,
+    "multiply": 1,
+    "fused": 1,
+    "nonfused": 1,
+    "multiplyFlags": 0,
+    "fusedFlags": 0,
+    "nonfusedFlags": 0
+  },
+  {
+    "name": "Underflow tie to zero",
+    "a": 1,
+    "b": 14336,
+    "c": 0,
+    "multiply": 0,
+    "fused": 0,
+    "nonfused": 0,
+    "multiplyFlags": 3,
+    "fusedFlags": 3,
+    "nonfusedFlags": 3
+  },
+  {
+    "name": "Negative tiny product",
+    "a": 32769,
+    "b": 14336,
+    "c": 32768,
+    "multiply": 32768,
+    "fused": 32768,
+    "nonfused": 32768,
+    "multiplyFlags": 3,
+    "fusedFlags": 3,
+    "nonfusedFlags": 3
+  },
+  {
+    "name": "Normal result with underflow",
+    "a": 1023,
+    "b": 15359,
+    "c": 1,
+    "fused": 1024,
+    "fusedFlags": 3
+  },
+  {
+    "name": "Tininess midpoint belongs to normal",
+    "a": 1021,
+    "b": 14848,
+    "c": 258,
+    "fused": 1024,
+    "fusedFlags": 1
+  },
+  {
+    "name": "Zero times infinity",
+    "a": 0,
+    "b": 31744,
+    "c": 15360,
+    "multiply": 32256,
+    "fused": 32256,
+    "nonfused": 32256,
+    "multiplyFlags": 8,
+    "fusedFlags": 8,
+    "nonfusedFlags": 8
+  },
+  {
+    "name": "Invalid product even with quiet C NaN",
+    "a": 0,
+    "b": 31744,
+    "c": 65041,
+    "fused": 65041,
+    "fusedFlags": 8
+  },
+  {
+    "name": "Signaling C outranks quiet A",
+    "a": 32258,
+    "b": 15360,
+    "c": 64529,
+    "fused": 65041,
+    "fusedFlags": 8
+  },
+  {
+    "name": "Positive exact cancellation",
+    "a": 15360,
+    "b": 15360,
+    "c": 48128,
+    "fused": 0,
+    "fusedFlags": 0
+  },
+  {
+    "name": "Negative zero terms",
+    "a": 32768,
+    "b": 15360,
+    "c": 32768,
+    "multiply": 32768,
+    "fused": 32768,
+    "nonfused": 32768,
+    "fusedFlags": 0
+  },
+  {
+    "name": "Product minus zero cancellation",
+    "a": 32768,
+    "b": 15360,
+    "c": 0,
+    "fused": 0,
+    "nonfused": 0
+  },
+  {
+    "name": "Large exponent difference",
+    "a": 31743,
+    "b": 31743,
+    "c": 1,
+    "multiply": 31744,
+    "fused": 31744,
+    "nonfused": 31744,
+    "multiplyFlags": 5,
+    "fusedFlags": 5,
+    "nonfusedFlags": 5
+  },
+  {
+    "name": "Extreme tiny product plus large C",
+    "a": 1,
+    "b": 1,
+    "c": 31743,
+    "multiply": 0,
+    "fused": 31743,
+    "nonfused": 31743,
+    "multiplyFlags": 3,
+    "fusedFlags": 1,
+    "nonfusedFlags": 3
+  },
+  {
+    "name": "Opposing genuine infinities",
+    "a": 31744,
+    "b": 15360,
+    "c": 64512,
+    "fused": 32256,
+    "fusedFlags": 8
+  },
+  {
+    "name": "Quiet NaN payload retention",
+    "a": 65041,
+    "b": 15360,
+    "c": 0,
+    "multiply": 65041,
+    "fused": 65041,
+    "nonfused": 65041,
+    "multiplyFlags": 0,
+    "fusedFlags": 0,
+    "nonfusedFlags": 0
+  },
+  {
+    "name": "Round after cancellation",
+    "a": 15361,
+    "b": 15358,
+    "c": 48128,
+    "fused": 32784,
+    "nonfused": 0
+  },
+  {
+    "name": "Smallest product quantum",
+    "a": 1,
+    "b": 1,
+    "c": 0,
+    "multiply": 0,
+    "fused": 0,
+    "nonfused": 0,
+    "multiplyFlags": 3,
+    "fusedFlags": 3,
+    "nonfusedFlags": 3
+  },
+  {
+    "name": "Even midpoint rounds down",
+    "a": 15361,
+    "b": 15872,
+    "c": 0,
+    "multiply": 15874
+  },
+  {
+    "name": "Odd midpoint rounds up",
+    "a": 15363,
+    "b": 15872,
+    "c": 0,
+    "multiply": 15876
+  },
+  {
+    "name": "Subnormal to normal product tie",
+    "a": 1024,
+    "b": 15359,
+    "c": 0,
+    "multiply": 1024,
+    "multiplyFlags": 3
+  }
+]
