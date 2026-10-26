@@ -30,3 +30,24 @@ jobs:
         run: make -C rtl test
       - name: Directed waveform capture
         run: make -C rtl waveform
+      - name: Multiply and true FMA differential corpus
+        run: make -C rtl -f mul-fma.mk test
+      - name: Multiply and FMA directed waveform
+        run: make -C rtl -f mul-fma.mk waveform
+      - name: Install pinned synthesis toolchain
+        env:
+          OSS_CAD_SHA256: f33dc250de5e3d2b4325c32dafc695c44e4f19cdc1e3bdb1fea7c78a7c5daa0a
+        run: |
+          archive="$RUNNER_TEMP/oss-cad-suite-linux-x64-20261024.tgz"
+          curl --fail --location --retry 3 --output "$archive" \
+            https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2026-10-24/oss-cad-suite-linux-x64-20261024.tgz
+          printf '%s  %s\n' "$OSS_CAD_SHA256" "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          version="$("$RUNNER_TEMP/oss-cad-suite/bin/yosys" -V)"
+          printf '%s\n' "$version"
+          case "$version" in
+            'Yosys 0.70+219 (git sha1 5053d0e26,'*) ;;
+            *) echo 'Unexpected synthesis tool version' >&2; exit 1 ;;
+          esac
+      - name: Generic synthesis sanity checks
+        run: make -C rtl -f mul-fma.mk synth YOSYS="$RUNNER_TEMP/oss-cad-suite/bin/yosys"

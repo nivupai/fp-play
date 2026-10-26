@@ -173,3 +173,9 @@ In Arithmetic Explorer, expand **Inspect precomputed FP16 RTL simulations**. Sel
 Try **Tie even stays** and **Tie odd increments**: both show G/R/S = 1/0/0, but only the odd retained significand increments. **Sticky tiny addend** shows 0/0/1 and inexact. Read the aligned 40-bit magnitudes, 41-bit sum/difference, normalization/discard coordinates, and final rounding decision. Native selection and keyboard-scrollable values provide text alternatives. Special paths explain that finite-stage zeros are bypass defaults.
 
 The browser does not run Verilator, synthesize hardware, or simulate arbitrary operands. These are combinational observation stages; neither stage order nor VCD timestamps imply clock cycles or measured delay. See [the RTL guide](../rtl/README.md) for local tool installation, the full differential corpus, VCD generation, failure replay, and honest synthesis/browser limitations.
+
+## Multiplier and true FMA hardware records
+
+In Arithmetic Explorer, expand **Inspect multiplier and true FMA RTL**. Choose a recorded example using the native keyboard-accessible selector. Compare multiplication, true fused, and nonfused outputs and exception flags; the agreement text recomputes the current software reference. Inspect exact significands/product, product exponent, 2^-48 alignment and accumulation, normalization, GRS, and tininess. Wide values are exact hex strings. Special paths explicitly bypass finite stages.
+
+Try **Lost product residual** (fused `0x0010`, nonfused zero) or **Avoid intermediate overflow** (fused maximum finite, nonfused infinity). These are actual precomputed Verilator observations for fixed examples; custom operands do not execute RTL in the browser. See [the simulation and synthesis guide](../rtl/MULTIPLY_FMA.md).
