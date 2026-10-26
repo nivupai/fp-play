@@ -1,5 +1,12 @@
 # Changelog
 
+## Milestone 11 — FP16 multiplier and true FMA RTL (local preparation)
+
+- Exact 11×11 multiplication, 81-bit exact fused accumulation, shared nearest-even rounder, and nonfused comparison through the unchanged adder.
+- 301,544 triples per path, independent lattice checks, 904,632 direct SoftFloat outputs, and all supported flags validated.
+- Genuine source-hashed hardware inspection, bounded VCD replay, read-only RTL CI, and generic Yosys synthesis sanity checks.
+- Preserves all 430 previous tests and numerical APIs. No physical implementation, new formats, HLS, publication, or deployment. See [the contract](rtl/MULTIPLY_FMA.md).
+
 ## Milestone 10 — FP16 RTL arithmetic (local preparation)
 
 - Original combinational SystemVerilog FP16 add/subtract, lossless fixed-width alignment, explicit GRS/nearest-even rounding, NaN/signed-zero policies, and all four indicators.

@@ -3,7 +3,7 @@
 ## Scope and architecture
 
 - Use **FP Play** as the public project name and `fp-play` as the npm package name and project-specific tool prefix. Preserve the original MIT copyright notice in `LICENSE`.
-- Build incrementally. Milestone 10 adds an original combinational FP16 RTL adder/subtractor, Verilator differential workflow, and optional recorded-signal inspection. Preserve all 424 earlier tests and public numerical APIs. Multiplication/FMA RTL, HLS, transformer hardware, and area/power optimization remain future work.
+- Build incrementally. Milestone 11 extends the original combinational adder with FP16 multiplier, true FMA, and nonfused RTL comparison. Preserve all 430 Milestone 10 tests and public numerical APIs. HLS, transformer hardware, and area/power optimization remain future work.
 - Use React, strict TypeScript, Vite, Tailwind CSS, Vitest, ESLint, and Prettier. Prefer native platform APIs and keep dependencies minimal.
 - Put reusable UI in `src/components/`, pure numerical code in `src/lib/numerics/`, and tests in `src/tests/`. Keep numerical models independent of React, the DOM, and display formatting.
 - Favor small components, explicit types, deterministic pure functions, and documented module boundaries. Do not introduce routing or state libraries without a concrete need.
@@ -80,3 +80,10 @@
 - Keep build products/VCD/failures under ignored `rtl/build/`. Save reproducible mismatches and bounded failing waveforms. Export `simulation.json` intentionally only after an actual complete simulator run; maintain source hashes. Normal tests must detect stale artifacts. Do not present software-computed values as RTL observations.
 - The Arithmetic Explorer panel uses small precomputed records, explicit software-versus-recorded-RTL status, native controls, and full inspectable signals. It does not run Verilator or arbitrary RTL in the browser. Mark special-stage debug defaults as bypassed; distinguish fixed-grid coordinates from software's per-operation alignment coordinates.
 - Preserve all historical numerical tests and APIs. Keep RTL CI separate and read-only; do not change the manual Pages deployment triggers/permissions. Report actual tool versions/counts, SoftFloat NaN policy differences, waveform generation versus GUI viewing, and synthesis/formal/browser limitations. Never claim area, power, timing, throughput, hardware latency, or device validation from a combinational simulation.
+
+## Multiplication/FMA RTL conventions
+
+- Follow [the width and exception contract](rtl/MULTIPLY_FMA.md). Retain the exact 22-bit product on a 2^-48 grid: 80-bit aligned product, 64-bit addend, 81-bit accumulation. True FMA rounds once; nonfused uses the rounded multiplier and original adder with flag union. Never import intermediate product flags into FMA.
+- Keep the original add/sub source, corpus, tests, and artifact intact. New commands use `make -C rtl -f mul-fma.mk`. Verify at least 100,000 deterministic random triples plus full raw-pattern families, special cross products, independent boundary constants, and the separate lattice oracle. Compare every flag and strict FP Play NaN metadata; direct SoftFloat permits only documented NaN metadata differences.
+- Serialize wide RTL observations as hexadecimal strings and compare with BigInt. Export artifacts only after complete actual simulation, with current source hashes. Keep finite-stage special-path defaults visibly bypassed. Browser inspection is recorded RTL versus explicitly computed software, never live hardware.
+- Attempt generic synthesis with `make -C rtl -f mul-fma.mk synth`, check unsupported constructs/latches/loops, and report actual versions. Do not infer physical cost or timing. Preserve read-only RTL CI and manual-only deployment.

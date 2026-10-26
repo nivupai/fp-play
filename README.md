@@ -19,6 +19,8 @@ Milestone 9 adds **[Attention Precision Lab](docs/ATTENTION_PRECISION.md)** (`#a
 
 Milestone 10 adds an original **[FP16 RTL adder/subtractor](rtl/README.md)** with a separate Verilator workflow and an optional **Inspect precomputed FP16 RTL simulations** panel in Arithmetic Explorer. The browser displays recorded results/signals; it does not run HDL tools.
 
+Milestone 11 adds **[FP16 multiplier and true FMA RTL](rtl/MULTIPLY_FMA.md)**, a nonfused hardware comparison, exact fixed-width intermediates, generic Yosys synthesis checks, and genuine recorded signal inspection. Each path passes 301,544 RTL triples; direct SoftFloat checks cover 904,632 outputs with all supported flags.
+
 The landing page links directly to each workspace. `#fma` opens a verified example, including on a page reload. Keyboard controls and text alternatives accompany charts and bit diagrams. Light, dark, and system themes share labeled field colors; mathematical meaning never depends on color alone.
 
 FP16 has one sign bit, five exponent bits, ten stored fraction bits, and exponent bias 15. Its eleven-bit normal precision helps explain why alignment, cancellation, accumulation precision, and rounding matter to numerical computing and accelerator workloads. These are educational models, not a particular chip's implementation or timing.
@@ -71,7 +73,7 @@ src/lib/attention/       Attention matrix parsing, heatmap helpers, and experime
 src/components/          Landing, bit explorer, microscope, arithmetic, and shell
 src/tests/               Numerical, independent-reference, and real-engine DOM tests
 scripts/                 Build/contrast checks and optional independent verification tools
-rtl/                     Original FP16 add/sub RTL, Verilator harness, vectors, and docs
+rtl/                     Original FP16 add/sub/multiply/FMA RTL, simulation, synthesis checks, and docs
 .github/workflows/       Read-only CI and a separate manual Pages deployment
 ```
 
@@ -87,7 +89,7 @@ rtl/                     Original FP16 add/sub RTL, Verilator harness, vectors, 
 
 ## Numerical verification
 
-All **424 Milestone 9 tests are preserved unchanged**. The current suite contains **430 tests**, including exhaustive BF16 decoding and midpoint checks, FP32 native conversions, independent BF16/FP32 arithmetic, exact dot references, reduction boundaries, and UI integration. Coverage includes all 65,536 raw binary16 encodings, representable midpoint boundaries, signed zeros, subnormals, infinity/NaN behavior, exhaustive identities/cancellation, deterministic differential cases, exact trace reconstruction, and actual-engine UI/keyboard interaction. CI runs the complete suite on Node 22.9.0 and 24; no numerical coverage or timeout budgets were reduced.
+All **430 Milestone 10 tests are preserved unchanged**. The current suite contains **457 tests**, including exhaustive BF16 decoding and midpoint checks, FP32 native conversions, independent BF16/FP32 arithmetic, exact dot references, reduction boundaries, and UI integration. Coverage includes all 65,536 raw binary16 encodings, representable midpoint boundaries, signed zeros, subnormals, infinity/NaN behavior, exhaustive identities/cancellation, deterministic differential cases, exact trace reconstruction, and actual-engine UI/keyboard interaction. CI runs the complete suite on Node 22.9.0 and 24; no numerical coverage or timeout budgets were reduced.
 
 The Milestone 6 Berkeley SoftFloat reference run compared **536,888 operations with zero mismatches**: 115,936 additions, 115,936 subtractions, 181,476 multiplications, and 123,540 FMAs. Non-NaN bits and all four flags match; 28,618 NaN outputs match quiet classification and flags, with implementation-specific payload/sign selection tested separately. Seven counterexamples have independent lattice checks and another 21 SoftFloat checks. The [verification instructions](src/lib/arithmetic/MULTIPLY_FMA.md#verification-and-reproducible-counterexamples) pin the upstream revision and describe corpus limits. SoftFloat is optional development tooling, not a bundled dependency.
 
@@ -101,7 +103,7 @@ RTL validation completed **462,172 add/subtract transactions with zero mismatche
 
 The release adds a responsive landing page, larger controls, stronger control borders, visible trace stages, keyboard-focusable long-value/plot regions, and direct FMA entry. Static checks cover **74 theme-token pairs**: text contrast is at least **5.46:1**, and the tested control/focus pairs are at least **3.39:1**. DOM tests cover semantic labels, keyboard behavior, links, input states, and real numerical outputs.
 
-**Browser automation is unavailable for Milestone 10; Milestone 7 also had no connected browser.** Actual rendering, mobile/touch behavior, theme/focus appearance, and screen-reader announcements remain unverified. No screenshot or full accessibility-conformance claim is made. The [release verification record](docs/RELEASE_VERIFICATION.md) distinguishes automated evidence from the remaining manual review.
+**Browser automation is unavailable through Milestone 11; Milestone 7 also had no connected browser.** Actual rendering, mobile/touch behavior, theme/focus appearance, and screen-reader announcements remain unverified. No screenshot or full accessibility-conformance claim is made. The [release verification record](docs/RELEASE_VERIFICATION.md) distinguishes automated evidence from the remaining manual review.
 
 ## GitHub Pages readiness
 
@@ -113,13 +115,13 @@ A maintainer must explicitly enable **Settings → Pages → Source: GitHub Acti
 
 ## Limits
 
-FP16 retains its existing conversion and add/subtract/multiply/FMA APIs. The typed engine adds FP16/BF16/FP32 conversion, exact addition/multiplication, and FMA for mixed-precision dot products. The original FMA workspace produces FP16 output; the new lab models FP32 accumulation explicitly. Only nearest-even is supported. Vectors have 1–64 terms. Pairwise fused modes round FMA-with-zero leaves before tree additions; they are not sequential FMA chains. The attention lab adds one bounded unmasked head, explicit conversion/arithmetic flags, and attention-specific exact rational normalization. An optional combinational RTL unit now supports FP16 add/subtract. General division UI, traps, global sticky state, alternate modes, training, GPU kernels, performance benchmarks, multiplication/FMA RTL, HLS, transformer hardware, and area/power optimization are outside scope. This project **does not claim full IEEE 754 conformance**.
+FP16 retains its existing conversion and add/subtract/multiply/FMA APIs. The typed engine adds FP16/BF16/FP32 conversion, exact addition/multiplication, and FMA for mixed-precision dot products. The original FMA workspace produces FP16 output; the new lab models FP32 accumulation explicitly. Only nearest-even is supported. Vectors have 1–64 terms. Pairwise fused modes round FMA-with-zero leaves before tree additions; they are not sequential FMA chains. The attention lab adds one bounded unmasked head, explicit conversion/arithmetic flags, and attention-specific exact rational normalization. Original combinational RTL now supports FP16 add/subtract/multiply, true FMA, and nonfused comparison, with generic synthesis sanity checks. General division UI, traps, global sticky state, alternate modes, training, GPU kernels, performance benchmarks, HLS, transformer hardware, and area/power optimization are outside scope. This project **does not claim full IEEE 754 conformance**.
 
 NaN payload selection is a documented FP Play policy. Tininess after rounding uses destination precision with unbounded exponents, so a stored normal can still raise underflow. Exact dyadic coefficient/exponent fields are authoritative; FMA's compatibility Number projection can round. Decimal parsing, error divisions, screen coordinates, axis labels, viewport sampling, and logarithmic plots have their documented limits. TestFloat and exhaustive testing of every operand pair/triple have not been performed.
 
 ## Roadmap and contributing
 
-Milestones 1–6 provide the foundation, numerical engine, representation explorer, precision microscope, arithmetic traces, multiplication, and FMA comparison. **Milestone 7 prepares v0.1.0 for public release; Milestone 8 adds multi-precision representations and accumulation experiments**. **Milestone 9 adds the bounded Attention Precision Lab**. **Milestone 10 adds original FP16 add/subtract RTL and differential verification**. Future work may extend original hardware experiments; these are planned capabilities, not release promises.
+Milestones 1–6 provide the foundation, numerical engine, representation explorer, precision microscope, arithmetic traces, multiplication, and FMA comparison. **Milestone 7 prepares v0.1.0 for public release; Milestone 8 adds multi-precision representations and accumulation experiments**. **Milestone 9 adds the bounded Attention Precision Lab**. **Milestone 10 adds original FP16 add/subtract RTL and differential verification; Milestone 11 adds multiplier/FMA RTL and generic synthesis checks**. Future work may extend original hardware experiments; these are planned capabilities, not release promises.
 
 Contributions improving clarity, accessibility, independent verification, documentation, or carefully scoped experiments are welcome. Follow [CONTRIBUTING.md](CONTRIBUTING.md), preserve numerical tests, and disclose unsupported behavior. [CHANGELOG.md](CHANGELOG.md) records the prepared release.
 
