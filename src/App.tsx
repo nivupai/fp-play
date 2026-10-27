@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { version } from '../package.json'
+import { ResearchShowcaseEntry } from './components/showcase/ResearchShowcaseEntry'
 import { AttentionLab } from './components/attention/AttentionLab'
 import { FormatComparison } from './components/mixed/FormatComparison'
 import { DotProductLab } from './components/mixed/DotProductLab'
@@ -22,6 +24,7 @@ export default function App() {
       <Header theme={theme} onThemeChange={setTheme} />
       <main id="main" tabIndex={-1} className="page-width main-content">
         <Landing />
+        <ResearchShowcaseEntry />
         <FP16Explorer />
         <PrecisionMicroscope />
         <ArithmeticExplorer />
@@ -49,10 +52,16 @@ export default function App() {
         </section>
       </main>
       <footer className="site-footer">
-        <span>FP Play · v0.1.0</span>
+        <span>FP Play · v{version}</span>
         <a href="https://github.com/nivupai/fp-play">Source on GitHub</a>
         <a href="https://github.com/nivupai/fp-play/blob/main/LICENSE">
           MIT License
+        </a>
+        <a href="https://github.com/nivupai/fp-play/blob/main/docs/README.md">
+          Documentation
+        </a>
+        <a href={`${import.meta.env.BASE_URL}THIRD_PARTY_NOTICES.txt`}>
+          Third-party notices
         </a>
         <a href="#hardware">Hardware analysis</a>
         <a href="#datapath">Datapath explorer</a>

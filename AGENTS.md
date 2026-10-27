@@ -3,7 +3,7 @@
 ## Scope and architecture
 
 - Use **FP Play** as the public project name and `fp-play` as the npm package name and project-specific tool prefix. Preserve the original MIT copyright notice in `LICENSE`.
-- Build incrementally. Milestone 13 adds logical datapath/GRS exploration, recorded signals/waveforms, and source-linked synthesis. Preserve all 473 Milestone 12 tests, immutable baseline RTL, and public numerical APIs. HLS, transformer hardware, and area/power optimization remain future work.
+- Build incrementally. Milestone 14 presents existing verified work as a research showcase and prepares v0.2.0-rc.1. Preserve all 502 Milestone 13 tests, immutable baseline RTL, and public numerical APIs. HLS, transformer hardware, and area/power optimization remain future work.
 - Use React, strict TypeScript, Vite, Tailwind CSS, Vitest, ESLint, and Prettier. Prefer native platform APIs and keep dependencies minimal.
 - Put reusable UI in `src/components/`, pure numerical code in `src/lib/numerics/`, and tests in `src/tests/`. Keep numerical models independent of React, the DOM, and display formatting.
 - Favor small components, explicit types, deterministic pure functions, and documented module boundaries. Do not introduce routing or state libraries without a concrete need.
@@ -104,3 +104,11 @@
 - Preserve immutable RTL, historical tests and artifacts. The new offline `rtl/scripts/export-datapath-waveforms.mjs` requires full/directed verification certificates, validates actual VCD correlations, and hashes raw downloads/parser/exporter. Re-export the new waveform artifact after changing its parser/exporter. Normal tests must reject stale source files and malformed/corrupt observations. Keep raw download paths under Vite BASE_URL.
 - Whole-unit metric comparisons require compatible core source hashes. Show exact recorded tools/library/constraints and unavailable data explicitly; never infer per-block area/delay, physical power or post-layout performance. VCD observation indices are not physical time or cycles. Native stage/GRS/wave controls and exact text tables complement SVGs; preserve long keyboard-scrollable bits.
 - Browser/assistive-technology limitations and the reproducible manual checklist must remain explicit. Run all historical and new tests serially on supported Node versions; do not alter old assertions/timeouts to accommodate a larger DOM.
+
+## Research showcase and release candidate
+
+- Read `docs/CASE_STUDY.md`, `docs/REPRODUCIBILITY.md` and the documentation index. Showcase code lives in `src/lib/showcase/` and `src/components/showcase/`. Keep the four original landing entries and all existing hashes/behaviors. Lazily open detailed research evidence at `#research`.
+- `src/lib/showcase/hardware-summary.json` is a compact generated derivative of the original M12 artifact. Regenerate with `node scripts/export-showcase.mjs`, then Prettier; test its source SHA-256 and every copied metric/endpoint/configuration. Do not mutate authoritative records to make presentation tests pass.
+- Distinguish measured observations from untested causal hypotheses. Report FMA/nonfused percentage reductions with the nonfused denominator. Preserve missing timing as unavailable; never infer frequency, physical area, power or stage cost. Recorded source hashes and dirty state matter, not only the historical commit.
+- Current candidate is `0.2.0-rc.1`, following the existing `v0.1.0` tag. Derive UI versions from package metadata and keep lockfile/release notes synchronized. Preserve private npm status, manual main-only Pages behavior and scoped permissions. Preparation never authorizes pushing, tagging, publication or settings changes.
+- Keep FP Play's original MIT notice unchanged; preserve browser dependency notices in `public/THIRD_PARTY_NOTICES.txt` and review `docs/THIRD_PARTY.md`. External cell libraries/tools keep their own terms and must not be vendored or described as FP Play MIT code.

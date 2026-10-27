@@ -1,7 +1,7 @@
 {
   "name": "fp-play",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0-rc.1",
   "description": "An interactive laboratory for floating-point arithmetic and numerical precision.",
   "license": "MIT",
   "type": "module",

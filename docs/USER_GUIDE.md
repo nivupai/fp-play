@@ -189,3 +189,30 @@ Open `#hardware` or use the footer link. Compare real generic/mapped counts, cel
 Use the footer link or `/fp-play/#datapath`. Choose an operation and recorded example, then select logical stages with native buttons or Left/Right/Home/End on the labeled navigation group. The GRS microscope has its own six-step controls. Exact software and actual recorded wires occupy separate labeled columns. Missing nonfused-adder signals remain unavailable; special-value finite defaults are bypassed. Long codes are focusable and scroll without changing stages.
 
 True FMA rounds once; nonfused shows a rounded product and second-rounding adder, with final flag union. Expand full software trace/provenance, inspect source-linked whole-unit synthesis, or open recorded waveforms for signal selection, zoom/pan, exact values and genuine raw VCD downloads. These are logical functions and recorded observations, not physical placement, hardware clocks or live HDL execution. See the [datapath guide](HARDWARE_DATAPATH.md) for examples, evidence layers, supported signals, reproduction and the pending real-browser checklist.
+
+## Research showcase
+
+Open **Measured hardware showcase** from the landing page or visit
+`/fp-play/#research`. Detailed data loads only on request. The compact landing
+introduces independently checked FP16/FMA examples, selected verification results
+and the path from exact software to measured hardware.
+
+Choose **Compare hardware units** to compare all seven records or a particular
+baseline/tree pair. Add/sub has only a baseline. Activate a table row with pointer
+or keyboard to select the exact metrics and timing-critical endpoints. The
+scatter plot uses circles for baseline and diamonds for tree; its exact table
+contains the same values. At narrow widths, focus/scroll the plot horizontally
+instead of shrinking its labels. Native keys scroll the plot and table regions.
+
+The observation panel uses nonfused as the denominator for FMA area/delay
+reductions. The explanation identifies plausible architectural hypotheses but
+makes no causal or universal cost claim. Library/tool/constraint values and
+original dirty-state/source-hash provenance are retained. Logical stages,
+functional verification, mapped area, graph depth, constrained estimated timing
+and physical chip measurements remain different evidence layers.
+
+Read the [case study](CASE_STUDY.md), [reproduction guide](REPRODUCIBILITY.md) and
+[current release-candidate checks](RELEASE_VERIFICATION.md#milestone-14-research-showcase-candidate).
+Actual [desktop](images/research-hardware-desktop.png) and
+[mobile dark](images/research-hardware-mobile-dark.png) captures show the view;
+these do not certify screen-reader or physical-device behavior.
