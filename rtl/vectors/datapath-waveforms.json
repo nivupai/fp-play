@@ -1,0 +1,2368 @@
+{
+  "schemaVersion": 1,
+  "interpretation": "Settled reset/transaction observations from actual Verilator VCD, not propagation delay or physical clocks",
+  "groups": [
+    {
+      "family": "add",
+      "artifact": "rtl/vectors/simulation.json",
+      "tool": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+      "cases": 462172,
+      "samples": 28,
+      "sampleTimes": [
+        1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37,
+        39, 41, 43, 45, 47, 49, 51, 53, 55
+      ],
+      "download": "artifacts/datapath-add.vcd",
+      "sourceHashes": {
+        "public/artifacts/datapath-add.vcd": "eb90ed3e86d1eff9b2c61d407d27042d7056c1e04f9dfd3999f90a17bad8f786",
+        "rtl/vectors/simulation.json": "4896144bec52e2c8e0bbc9c0b66dbca7cd2268122dd6a85d8039f1001f452f36",
+        "src/lib/datapath/vcd.ts": "a373ac7585f0c00adc8977d3084a5fd00bc7e0b6b2fef65a6493e4203902cdba",
+        "rtl/scripts/export-datapath-waveforms.mjs": "cc4af9938a82a7b54f8ad08f9d35ed36f2f38283e3ac234e46b6361225c59891"
+      },
+      "data": {
+        "timescale": "1ps",
+        "signals": [
+          {
+            "name": "a",
+            "width": 16
+          },
+          {
+            "name": "b",
+            "width": 16
+          },
+          {
+            "name": "subtract",
+            "width": 1
+          },
+          {
+            "name": "result",
+            "width": 16
+          },
+          {
+            "name": "invalid",
+            "width": 1
+          },
+          {
+            "name": "overflow",
+            "width": 1
+          },
+          {
+            "name": "underflow",
+            "width": 1
+          },
+          {
+            "name": "inexact",
+            "width": 1
+          },
+          {
+            "name": "arithmetic_magnitude",
+            "width": 41
+          },
+          {
+            "name": "retained_significand",
+            "width": 12
+          },
+          {
+            "name": "guard_bit",
+            "width": 1
+          },
+          {
+            "name": "round_bit",
+            "width": 1
+          },
+          {
+            "name": "sticky_bit",
+            "width": 1
+          },
+          {
+            "name": "increment",
+            "width": 1
+          }
+        ],
+        "frames": [
+          {
+            "time": 0,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 1,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0011100000000000",
+              "subtract": "0",
+              "result": "0011111000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000001100000000000000000000000",
+              "retained_significand": "011000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 2,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 3,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0001000000000000",
+              "subtract": "0",
+              "result": "0011110000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001000000000010000000000000",
+              "retained_significand": "010000000000",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 4,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 5,
+            "values": {
+              "a": "0011110000000001",
+              "b": "0001000000000000",
+              "subtract": "0",
+              "result": "0011110000000010",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001000000000110000000000000",
+              "retained_significand": "010000000001",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 6,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 7,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0000000000000001",
+              "subtract": "0",
+              "result": "0011110000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001000000000000000000000001",
+              "retained_significand": "010000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "1",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 8,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 9,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0001000000000001",
+              "subtract": "0",
+              "result": "0011110000000001",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001000000000010000000001000",
+              "retained_significand": "010000000000",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "1",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 10,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 11,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0001001000000000",
+              "subtract": "0",
+              "result": "0011110000000001",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001000000000011000000000000",
+              "retained_significand": "010000000000",
+              "guard_bit": "1",
+              "round_bit": "1",
+              "sticky_bit": "0",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 12,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 13,
+            "values": {
+              "a": "0011111111111111",
+              "b": "0001000000000000",
+              "subtract": "0",
+              "result": "0100000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "1",
+              "arithmetic_magnitude": "00000000000000001111111111110000000000000",
+              "retained_significand": "011111111111",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 14,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 15,
+            "values": {
+              "a": "0011110000000001",
+              "b": "0011110000000000",
+              "subtract": "1",
+              "result": "0001010000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000100000000000000",
+              "retained_significand": "010000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 16,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 17,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0100000000000000",
+              "subtract": "1",
+              "result": "1011110000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000001000000000000000000000000",
+              "retained_significand": "010000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 18,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 19,
+            "values": {
+              "a": "0000000000000001",
+              "b": "0000000000000001",
+              "subtract": "0",
+              "result": "0000000000000010",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000010",
+              "retained_significand": "000000000010",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 20,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 21,
+            "values": {
+              "a": "0000001111111111",
+              "b": "0000000000000001",
+              "subtract": "0",
+              "result": "0000010000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000010000000000",
+              "retained_significand": "010000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 22,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 23,
+            "values": {
+              "a": "0000010000000000",
+              "b": "0000000000000001",
+              "subtract": "1",
+              "result": "0000001111111111",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000001111111111",
+              "retained_significand": "001111111111",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 24,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 25,
+            "values": {
+              "a": "0000010000000000",
+              "b": "0000001111111111",
+              "subtract": "1",
+              "result": "0000000000000001",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000001",
+              "retained_significand": "000000000001",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 26,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 27,
+            "values": {
+              "a": "0111101111111111",
+              "b": "0100110000000000",
+              "subtract": "0",
+              "result": "0111110000000000",
+              "invalid": "0",
+              "overflow": "1",
+              "inexact": "1",
+              "arithmetic_magnitude": "01111111111110000000000000000000000000000",
+              "retained_significand": "011111111111",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 28,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 29,
+            "values": {
+              "a": "0111101111111111",
+              "b": "0111101111111111",
+              "subtract": "0",
+              "result": "0111110000000000",
+              "invalid": "0",
+              "overflow": "1",
+              "inexact": "1",
+              "arithmetic_magnitude": "11111111111000000000000000000000000000000",
+              "retained_significand": "011111111111",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 30,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 31,
+            "values": {
+              "a": "1111101111111111",
+              "b": "1100110000000000",
+              "subtract": "0",
+              "result": "1111110000000000",
+              "invalid": "0",
+              "overflow": "1",
+              "inexact": "1",
+              "arithmetic_magnitude": "01111111111110000000000000000000000000000",
+              "retained_significand": "011111111111",
+              "guard_bit": "1",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "1",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 32,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 35,
+            "values": {
+              "a": "1000000000000000",
+              "b": "1000000000000000",
+              "subtract": "0",
+              "result": "1000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 36,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 37,
+            "values": {
+              "a": "1000000000000000",
+              "b": "0000000000000000",
+              "subtract": "1",
+              "result": "1000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 38,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 39,
+            "values": {
+              "a": "1000000000000000",
+              "b": "1000000000000000",
+              "subtract": "1",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 40,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 41,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0111110000000000",
+              "subtract": "0",
+              "result": "0111110000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 42,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 43,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0111110000000000",
+              "subtract": "1",
+              "result": "1111110000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 44,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 45,
+            "values": {
+              "a": "0111110000000000",
+              "b": "1111110000000000",
+              "subtract": "0",
+              "result": "0111111000000000",
+              "invalid": "1",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 46,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 47,
+            "values": {
+              "a": "0111110000000000",
+              "b": "0111110000000000",
+              "subtract": "1",
+              "result": "0111111000000000",
+              "invalid": "1",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 48,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 49,
+            "values": {
+              "a": "0111110000000001",
+              "b": "0011110000000000",
+              "subtract": "0",
+              "result": "0111111000000001",
+              "invalid": "1",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 50,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 51,
+            "values": {
+              "a": "0111111000000010",
+              "b": "1111110000010001",
+              "subtract": "1",
+              "result": "1111111000010001",
+              "invalid": "1",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 52,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 53,
+            "values": {
+              "a": "1111111000010001",
+              "b": "0111111000000010",
+              "subtract": "0",
+              "result": "1111111000010001",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 54,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "subtract": "0",
+              "result": "0000000000000000",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          },
+          {
+            "time": 55,
+            "values": {
+              "a": "0011110000000000",
+              "b": "1111111000010001",
+              "subtract": "1",
+              "result": "1111111000010001",
+              "invalid": "0",
+              "overflow": "0",
+              "inexact": "0",
+              "arithmetic_magnitude": "00000000000000000000000000000000000000000",
+              "retained_significand": "000000000000",
+              "guard_bit": "0",
+              "round_bit": "0",
+              "sticky_bit": "0",
+              "increment": "0",
+              "underflow": "0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "family": "product",
+      "artifact": "rtl/vectors/mul-fma-simulation.json",
+      "tool": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+      "cases": 301544,
+      "samples": 23,
+      "sampleTimes": [
+        1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37,
+        39, 41, 43, 45
+      ],
+      "download": "artifacts/datapath-product.vcd",
+      "sourceHashes": {
+        "public/artifacts/datapath-product.vcd": "9da396c2339b670162ef7c9a9b4718b62c89fb4a3c2ff0d36f49f01eb4f6fcf2",
+        "rtl/vectors/mul-fma-simulation.json": "616c7842580fc709424a5c411dc03f3eea69316a5dfbd163224d4b5d826aa11c",
+        "src/lib/datapath/vcd.ts": "a373ac7585f0c00adc8977d3084a5fd00bc7e0b6b2fef65a6493e4203902cdba",
+        "rtl/scripts/export-datapath-waveforms.mjs": "cc4af9938a82a7b54f8ad08f9d35ed36f2f38283e3ac234e46b6361225c59891"
+      },
+      "data": {
+        "timescale": "1ps",
+        "signals": [
+          {
+            "name": "a",
+            "width": 16
+          },
+          {
+            "name": "b",
+            "width": 16
+          },
+          {
+            "name": "c",
+            "width": 16
+          },
+          {
+            "name": "multiply_result",
+            "width": 16
+          },
+          {
+            "name": "fused_result",
+            "width": 16
+          },
+          {
+            "name": "nonfused_result",
+            "width": 16
+          },
+          {
+            "name": "multiply_flags",
+            "width": 4
+          },
+          {
+            "name": "fused_flags",
+            "width": 4
+          },
+          {
+            "name": "addition_flags",
+            "width": 4
+          },
+          {
+            "name": "nonfused_flags",
+            "width": 4
+          },
+          {
+            "name": "mul_guard_bit",
+            "width": 1
+          },
+          {
+            "name": "mul_round_bit",
+            "width": 1
+          },
+          {
+            "name": "mul_sticky_bit",
+            "width": 1
+          },
+          {
+            "name": "mul_increment",
+            "width": 1
+          },
+          {
+            "name": "fma_exact_product",
+            "width": 22
+          },
+          {
+            "name": "fma_arithmetic_magnitude",
+            "width": 81
+          },
+          {
+            "name": "fma_guard_bit",
+            "width": 1
+          },
+          {
+            "name": "fma_round_bit",
+            "width": 1
+          },
+          {
+            "name": "fma_sticky_bit",
+            "width": 1
+          },
+          {
+            "name": "fma_increment",
+            "width": 1
+          }
+        ],
+        "frames": [
+          {
+            "time": 0,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 1,
+            "values": {
+              "a": "0011111000000000",
+              "b": "0100000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0100001000000000",
+              "fused_result": "0100001000000000",
+              "nonfused_result": "0100001000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0110000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000011000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 2,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 3,
+            "values": {
+              "a": "0011110000000001",
+              "b": "0011110000000001",
+              "c": "1011110000000010",
+              "multiply_result": "0011110000000010",
+              "fused_result": "0000000000010000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0001",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0001",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "1",
+              "mul_increment": "0",
+              "fma_exact_product": "0100000000100000000001",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000010000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 4,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 5,
+            "values": {
+              "a": "0111101111111111",
+              "b": "0100000000000000",
+              "c": "1111101111111111",
+              "multiply_result": "0111110000000000",
+              "fused_result": "0111101111111111",
+              "nonfused_result": "0111110000000000",
+              "multiply_flags": "0101",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0101",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0111111111110000000000",
+              "fma_arithmetic_magnitude": "000000000000000001111111111100000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 6,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 7,
+            "values": {
+              "a": "0000010000000000",
+              "b": "0001010000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000001",
+              "fused_result": "0000000000000001",
+              "nonfused_result": "0000000000000001",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0100000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000001000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 8,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 9,
+            "values": {
+              "a": "0000000000000001",
+              "b": "0011100000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0011",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000010000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000100000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 10,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 11,
+            "values": {
+              "a": "1000000000000001",
+              "b": "0011100000000000",
+              "c": "1000000000000000",
+              "multiply_result": "1000000000000000",
+              "fused_result": "1000000000000000",
+              "nonfused_result": "1000000000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0011",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000010000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000100000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 12,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 13,
+            "values": {
+              "a": "0000001111111111",
+              "b": "0011101111111111",
+              "c": "0000000000000001",
+              "multiply_result": "0000001111111111",
+              "fused_result": "0000010000000000",
+              "nonfused_result": "0000010000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0011",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "1",
+              "mul_increment": "1",
+              "fma_exact_product": "0111111111010000000001",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000001111111111100000000010000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "1",
+              "fma_increment": "1"
+            }
+          },
+          {
+            "time": 14,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 15,
+            "values": {
+              "a": "0000001111111101",
+              "b": "0011101000000000",
+              "c": "0000000100000010",
+              "multiply_result": "0000001011111110",
+              "fused_result": "0000010000000000",
+              "nonfused_result": "0000010000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0001",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "1",
+              "mul_sticky_bit": "0",
+              "mul_increment": "1",
+              "fma_exact_product": "0101111110111000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000001111111111110000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "1",
+              "fma_sticky_bit": "0",
+              "fma_increment": "1"
+            }
+          },
+          {
+            "time": 16,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 17,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0111110000000000",
+              "c": "0011110000000000",
+              "multiply_result": "0111111000000000",
+              "fused_result": "0111111000000000",
+              "nonfused_result": "0111111000000000",
+              "multiply_flags": "1000",
+              "fused_flags": "1000",
+              "addition_flags": "0000",
+              "nonfused_flags": "1000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 18,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 19,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0111110000000000",
+              "c": "1111111000010001",
+              "multiply_result": "0111111000000000",
+              "fused_result": "1111111000010001",
+              "nonfused_result": "0111111000000000",
+              "multiply_flags": "1000",
+              "fused_flags": "1000",
+              "addition_flags": "0000",
+              "nonfused_flags": "1000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 20,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 21,
+            "values": {
+              "a": "0111111000000010",
+              "b": "0011110000000000",
+              "c": "1111110000010001",
+              "multiply_result": "0111111000000010",
+              "fused_result": "1111111000010001",
+              "nonfused_result": "1111111000010001",
+              "multiply_flags": "0000",
+              "fused_flags": "1000",
+              "addition_flags": "1000",
+              "nonfused_flags": "1000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 22,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 23,
+            "values": {
+              "a": "0011110000000000",
+              "b": "0011110000000000",
+              "c": "1011110000000000",
+              "multiply_result": "0011110000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0100000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 24,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 25,
+            "values": {
+              "a": "1000000000000000",
+              "b": "0011110000000000",
+              "c": "1000000000000000",
+              "multiply_result": "1000000000000000",
+              "fused_result": "1000000000000000",
+              "nonfused_result": "1000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 26,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 27,
+            "values": {
+              "a": "1000000000000000",
+              "b": "0011110000000000",
+              "c": "0000000000000000",
+              "multiply_result": "1000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 28,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 29,
+            "values": {
+              "a": "0111101111111111",
+              "b": "0111101111111111",
+              "c": "0000000000000001",
+              "multiply_result": "0111110000000000",
+              "fused_result": "0111110000000000",
+              "nonfused_result": "0111110000000000",
+              "multiply_flags": "0101",
+              "fused_flags": "0101",
+              "addition_flags": "0000",
+              "nonfused_flags": "0101",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "1",
+              "mul_increment": "0",
+              "fma_exact_product": "1111111111000000000001",
+              "fma_arithmetic_magnitude": "011111111110000000000010000000000000000000000000000000001000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "1",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 30,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 31,
+            "values": {
+              "a": "0000000000000001",
+              "b": "0000000000000001",
+              "c": "0111101111111111",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0111101111111111",
+              "nonfused_result": "0111101111111111",
+              "multiply_flags": "0011",
+              "fused_flags": "0001",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "1",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000001",
+              "fma_arithmetic_magnitude": "000000000000000001111111111100000000000000000000000000000000000000000000000000001",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "1",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 32,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 33,
+            "values": {
+              "a": "0111110000000000",
+              "b": "0011110000000000",
+              "c": "1111110000000000",
+              "multiply_result": "0111110000000000",
+              "fused_result": "0111111000000000",
+              "nonfused_result": "0111111000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "1000",
+              "addition_flags": "1000",
+              "nonfused_flags": "1000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 34,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 35,
+            "values": {
+              "a": "1111111000010001",
+              "b": "0011110000000000",
+              "c": "0000000000000000",
+              "multiply_result": "1111111000010001",
+              "fused_result": "1111111000010001",
+              "nonfused_result": "1111111000010001",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 36,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 37,
+            "values": {
+              "a": "0011110000000001",
+              "b": "0011101111111110",
+              "c": "1011110000000000",
+              "multiply_result": "0011110000000000",
+              "fused_result": "1000000000010000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0001",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0001",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "1",
+              "mul_sticky_bit": "1",
+              "mul_increment": "1",
+              "fma_exact_product": "0111111111111111111110",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000010000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 38,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 39,
+            "values": {
+              "a": "0000000000000001",
+              "b": "0000000000000001",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0011",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "1",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000001",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "1",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 40,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 41,
+            "values": {
+              "a": "0011110000000001",
+              "b": "0011111000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0011111000000010",
+              "fused_result": "0011111000000010",
+              "nonfused_result": "0011111000000010",
+              "multiply_flags": "0001",
+              "fused_flags": "0001",
+              "addition_flags": "0000",
+              "nonfused_flags": "0001",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "1",
+              "fma_exact_product": "0110000000011000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000001100000000110000000000000000000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "1"
+            }
+          },
+          {
+            "time": 42,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 43,
+            "values": {
+              "a": "0011110000000011",
+              "b": "0011111000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0011111000000100",
+              "fused_result": "0011111000000100",
+              "nonfused_result": "0011111000000100",
+              "multiply_flags": "0001",
+              "fused_flags": "0001",
+              "addition_flags": "0000",
+              "nonfused_flags": "0001",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0110000001001000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000001100000010010000000000000000000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 44,
+            "values": {
+              "a": "0000000000000000",
+              "b": "0000000000000000",
+              "c": "0000000000000000",
+              "multiply_result": "0000000000000000",
+              "fused_result": "0000000000000000",
+              "nonfused_result": "0000000000000000",
+              "multiply_flags": "0000",
+              "fused_flags": "0000",
+              "addition_flags": "0000",
+              "nonfused_flags": "0000",
+              "mul_guard_bit": "0",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "0",
+              "fma_exact_product": "0000000000000000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+              "fma_guard_bit": "0",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "0"
+            }
+          },
+          {
+            "time": 45,
+            "values": {
+              "a": "0000010000000000",
+              "b": "0011101111111111",
+              "c": "0000000000000000",
+              "multiply_result": "0000010000000000",
+              "fused_result": "0000010000000000",
+              "nonfused_result": "0000010000000000",
+              "multiply_flags": "0011",
+              "fused_flags": "0011",
+              "addition_flags": "0000",
+              "nonfused_flags": "0011",
+              "mul_guard_bit": "1",
+              "mul_round_bit": "0",
+              "mul_sticky_bit": "0",
+              "mul_increment": "1",
+              "fma_exact_product": "0111111111110000000000",
+              "fma_arithmetic_magnitude": "000000000000000000000000000000000000000000000001111111111100000000000000000000000",
+              "fma_guard_bit": "1",
+              "fma_round_bit": "0",
+              "fma_sticky_bit": "0",
+              "fma_increment": "1"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
