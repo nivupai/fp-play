@@ -1,5 +1,13 @@
 # Changelog
 
+## Milestone 13 — Hardware Datapath Explorer
+
+- Added logical FP16 add/sub, multiply, true FMA and two-round nonfused diagrams with accessible stage navigation.
+- Connected 97 recorded operation/examples to exact numerical traces, result/flag/internal-signal agreement and simulator/source provenance; unavailable wires and special bypasses stay explicit.
+- Added stepwise GRS/parity/increment/carry explanations and source-linked baseline/tree whole-unit synthesis metrics with exact library/tool/constraint metadata.
+- Added a bounded offline VCD exporter, 51 correlated directed waveform examples, native signal/zoom/pan controls and genuine raw downloads.
+- Preserved historical tests, numerical engines, RTL and synthesis records; documented evidence layers, regeneration and outstanding manual browser checks. Actual headless Chrome desktop/mobile/theme/keyboard/emulated-touch checks and screenshots caught and resolved mobile grid overflow.
+
 ## Milestone 12 — RTL synthesis and design-space analysis
 
 - Reproducible functional-only Yosys/ABC mapping with pinned public Nangate45, constrained OpenSTA timing, graph depth, raw netlists/reports, per-run manifests, and a read-only Hardware Analysis view.

@@ -9,6 +9,7 @@ import { Header } from './components/Header'
 import type { ColorTheme } from './components/Header'
 import { Landing } from './components/Landing'
 import { Roadmap } from './components/Roadmap'
+import { HardwareDatapathEntry } from './components/datapath/HardwareDatapathEntry'
 import { HardwareAnalysisEntry } from './components/hardware/HardwareAnalysisEntry'
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
         <DotProductLab />
         <AttentionLab />
         <HardwareAnalysisEntry />
+        <HardwareDatapathEntry />
         <Roadmap />
         <section
           id="about"
@@ -53,6 +55,7 @@ export default function App() {
           MIT License
         </a>
         <a href="#hardware">Hardware analysis</a>
+        <a href="#datapath">Datapath explorer</a>
         <a href="#main">Back to top ↑</a>
       </footer>
     </div>

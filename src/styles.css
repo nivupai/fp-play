@@ -2095,3 +2095,175 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Recorded datapath views: meaning is also encoded in text and stage state. */
+.datapath-explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  min-width: 0;
+}
+.datapath-explorer > * {
+  min-width: 0;
+}
+.datapath-entry > summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding-block: 0.6rem;
+}
+.datapath-selection,
+.datapath-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.datapath-selection > div {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.datapath-explorer select {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  max-width: 100%;
+}
+.datapath-explorer button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  min-height: 44px;
+}
+.datapath-explorer button[aria-current='step'] {
+  outline: 2px solid var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+}
+.datapath-explorer button:disabled {
+  opacity: 0.55;
+}
+.datapath-operands {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.datapath-results > section,
+.datapath-operands > div {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 1rem;
+}
+.datapath-emphasis {
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+}
+.datapath-explorer code {
+  overflow-wrap: anywhere;
+}
+.datapath-diagram {
+  min-width: 0;
+}
+.datapath-diagram > svg {
+  display: block;
+  width: 100%;
+  color: var(--text);
+}
+.datapath-diagram svg text {
+  fill: var(--text);
+  font-size: 10px;
+}
+.datapath-diagram svg rect {
+  fill: var(--subtle);
+  stroke: var(--control-border);
+}
+.datapath-diagram svg path {
+  stroke: var(--text);
+}
+.datapath-diagram .datapath-svg-active rect {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.datapath-stage-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  list-style: none;
+  padding: 0.4rem;
+}
+.datapath-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+.datapath-grs-bits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.datapath-grs-bits > div {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.datapath-grs-bits strong {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+}
+.datapath-wave svg {
+  width: 100%;
+  color: var(--text);
+}
+.datapath-wave svg path {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.datapath-wave svg rect {
+  fill: var(--subtle);
+  stroke: var(--text);
+}
+.datapath-wave svg text {
+  fill: var(--text);
+  font-size: 13px;
+}
+.datapath-wave table {
+  width: 100%;
+  table-layout: fixed;
+}
+.datapath-wave table th:first-child {
+  width: 9rem;
+}
+.datapath-explorer .mixed-data dd {
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .datapath-selection,
+  .datapath-results {
+    grid-template-columns: 1fr;
+  }
+  .datapath-diagram {
+    overflow-x: auto;
+  }
+  .datapath-diagram > svg {
+    min-width: 850px;
+  }
+}
+
+.datapath-explorer .rtl-binary {
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  max-width: 100%;
+}
+
+.datapath-explorer .mixed-data dt {
+  overflow-wrap: anywhere;
+}
