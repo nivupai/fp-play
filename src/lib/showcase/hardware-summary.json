@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "path": "rtl/vectors/hardware-analysis.json",
+    "sha256": "c0a5c8e7aa8b300ca5f38e76bff55e226aa558fc6c870050215ec10bc7077b91",
+    "gitCommit": "f5d11a0b86548072402c8c5a314f585d4279037a",
+    "gitDirty": true,
+    "timestamp": "2026-10-26T17:56:12.182Z",
+    "sourceHashes": {
+      "rtl/analysis.mk": "cab5bc00bc4f6b9b6dec4081f2f10d62bcd202eafffa6503a41c93570df7ccf0",
+      "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+      "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+      "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+      "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+      "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+      "rtl/src/fp16_round_grid48.sv": "65b67987562ec5cac6a4a6577726504574b81fcb9b15c75495f4ba7cb2aaed9b",
+      "rtl/variants/tree-leading-bit/fp16_round_grid48.sv": "f8a3abdd111864c7e80cf04004814a8b4fd27ba71f42de89e8307971f219130c",
+      "rtl/analysis/units/analysis_add.sv": "8abf0efc804eb718f87e308d04b8956e50de76624f47bf86f359a8956f817bb2",
+      "rtl/analysis/units/analysis_fma.sv": "05a9bfb3da28c6abc3a53a548fefa735d24ca326ea85666c13fbddeb0b309147",
+      "rtl/analysis/units/analysis_mul.sv": "f5c1d9f1a5685b3c57296f79405981e7d7bee932493f5c12a015bf3809c589c1",
+      "rtl/analysis/units/analysis_nonfused.sv": "23f6cb4806146a0703194127a21e0c1cad620a45601b1873bac39125e623386f",
+      "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f",
+      "rtl/analysis/config.json": "4c8162525e5133138392e1a19b39bfe401ea69804d811884a554a83ea82426c2",
+      "rtl/analysis/timing.sdc": "4ead3020db6be0f427ef353ad2298293d4e5ded02f61d22f9705a0f2712b447b",
+      "rtl/analysis/equiv-rounder.ys": "7e88e5b412fef2d79e078e5b571089264aad484678319814a6adeb9dd0da1428",
+      "rtl/analysis/run.mjs": "651fb1ae414c614077486f1f3b2651dc02246cdb85bee801222b95dc860cfca9",
+      "rtl/analysis/build-opensta.sh": "4bf923a750afaf9763d302c802234802910d64280c54f671985a629e7f33e885",
+      "rtl/analysis/summarize.mjs": "d6af5acb0d6e2dad2cefc03eee288808a39ab242a044c5b5d6c2e05230b6c7ca",
+      "rtl/analysis/verify-variant.mjs": "4a16fbf4ca903e99508defb56f17ad387189333104011eaa048b6752bc34262d",
+      "src/lib/hardware/netlist.ts": "e7d75b06f810fafb0195cf0e0817981413d973d8553117f5ed32a6d68fc410bf",
+      "rtl/mul-fma.mk": "1f8d543ba1d09be4e7903ba075e268694c78d8a14386f8d37940bc6606efd7a9",
+      "rtl/sim/mul_fma.cpp": "5290dee190ddf7f5de48393a5707234dd61e08e790872a2cd0a1202378a37943",
+      "rtl/scripts/verify-mul-fma.mjs": "14236b967015fca87835dc2303d996d5451597438ac16c42fc9dbdbc15d20ccd",
+      "rtl/vectors/mul-fma-directed.json": "dfb66f24c9ab1c910eba62c601b10d705f25df1e5939f242f6bf883784475ae5",
+      "src/lib/numerics/fp16Multiply.ts": "5ebd72eca832575a4dfeafb5f28f64ac1134276f017d628aaeec01d1da66f27e",
+      "src/lib/numerics/roundDyadicFP16.ts": "c5a4bf156f36463199b0392084e8c9eaa78380ceb40578666e381a3513050f17",
+      "src/tests/reference/fp16MultiplyReference.ts": "e3569e288dcaee395450584aa6cd48173d6c9cb0fdf3b3501c2c4cf42360b485",
+      "rtl/Makefile": "71c5e55b120302fe91f0be6f1f967f502927c89ef8c5cd19a8d9ea6bffbfffde",
+      "rtl/sim/main.cpp": "bb458bf7ce3c33b53c62e7e7970b9fa27572b5a98f61fd7f909fd7f9f968dfeb",
+      "rtl/scripts/verify.mjs": "dd347afd28327dfbc34de6052762656d7f6d3b9e24722c13f1adab7649f1ee99",
+      "rtl/vectors/directed.json": "95a452958c169accedae1cc9df156e09204322e5928548c1124dd10f7b08287c",
+      "src/lib/numerics/fp16.ts": "0f7f5d1bde1c45dc74fbff2d2ae7d2790f93b1a738a26987886145d91324f619",
+      "src/lib/numerics/fp16Arithmetic.ts": "dd979404985b467147b3285def8c7972ad88518589173a18d3eb94938a256f15",
+      "scripts/arithmetic-runtime.mjs": "7756b0cd931c73db698574f8b5e473977b9d383ca89e8610b3639ba4dd44f01a"
+    },
+    "tools": {
+      "yosys": "Yosys 0.70+219 (git sha1 5053d0e26, Release, Clang /usr/local/osxcross/target/bin/aarch64-apple-darwin25.5-clang++ 21.1.8)",
+      "abc": "======== ABC command line \"version\"\nUC Berkeley, ABC 1.01 (compiled Oct 24 2026 06:26:39)",
+      "opensta": "3.1.0"
+    },
+    "config": {
+      "schemaVersion": 1,
+      "toolchain": {
+        "suite": "2026-10-24",
+        "yosys": "Yosys 0.70+219 (git sha1 5053d0e26,"
+      },
+      "library": {
+        "name": "Nangate45 typical",
+        "revision": "64939f3717ad7c694199ba04cb98924b98022868",
+        "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib",
+        "sha256": "8d540a4d4cf6d09d27c87ad067857a9c0c2eeb023ab7a56e058cd3113db4e9b1",
+        "licenseUrl": "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/LICENSE",
+        "corner": "typical, 1.10 V, 25 C",
+        "timeUnit": "ns",
+        "capacitanceUnit": "fF",
+        "areaUnit": "library area units (Nangate45 square micrometres)"
+      },
+      "mapping": {
+        "driver": "INV_X1",
+        "outputLoadFf": 10,
+        "abcDelayTargetPs": 1000
+      },
+      "timing": {
+        "virtualClockPeriodNs": 100,
+        "inputDelayNs": 0,
+        "outputDelayNs": 0,
+        "inputTransitionNs": 0.05,
+        "outputLoadFf": 10,
+        "wireModel": "no parasitics; ideal interconnect"
+      },
+      "units": ["add", "mul", "fma", "nonfused"],
+      "variants": ["baseline", "tree-leading-bit"]
+    }
+  },
+  "records": [
+    {
+      "id": "baseline-add",
+      "unit": "add",
+      "variant": "baseline",
+      "area": 1685.908,
+      "cells": 1539,
+      "depth": 99,
+      "delay": 2.917984,
+      "startpoint": "a[13] (input port clocked by virtual_io)",
+      "endpoint": "result[5] (output port clocked by virtual_io)",
+      "pathCells": 86,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 462172,
+        "mismatches": 0,
+        "seed": 1179660598,
+        "proof": false,
+        "rounderEquivalence": null,
+        "boundaryVerification": {
+          "id": "baseline-add",
+          "cases": 462172,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "ce4a88f1e1ec6d9997e5d5d8458cebaefec4450179a337753d822fdb0175dca6",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/src/fp16_round_grid48.sv": "65b67987562ec5cac6a4a6577726504574b81fcb9b15c75495f4ba7cb2aaed9b",
+            "rtl/analysis/units/analysis_add.sv": "8abf0efc804eb718f87e308d04b8956e50de76624f47bf86f359a8956f817bb2",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Exact TypeScript differential corpus"
+      }
+    },
+    {
+      "id": "baseline-mul",
+      "unit": "mul",
+      "variant": "baseline",
+      "area": 2048.466,
+      "cells": 1851,
+      "depth": 109,
+      "delay": 3.3185,
+      "startpoint": "b[0] (input port clocked by virtual_io)",
+      "endpoint": "result[1] (output port clocked by virtual_io)",
+      "pathCells": 103,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": null,
+        "boundaryVerification": {
+          "id": "baseline-mul",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/src/fp16_round_grid48.sv": "65b67987562ec5cac6a4a6577726504574b81fcb9b15c75495f4ba7cb2aaed9b",
+            "rtl/analysis/units/analysis_mul.sv": "f5c1d9f1a5685b3c57296f79405981e7d7bee932493f5c12a015bf3809c589c1",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Exact TypeScript differential corpus"
+      }
+    },
+    {
+      "id": "baseline-fma",
+      "unit": "fma",
+      "variant": "baseline",
+      "area": 3588.074,
+      "cells": 3221,
+      "depth": 140,
+      "delay": 4.179512,
+      "startpoint": "b[0] (input port clocked by virtual_io)",
+      "endpoint": "result[6] (output port clocked by virtual_io)",
+      "pathCells": 124,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": null,
+        "boundaryVerification": {
+          "id": "baseline-fma",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/src/fp16_round_grid48.sv": "65b67987562ec5cac6a4a6577726504574b81fcb9b15c75495f4ba7cb2aaed9b",
+            "rtl/analysis/units/analysis_fma.sv": "05a9bfb3da28c6abc3a53a548fefa735d24ca326ea85666c13fbddeb0b309147",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Exact TypeScript differential corpus"
+      }
+    },
+    {
+      "id": "baseline-nonfused",
+      "unit": "nonfused",
+      "variant": "baseline",
+      "area": 3981.754,
+      "cells": 3374,
+      "depth": 189,
+      "delay": 5.652442,
+      "startpoint": "b[1] (input port clocked by virtual_io)",
+      "endpoint": "result[2] (output port clocked by virtual_io)",
+      "pathCells": 183,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": null,
+        "boundaryVerification": {
+          "id": "baseline-nonfused",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/src/fp16_round_grid48.sv": "65b67987562ec5cac6a4a6577726504574b81fcb9b15c75495f4ba7cb2aaed9b",
+            "rtl/analysis/units/analysis_nonfused.sv": "23f6cb4806146a0703194127a21e0c1cad620a45601b1873bac39125e623386f",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Exact TypeScript differential corpus"
+      }
+    },
+    {
+      "id": "tree-leading-bit-mul",
+      "unit": "mul",
+      "variant": "tree-leading-bit",
+      "area": 2085.44,
+      "cells": 1801,
+      "depth": 99,
+      "delay": 3.42219,
+      "startpoint": "b[0] (input port clocked by virtual_io)",
+      "endpoint": "result[8] (output port clocked by virtual_io)",
+      "pathCells": 92,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": {
+          "proven": true,
+          "scope": "All rounder outputs for every 81-bit magnitude and sign; not a whole-unit proof",
+          "report": "rtl/build/analysis/rounder-equivalence.log",
+          "sha256": "6b89efbc45db9f1d32f45fc74c2b02180c5af6728b40ea6fd9e428b67062f9e0"
+        },
+        "boundaryVerification": {
+          "id": "tree-leading-bit-mul",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/variants/tree-leading-bit/fp16_round_grid48.sv": "f8a3abdd111864c7e80cf04004814a8b4fd27ba71f42de89e8307971f219130c",
+            "rtl/analysis/units/analysis_mul.sv": "f5c1d9f1a5685b3c57296f79405981e7d7bee932493f5c12a015bf3809c589c1",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Differential results/flags/signals against verified baseline"
+      }
+    },
+    {
+      "id": "tree-leading-bit-fma",
+      "unit": "fma",
+      "variant": "tree-leading-bit",
+      "area": 3801.406,
+      "cells": 3205,
+      "depth": 149,
+      "delay": 5.031622,
+      "startpoint": "b[1] (input port clocked by virtual_io)",
+      "endpoint": "flags[1] (output port clocked by virtual_io)",
+      "pathCells": 141,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": {
+          "proven": true,
+          "scope": "All rounder outputs for every 81-bit magnitude and sign; not a whole-unit proof",
+          "report": "rtl/build/analysis/rounder-equivalence.log",
+          "sha256": "6b89efbc45db9f1d32f45fc74c2b02180c5af6728b40ea6fd9e428b67062f9e0"
+        },
+        "boundaryVerification": {
+          "id": "tree-leading-bit-fma",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/variants/tree-leading-bit/fp16_round_grid48.sv": "f8a3abdd111864c7e80cf04004814a8b4fd27ba71f42de89e8307971f219130c",
+            "rtl/analysis/units/analysis_fma.sv": "05a9bfb3da28c6abc3a53a548fefa735d24ca326ea85666c13fbddeb0b309147",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Differential results/flags/signals against verified baseline"
+      }
+    },
+    {
+      "id": "tree-leading-bit-nonfused",
+      "unit": "nonfused",
+      "variant": "tree-leading-bit",
+      "area": 4069.268,
+      "cells": 3333,
+      "depth": 196,
+      "delay": 6.00975,
+      "startpoint": "a[7] (input port clocked by virtual_io)",
+      "endpoint": "result[0] (output port clocked by virtual_io)",
+      "pathCells": 181,
+      "stageBreakdownUnavailable": "ABC optimizes across RTL stage boundaries; no reliable stage attribution is retained",
+      "verification": {
+        "cases": 301544,
+        "mismatches": 0,
+        "seed": 1297435718,
+        "proof": false,
+        "rounderEquivalence": {
+          "proven": true,
+          "scope": "All rounder outputs for every 81-bit magnitude and sign; not a whole-unit proof",
+          "report": "rtl/build/analysis/rounder-equivalence.log",
+          "sha256": "6b89efbc45db9f1d32f45fc74c2b02180c5af6728b40ea6fd9e428b67062f9e0"
+        },
+        "boundaryVerification": {
+          "id": "tree-leading-bit-nonfused",
+          "cases": 301544,
+          "verilator": "Verilator 5.052 2026-09-05 rev vUNKNOWN-built20260905",
+          "vectorsSha256": "9fd4ab708596260b3e46831c2bd04fa63e35540aad1c136c56e162f867658394",
+          "mismatches": 0,
+          "proof": false,
+          "method": "Actual functional wrapper outputs, raw result and all flags against the full original numerical corpus",
+          "sourceHashes": {
+            "rtl/src/fp16_addsub.sv": "29e2de0c304d637dacb171b8e0d41b89df66a13b3524777c6fcd5577fdc66e12",
+            "rtl/src/fp16_fma.sv": "d477b4d36a124644c0ea93dd596759de9fd642fa2c2e87cbf02c0eecbe53929d",
+            "rtl/src/fp16_mul.sv": "f16657e160f9121226e4cf22491b73290975a3110aa7a93bd044706111d5ea70",
+            "rtl/src/fp16_mul_fma_compare.sv": "18d07c2d08da7e0ebffdce0d220d144c8d12e7dce5b10b2f252f4f9cb85dafde",
+            "rtl/src/fp16_mul_fma_core.sv": "8e3f9cb11ccd1124eab02edc53c3e5b650d26b92b80db50120346097d090cd22",
+            "rtl/variants/tree-leading-bit/fp16_round_grid48.sv": "f8a3abdd111864c7e80cf04004814a8b4fd27ba71f42de89e8307971f219130c",
+            "rtl/analysis/units/analysis_nonfused.sv": "23f6cb4806146a0703194127a21e0c1cad620a45601b1873bac39125e623386f",
+            "rtl/analysis/verify-units.mjs": "2edb531d567804ee328bb797a61750e90ca57673e801a16e971e908527579b6f"
+          }
+        },
+        "method": "Differential results/flags/signals against verified baseline"
+      }
+    }
+  ]
+}

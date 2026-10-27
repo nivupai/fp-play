@@ -1,137 +1,145 @@
 # FP Play
 
-**Make precision visible.** FP Play is an open-source interactive laboratory for FP16, BF16, FP32, and numerical precision in AI hardware. Flip bits, zoom into representable values, follow an exact calculation, and compare fused with separately rounded operations.
+**Make precision visible—from bits to verified RTL.** FP Play is an open-source
+interactive laboratory for floating-point arithmetic, numerical precision in AI
+workloads, and reproducible hardware experiments. Explore a number, follow an
+exact calculation, and inspect the implementation and evidence behind it.
 
-Version **0.1.0** is prepared for its first public release. This branch does not publish a release or deploy a site.
+**Release candidate: v0.2.0-rc.1.** The repository already has a v0.1.0 tag;
+this candidate prepares the subsequent numerical/hardware work for review.
+No new tag, GitHub release or deployment is created by local preparation.
 
-## Experiences
+[Technical case study](docs/CASE_STUDY.md) · [Documentation](docs/README.md) ·
+[Reproduce the results](docs/REPRODUCIBILITY.md) · [Contributing](CONTRIBUTING.md)
 
-| Experience               | What you can explore                                                                                                                                       |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bit Explorer**         | Sixteen independent bit switches, exact decoded values, decimal quantization, signed zeros, subnormals, infinities, NaN metadata, and numerical neighbors. |
-| **Precision Microscope** | Zoom/pan through actual FP16 points, inspect rounding cells and midpoint ownership, and compare ULP spacing with magnitude.                                |
-| **Arithmetic Pipeline**  | Trace addition, subtraction, and multiplication through exact intermediates, normalization, GRS bits, nearest-even rounding, and exception indicators.     |
-| **FMA Comparison**       | See the exact product and sum beside fused, rounded-product, and nonfused outputs. Discover lost residuals and avoided intermediate overflow.              |
+[Desktop landing screenshot](docs/images/research-landing-desktop-light.png) · [Hardware showcase screenshot](docs/images/research-hardware-desktop.png)
 
-Milestone 8 adds **[Format Comparison](docs/MIXED_PRECISION.md)** (`#formats`) and the **Dot Product Precision Lab** (`#dot-product`): compare all three representations, five explicit mixed-precision configurations, sequential/pairwise reductions, exact references, rounding events, and twelve verified experiments.
+## Explore
 
-Milestone 9 adds **[Attention Precision Lab](docs/ATTENTION_PRECISION.md)** (`#attention`): edit small Q/K/V matrices, compare five explicit precision policies, stable/naive softmax, scores/probabilities/outputs, shared-scale heatmaps, raw encodings, stage rounding, and reference errors. Twelve verified presets explain how precision loss propagates through an attention head.
+| Experience                                              | What you can learn                                                                                                     |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Bit Explorer** (`#explorer`)                          | Flip FP16 bits; inspect exact values, signed zeros, subnormals, NaN metadata, decimal quantization and neighbors.      |
+| **Precision Microscope** (`#microscope`)                | Zoom/pan over actual representable values, halfway boundaries, rounding cells and ULP spacing.                         |
+| **Arithmetic / FMA** (`#arithmetic`, `#fma`)            | Follow exact add/subtract/multiply/FMA traces, GRS decisions, flags and one-round versus two-round results.            |
+| **Formats / dot products** (`#formats`, `#dot-product`) | Compare FP16/BF16/FP32 and five explicit mixed-precision accumulation policies, sequential or pairwise.                |
+| **Attention Precision Lab** (`#attention`)              | Inspect bounded QK/softmax/PV pipelines, stable/naive behavior, raw encodings and stage errors.                        |
+| **Research showcase** (`#research`)                     | Compare seven recorded Nangate45 mappings, area/delay tradeoffs, critical endpoints and exact experimental conditions. |
+| **Hardware / datapaths** (`#hardware`, `#datapath`)     | Inspect actual RTL observations, synthesis paths, software agreement, GRS and genuine recorded VCD waveforms.          |
 
-Milestone 10 adds an original **[FP16 RTL adder/subtractor](rtl/README.md)** with a separate Verilator workflow and an optional **Inspect precomputed FP16 RTL simulations** panel in Arithmetic Explorer. The browser displays recorded results/signals; it does not run HDL tools.
+The compact landing page links to every experience. Hash navigation works on
+static hosting without server rewrites. Native controls, exact tables and full
+scrollable binary values complement SVGs; light/dark/system themes share labeled
+fields and visible focus states.
 
-Milestone 11 adds **[FP16 multiplier and true FMA RTL](rtl/MULTIPLY_FMA.md)**, a nonfused hardware comparison, exact fixed-width intermediates, generic Yosys synthesis checks, and genuine recorded signal inspection. Each path passes 301,544 RTL triples; direct SoftFloat checks cover 904,632 outputs with all supported flags.
+## Run in minutes
 
-Milestone 12 adds **[Hardware Analysis](docs/HARDWARE_SYNTHESIS.md)** (`#hardware`): controlled Nangate45 cell area, OpenSTA timing, logic depth, baseline/normalization-variant comparisons, real critical-path records, and reproducible source-hashed manifests. It displays recorded results rather than running tools in the browser.
-
-Milestone 13 adds the **[Hardware Datapath Explorer](docs/HARDWARE_DATAPATH.md)** (`#datapath`): logical block diagrams for all FP16 RTL operations, actual recorded signals beside exact software traces, a step-by-step GRS microscope, source-linked synthesis comparisons, and a compact genuine VCD viewer with raw downloads. Missing signals and special-value bypasses are explicit; the browser never runs HDL tools.
-
-The landing page links directly to each workspace. `#fma` opens a verified example, including on a page reload. Keyboard controls and text alternatives accompany charts and bit diagrams. Light, dark, and system themes share labeled field colors; mathematical meaning never depends on color alone.
-
-FP16 has one sign bit, five exponent bits, ten stored fraction bits, and exponent bias 15. Its eleven-bit normal precision helps explain why alignment, cancellation, accumulation precision, and rounding matter to numerical computing and accelerator workloads. These are educational models, not a particular chip's implementation or timing.
-
-## Run locally
-
-Use Node **22.9.0** with npm **10.8.3**, or Node **24**, matching the CI matrix. Keep the committed dependency lockfile; consult `package.json` for supported engines.
+Use Node **22.9.0** / npm **10.8.3**, or Node **24**, and retain the lockfile.
+No HDL tools, Python or SoftFloat installation is required for frontend use.
 
 ```sh
 git clone https://github.com/nivupai/fp-play.git
 cd fp-play
 npm ci
 npm run dev
+# Open http://localhost:5173/fp-play/ (or the port Vite prints).
 ```
-
-Open **http://localhost:5173/fp-play/** (or the URL Vite prints if the port is occupied). The repository base path applies to development and production.
 
 ```sh
-npm run check          # Lint, formatting, contrast tokens, full tests, typecheck, build
-npm run check:release  # Verify generated /fp-play/ assets; run after the build
-npm run preview       # Preview the build at http://localhost:4173/fp-play/
+npm run check          # lint, formatting, contrast, full tests, types and build
+npm run check:release  # built /fp-play/ paths, version, notices and VCD downloads
+npm run preview       # http://localhost:4173/fp-play/
 ```
 
-Other commands: `npm test`, `npm run test:watch`, `npm run lint`, `npm run typecheck`, `npm run format`, `npm run format:check`, and `npm run check:contrast`. Preview is for local verification, not a production server.
+[Reproducibility](docs/REPRODUCIBILITY.md) separates these fast checks from
+optional SoftFloat, Verilator, Yosys/ABC and OpenSTA setup. Full controls and
+input conventions are in the [user guide](docs/USER_GUIDE.md). Decimal text parses
+as binary64 first; special inputs include `-0`, `Infinity`, `-Infinity`, `NaN`
+and arithmetic raw hex such as `0xfc11`.
 
-## Try it
+## Two experiments to try
 
-- Enter `0.1` in Bit Explorer to compare its parsed binary64 input with exact FP16 `0.0999755859375`. Use Tab, Space, and Enter to flip individual bits.
-- Analyze `1.0001` in the microscope: it rounds to 1. Use pan/zoom buttons or focus the chart for arrow and +/− controls. A point selector and exact table complement pointer interaction.
-- Trace `1 + 2^-11` with **Tie to even**. Inspect alignment, guard/round/sticky, and the retained significand's parity.
-- Open **Format Comparison** with `1.0009765625`: FP16/FP32 retain it; BF16 becomes 1.
-- In **Dot Product Precision Lab**, select **Rounded FP16 products**, then compare modes B/C: the FP32 accumulator cannot restore product bits already lost in B. Select **Pairwise saves increments** to compare reduction orders.
-- In **Arithmetic Pipeline**, expand **Inspect precomputed FP16 RTL simulations** and select even/odd ties. Compare recorded GRS, result bits, and flags against the current software engine.
-- Open **Attention Precision Lab**, select **QK accumulation width**, then switch between scores, probabilities, and outputs. Try **FP16 exponential overflow** with naive/stable softmax and inspect the exp/denominator stages.
-- Open **Hardware Datapath Explorer** (`#datapath`), choose true FMA and **Lost product residual**, then compare with nonfused. Step through GRS, inspect genuine RTL wires, source-linked whole-unit metrics, and recorded waveforms.
-- Open **FMA Comparison**: `(1 + 2^-10)^2 − (1 + 2^-9)` gives `2^-20` fused and zero after intermediate FP16 product rounding. Select each computation path to inspect the difference.
+- Enter **1.0001** in Bit Explorer or the microscope. Its parsed binary64 value
+  rounds to FP16 **1** (`0x3c00`); spacing near 1 is `2^-10`.
+- Open **FMA Comparison**: `(1 + 2^-10)^2 − (1 + 2^-9)` is exactly `2^-20`.
+  Fused returns `0x0010`; separately rounding the product first loses the
+  residual and returns `0x0000`. Inspect the same triple in `#datapath`.
 
-Decimal/scientific input is binary64-first. Use `-0`, `Infinity`, `-Infinity`, and `NaN`; arithmetic raw mode accepts four-digit hex such as `0xfc11`. Invalid input preserves the last applied calculation. See the [usage guide](docs/USER_GUIDE.md) for full controls, conventions, examples, and visualization limits.
+For attention, try **QK accumulation width**, then compare the scores,
+probabilities and output. For hardware, inspect the baseline FMA and nonfused
+critical paths; the showcase separates measured observations from hypotheses.
 
-## Architecture and technical documentation
+## Evidence, with boundaries
 
-React and strict TypeScript provide presentation; pure numerical functions provide every decoded value, neighbor, rounding cell, result, and trace. Vite, Tailwind CSS, Vitest, ESLint, and Prettier provide the tooling. There is no plotting, routing, or numerical runtime dependency.
+The existing **502 Milestone 13 tests are preserved unchanged**. Tests include
+all **65,536 binary16 encodings**, independent lattice/midpoint checks, exact
+trace reconstruction, BF16/FP32 and attention references, source-hash checks,
+and actual-engine UI integration. CI runs the complete suite on Node 22.9.0 and 24. [Release verification](docs/RELEASE_VERIFICATION.md) records the new showcase
+test count and commands.
 
-```text
-src/lib/numerics/        Conversion, introspection, microscope, exact arithmetic, shared rounding
-src/lib/explorer/        Input/display formatting and explicit bit presets
-src/lib/microscope/      Precision presentation and examples
-src/lib/arithmetic/      Typed trace presentation, examples, and model documentation
-src/lib/mixed/           Multi-precision presentation and verified experiments
-src/lib/attention/       Attention matrix parsing, heatmap helpers, and experiments
-src/lib/datapath/        Bounded record/VCD parsing, provenance, exact-engine comparisons
-src/components/          Landing, bit explorer, microscope, arithmetic, and shell
-src/tests/               Numerical, independent-reference, and real-engine DOM tests
-scripts/                 Build/contrast checks and optional independent verification tools
-rtl/                     Original FP16 add/sub/multiply/FMA RTL, simulation, synthesis checks, and docs
-.github/workflows/       Read-only CI and a separate manual Pages deployment
-```
+Recorded independent checks include **536,888 FP16 SoftFloat operations**,
+**169,011 FP32 operations**, and **240 attention pipelines / 12,916 stage
+comparisons**. RTL passes **462,172 add/sub transactions** and **301,544 triples
+per multiply/FMA/nonfused path**. Raw bits and all modeled flags are checked;
+SoftFloat NaN metadata differences follow its documented specialization policy.
+These overlapping corpora are not summed into a single verification claim.
 
-- [Hardware datapath controls, evidence layers, waveform reproduction, and manual browser checklist](docs/HARDWARE_DATAPATH.md)
-- [FP16 RTL interface, simulation, waveforms, and recorded-signal inspection](rtl/README.md)
-- [Attention policies, softmax, independent references, and reproduction](docs/ATTENTION_PRECISION.md)
-- [Multi-precision formats, accumulation semantics, and verification](docs/MIXED_PRECISION.md)
-- [Binary16 representation and conversion API](src/lib/numerics/README.md)
-- [Microscope mathematics, sampling, and error definitions](src/lib/microscope/README.md)
-- [Addition/subtraction model and trace contract](src/lib/arithmetic/README.md)
-- [Multiplication, FMA, exceptions, and independent verification](src/lib/arithmetic/MULTIPLY_FMA.md)
-- [Reproducible FMA counterexamples](docs/experiments/fma-counterexamples.json)
-- [Contributor guide](CONTRIBUTING.md) and [project conventions](AGENTS.md)
+The source-hashed [Nangate45 artifact](rtl/vectors/hardware-analysis.json) records:
 
-## Numerical verification
+| Baseline unit         | Mapped cell area (µm²) | Constrained estimated delay (ns) |
+| --------------------- | ---------------------: | -------------------------------: |
+| Add/subtract          |               1685.908 |                         2.917984 |
+| Multiply              |               2048.466 |                         3.318500 |
+| True FMA              |               3588.074 |                         4.179512 |
+| Nonfused multiply-add |               3981.754 |                         5.652442 |
 
-All **473 Milestone 12 tests are preserved unchanged**. The current suite contains **502 tests**, including exhaustive BF16 decoding and midpoint checks, FP32 native conversions, independent BF16/FP32 arithmetic, exact dot references, reduction boundaries, and UI integration. Coverage includes all 65,536 raw binary16 encodings, representable midpoint boundaries, signed zeros, subnormals, infinity/NaN behavior, exhaustive identities/cancellation, deterministic differential cases, exact trace reconstruction, and actual-engine UI/keyboard interaction. CI runs the complete suite on Node 22.9.0 and 24; no numerical coverage or timeout budgets were reduced.
+Under this one library/corner/configuration, baseline FMA is smaller and faster
+than nonfused; no tree variant improves both area and delay. This is an
+experimental observation, not a universal FMA cost law. Cell area is not chip
+area; ideal-interconnect OpenSTA delay is not post-layout timing. No power,
+achieved clock frequency, throughput or silicon measurement is claimed.
+See the [case study](docs/CASE_STUDY.md) and [full synthesis conditions](docs/HARDWARE_SYNTHESIS.md).
 
-The Milestone 6 Berkeley SoftFloat reference run compared **536,888 operations with zero mismatches**: 115,936 additions, 115,936 subtractions, 181,476 multiplications, and 123,540 FMAs. Non-NaN bits and all four flags match; 28,618 NaN outputs match quiet classification and flags, with implementation-specific payload/sign selection tested separately. Seven counterexamples have independent lattice checks and another 21 SoftFloat checks. The [verification instructions](src/lib/arithmetic/MULTIPLY_FMA.md#verification-and-reproducible-counterexamples) pin the upstream revision and describe corpus limits. SoftFloat is optional development tooling, not a bundled dependency.
+## Architecture and limits
 
-Milestone 8 additionally compared **169,011 FP32 operations with Berkeley SoftFloat, zero mismatches** in non-NaN bits and all flags. All 5,275 NaN outputs agree in quiet classification and flags; 369 payload/sign differences follow the documented policy. Mathematical checks include 195,840 BF16 midpoint-neighbor conversions, 24,000 finite arithmetic comparisons, and 2,000 dot reductions plus intermediate checks. See the [multi-precision contract and reproduction instructions](docs/MIXED_PRECISION.md).
+React/strict TypeScript render the interface; pure BigInt dyadic models perform
+exact arithmetic before destination rounding. Presentation helpers stay outside
+numerical modules. Original combinational SystemVerilog implements FP16 units;
+separate verification tools produce small immutable browser records. Vite,
+Tailwind, Vitest, ESLint and Prettier provide tooling. There is no plotting,
+routing, numerical runtime or browser HDL dependency.
 
-Attention verification adds **240 independent full pipelines**, **12,916 stage result/flag comparisons**, **48 aligned NumPy FP32 calculations**, and a **100-digit Decimal reference**. Zero mismatches were observed; 240 generated pipelines are replayed in CI. `Math.exp` and reciprocal-square-root scaling remain explicitly labeled host binary64 approximations; no correctly rounded format-exp claim is made. See [the attention contract and reproducible exports](docs/ATTENTION_PRECISION.md).
+Only nearest-even is supported. This is **not full IEEE 754 conformance**.
+NaN propagation has an explicit FP Play policy. FMA's Number projection can round;
+exact coefficient/exponent fields are authoritative. Attention uses host
+binary64 exp/scaling approximations, not correctly rounded format-specific
+transcendentals. Workloads are bounded and do not model a particular accelerator.
+RTL simulation and finite corpora are not whole-unit formal/silicon validation.
 
-RTL validation completed **462,172 add/subtract transactions with zero mismatches**, including strict raw NaN sign/payload and all four flags. The same RTL results also passed **462,172 direct SoftFloat comparisons** under its documented NaN metadata policy (65 differences in sign/payload; classification/flags match). Actual signals and source hashes back the small browser artifact. See [the RTL architecture, simulation, waveform, and verification guide](rtl/README.md).
+Actual headless Chrome checks and screenshots cover the landing, research showcase, charts and datapath/waveform workspaces;
+[the verification record](docs/RELEASE_VERIFICATION.md) distinguishes current
+showcase browser evidence from pending physical-device, screen-reader and
+cross-browser review. Automated accessibility checks are not WCAG certification.
 
-## Accessibility and visual-review status
+## Contribute, reproduce, release
 
-The release adds a responsive landing page, larger controls, stronger control borders, visible trace stages, keyboard-focusable long-value/plot regions, and direct FMA entry. Static checks cover **74 theme-token pairs**: text contrast is at least **5.46:1**, and the tested control/focus pairs are at least **3.39:1**. DOM tests cover semantic labels, keyboard behavior, links, input states, and real numerical outputs.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), the [documentation index](docs/README.md),
+and [AGENTS.md](AGENTS.md). Documentation, accessibility and independent verification
+are useful first contributions. Numerical APIs, historical assertions and
+source-hashed artifacts must remain trustworthy. See the authoritative/generated
+file map before refreshing records.
 
-**Milestone 13 received actual headless Chrome verification** at desktop and 390/320 px mobile-emulated widths: rendered SVGs, light/dark themes, focus, keyboard/range controls, emulated touch, example results, waveform controls and raw downloads. [Screenshots and the remaining manual checklist](docs/HARDWARE_DATAPATH.md#browser-verification-and-remaining-manual-checklist) are available. Physical devices, screen-reader announcements, other browsers and full accessibility conformance remain unverified; earlier milestones’ recorded browser limitations remain historical. The [release verification record](docs/RELEASE_VERIFICATION.md) distinguishes automated evidence from the remaining manual review.
+Future research may isolate alignment/rounding costs, examine fanout-aware
+normalization, add controlled pipeline studies, or expand independent verification.
+These are research directions, not measured improvements or release promises.
 
-## GitHub Pages readiness
-
-The production base is **`/fp-play/`**. Hash links support static-host navigation without server rewrites. A production build checks JavaScript, CSS, and favicon paths before deployment.
-
-[Deploy GitHub Pages (manual)](.github/workflows/pages.yml) has **only `workflow_dispatch`**, runs only from `main`, and deploys only after the full checks and build pass. Build has read-only content/Pages permissions; only the separate deploy job has `pages: write` and `id-token: write`. Actions are pinned to official release commits. The workflow does not enable Pages or change repository settings automatically.
-
-A maintainer must explicitly enable **Settings → Pages → Source: GitHub Actions**, then run the workflow on `main` when publication is authorized. Nothing deploys on pushes, pull requests, tags, or releases. See [manual deployment and release instructions](docs/RELEASING.md). No live deployment or GitHub release is claimed here.
-
-## Limits
-
-FP16 retains its existing conversion and add/subtract/multiply/FMA APIs. The typed engine adds FP16/BF16/FP32 conversion, exact addition/multiplication, and FMA for mixed-precision dot products. The original FMA workspace produces FP16 output; the new lab models FP32 accumulation explicitly. Only nearest-even is supported. Vectors have 1–64 terms. Pairwise fused modes round FMA-with-zero leaves before tree additions; they are not sequential FMA chains. The attention lab adds one bounded unmasked head, explicit conversion/arithmetic flags, and attention-specific exact rational normalization. Original combinational RTL now supports FP16 add/subtract/multiply, true FMA, and nonfused comparison, with generic synthesis sanity checks. General division UI, traps, global sticky state, alternate modes, training, GPU kernels, performance benchmarks, HLS, transformer hardware, and area/power optimization are outside scope. This project **does not claim full IEEE 754 conformance**.
-
-NaN payload selection is a documented FP Play policy. Tininess after rounding uses destination precision with unbounded exponents, so a stored normal can still raise underflow. Exact dyadic coefficient/exponent fields are authoritative; FMA's compatibility Number projection can round. Decimal parsing, error divisions, screen coordinates, axis labels, viewport sampling, and logarithmic plots have their documented limits. TestFloat and exhaustive testing of every operand pair/triple have not been performed.
-
-## Roadmap and contributing
-
-Milestones 1–6 provide the foundation, numerical engine, representation explorer, precision microscope, arithmetic traces, multiplication, and FMA comparison. **Milestone 7 prepares v0.1.0 for public release; Milestone 8 adds multi-precision representations and accumulation experiments**. **Milestone 9 adds the bounded Attention Precision Lab**. **Milestone 10 adds original FP16 add/subtract RTL and differential verification; Milestone 11 adds multiplier/FMA RTL and generic synthesis checks; Milestone 12 adds controlled hardware synthesis and design-space analysis; Milestone 13 connects logical datapaths, recorded RTL, GRS, synthesis metrics, and VCDs**. Future work may extend original hardware experiments; these are planned capabilities, not release promises.
-
-Contributions improving clarity, accessibility, independent verification, documentation, or carefully scoped experiments are welcome. Follow [CONTRIBUTING.md](CONTRIBUTING.md), preserve numerical tests, and disclose unsupported behavior. [CHANGELOG.md](CHANGELOG.md) records the prepared release.
+GitHub Pages uses `/fp-play/` and a **manual, main-only** workflow. Enabling Pages,
+merging, deploying, tagging and publishing remain explicit maintainer actions;
+see [the release procedure](docs/RELEASING.md) and [changelog](CHANGELOG.md).
+No local check performs publication.
 
 ## License
 
-[MIT](LICENSE). The original copyright attribution is preserved. All code uses public standards and original or appropriately licensed open-source material; proprietary hardware designs and internal Broadcom information are excluded.
+Original FP Play code is [MIT-licensed](LICENSE), with the original attribution
+preserved. Dependencies and external hardware tools/libraries retain their own
+terms; see [third-party attribution](docs/THIRD_PARTY.md). No proprietary hardware
+designs or internal Broadcom information are included.

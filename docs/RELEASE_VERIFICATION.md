@@ -1,6 +1,8 @@
-# v0.1.0 verification record
+# FP Play release verification record
 
 This record distinguishes source/DOM/static-build evidence from real-browser verification. It is not a full IEEE 754 or WCAG conformance certification.
+
+**Current preparation: v0.2.0-rc.1, Milestone 14.** See the [latest verification update](#milestone-14-research-showcase-candidate). Earlier sections describe the checks and publication status at those milestones. The existing v0.1.0 tag is retained; this candidate creates no new tag or release.
 
 ## Automated evidence
 
@@ -146,3 +148,93 @@ Synthesis values are whole-unit mapping/timing estimates; logical blocks and VCD
 observation indices are not physical placement, measured stage delay, hardware
 clocks or latency. No push, merge, deployment, publication or repository-settings
 change was performed.
+
+## Milestone 14 research showcase candidate
+
+`feature/research-showcase` starts from latest main **600aca6**, which includes
+merged Milestone 13. The existing **v0.1.0** tag points to **977ccc8** (Milestone 7).
+The subsequent work is prepared as **0.2.0-rc.1** in package/lockfile and the UI,
+with private npm status retained. Old global documentation implying v0.1.0 was
+still untagged has been corrected; no GitHub release/deployment status is inferred
+from the tag. No new tag is created.
+
+All **502 historical tests** are unchanged, as are numerical engines, original
+RTL, historical simulation/waveform/synthesis artifacts and workflow behavior.
+Twelve new evidence/UI/release/documentation tests bring the suite to **514 tests
+in 27 files**, passing on **Node 22.9.0 and Node 24.22.0**. Checks bind all seven
+compact showcase records and their metrics/endpoints/verification/conditions to
+the original M12 JSON SHA-256, preserve measurement dirty-state provenance,
+verify independent example encodings and percentage denominators, permit missing
+timing, and exercise lazy navigation, keyboard controls, filtering and source
+links. Local documentation target tests catch broken file links.
+
+Lint, Prettier, TypeScript, all 74 theme-token contrast checks, production build,
+release-path/version/private-package checks and actionlint pass. Static text
+contrast remains at least 5.46:1 and tested control/focus pairs at least 3.39:1.
+The release checker now also verifies current candidate text in built JavaScript,
+third-party notices copied into the build, and both raw VCD files byte-for-byte
+and against their recorded hashes. The lockfile changes only candidate versions;
+no dependency is added/upgraded. The Pages workflow remains manual/main-only
+with deployment writes confined to its deploy job; no settings were changed.
+
+Applicable RTL checks were rerun with **Verilator 5.052**: strict lint, all
+**462,172 add/sub transactions**, all **301,544 multiplication/FMA/nonfused triples**
+and the **28/23 directed VCD flows**, zero mismatches. Generic synthesis/latch
+sanity checks pass with CI-pinned **Yosys 0.70+219 / 5053d0e26**. No new mapped
+area/timing measurement, SoftFloat run, formal proof or silicon validation is
+claimed. The case study/showcase reuses the source-hashed M12 measurements and
+previously recorded independent references, identifying overlapping corpora and
+NaN-policy differences rather than summing them into an inflated count.
+
+### Actual production-browser verification
+
+The committed optional `scripts/check-showcase-browser.mjs` uses Node's native
+WebSocket API and an isolated local **Chrome 156.0.8078.48** DevTools target, with
+no new npm dependency. It passed against both the development server and the
+**built production preview under /fp-play/**. Coverage includes:
+
+- Desktop **1440×1100**, mobile-emulated **390×844** and **320×844**, with page
+  scroll width bounded by client width across every hardware-unit filter and
+  expanded provenance. Plot/table/code scrolling remains local.
+- Native keyboard entry into `#research`, experiment-row Enter activation,
+  visible focus outline, exact selection/endpoints, bounded filter results,
+  and readable labels with native ArrowRight plot scrolling.
+- Explicit light/dark switching and system-theme emulated dark/light preference,
+  plus rendered SVG circle/diamond alternatives and exact table controls.
+- Verified FP16 FMA/nonfused residual results, microscope zoom/pan, logical
+  datapath stage keys, waveform signal/zoom/pan/range controls and native range
+  ArrowRight behavior; emulated touch activates a datapath stage.
+- Accessibility-tree audit: **207 nonignored interactive controls**
+  (buttons, links, comboboxes, sliders and textboxes) all have nonempty names;
+  research and stage-navigation labels are present. No runtime exceptions.
+- HTTP 200 and exact source-byte equality for both genuine raw VCD downloads and the
+  third-party notice asset at the production base.
+
+Actual screenshots were captured and visually inspected: [desktop landing](images/research-landing-desktop-light.png),
+[mobile dark landing](images/research-landing-mobile-dark.png),
+[desktop hardware](images/research-hardware-desktop.png), and
+[mobile dark hardware](images/research-hardware-mobile-dark.png).
+Visual review caught tiny chart labels on narrow screens; the final plot uses a
+focusable horizontal scroll region instead of shrinking labels. These are real
+interface captures, not new scientific measurements.
+
+The [reproduction guide](REPRODUCIBILITY.md#optional-real-browser-check-no-npm-dependency)
+provides exact preview/browser/checker commands. Browser checks are local-only;
+the checker closes only its own tab. It does not deploy or contact GitHub APIs.
+
+### Remaining acceptance checks
+
+Automated control names and contrast tokens do not establish full accessibility
+or WCAG conformance. Physical touch devices, actual screen-reader announcements,
+other browser engines, complete 200% zoom/device coverage and every composited
+contrast state remain unverified. Review them with the existing
+[manual checklist](HARDWARE_DATAPATH.md#browser-verification-and-remaining-manual-checklist),
+adding the landing proof strip, all `#research` unit filters/table rows,
+horizontal plot scrolling, source provenance, and documentation/download links.
+
+Candidate source/build readiness is established locally; CI must still run on
+GitHub after an authorized push. New documentation links to main become available
+after the approved merge. Maintainer review, merge, Pages enablement/workflow
+dispatch, candidate tag and GitHub prerelease all remain separate explicitly
+authorized steps. Nothing was pushed, merged, deployed, published or tagged by
+this milestone. See [the release procedure](RELEASING.md).

@@ -1,3 +1,10 @@
+import { version } from '../../package.json'
+import {
+  fusedComparison,
+  numericalExamples,
+  formatMetric,
+} from '../lib/showcase/evidence'
+import { fp16BitsToHex } from '../lib/numerics/fp16'
 const repository = 'https://github.com/nivupai/fp-play'
 const experiences = [
   {
@@ -35,6 +42,7 @@ const experiences = [
 ]
 
 export function Landing() {
+  const measured = fusedComparison()
   return (
     <section className="landing" aria-labelledby="landing-heading">
       <div className="hero">
@@ -48,7 +56,9 @@ export function Landing() {
           <p className="hero-tagline">Make precision visible.</p>
           <p className="hero-description">
             A hands-on laboratory for understanding how bits become numbers, and
-            how representation and accumulation precision shape a result.
+            how representation and accumulation precision shape a result. Follow
+            exact software calculations into verified RTL and measured synthesis
+            experiments.
           </p>
           <div className="landing-links">
             <a className="primary-button" href="#explorer">
@@ -64,17 +74,35 @@ export function Landing() {
         </div>
         <aside className="landing-note" aria-label="About this release">
           <p className="release-badge">
-            v0.1.0 <span>Release preparation</span>
+            v{version} <span>Release candidate · not published</span>
           </p>
           <p>
             Built for curious engineers, students, and researchers in numerical
             computing and AI hardware.
           </p>
           <p className="muted text-small">
-            Exact FP16, BF16, and FP32 models. Computation-derived traces.
-            Public standards and open-source code.
+            Exact arithmetic models, independently checked results, and
+            inspectable hardware evidence. Public standards and open-source
+            code.
           </p>
         </aside>
+      </div>
+      <div
+        className="showcase-proof-strip"
+        aria-label="Selected verification evidence"
+      >
+        <p>
+          <strong>65,536</strong>
+          <span>FP16 encodings exhaustively checked</span>
+        </p>
+        <p>
+          <strong>536,888</strong>
+          <span>recorded independent SoftFloat operations</span>
+        </p>
+        <p>
+          <strong>7</strong>
+          <span>controlled Nangate45 experiments</span>
+        </p>
       </div>
       <div className="landing-section-heading">
         <h2 id="experiences-heading">Four ways to see the same sixteen bits</h2>
@@ -109,10 +137,66 @@ export function Landing() {
         <a href="#dot-product">Dot Product Precision Lab →</a>
         <a href="#attention">Attention Precision Lab →</a>
       </nav>
-      <p className="landing-context">
-        Why this matters: accelerator workloads combine many small numerical
-        decisions. Explore how representation, spacing, cancellation, and
-        rounding influence a result—without assuming a particular chip design.
+      <nav className="landing-links" aria-label="Hardware and research">
+        <a href="#research">Measured hardware showcase →</a>
+        <a href="#datapath">RTL datapaths and waveforms →</a>
+        <a href={`${repository}/blob/main/docs/CASE_STUDY.md`}>
+          Technical case study →
+        </a>
+        <a href={`${repository}/blob/main/docs/REPRODUCIBILITY.md`}>
+          Reproduce the results →
+        </a>
+      </nav>
+      <div className="showcase-examples" aria-label="Verified examples">
+        <div>
+          <p className="eyebrow">A small input, a visible rounding decision</p>
+          <p>
+            <code>
+              {numericalExamples.conversion.original} →{' '}
+              {numericalExamples.conversion.value}
+            </code>{' '}
+            in FP16 ·{' '}
+            <code>{fp16BitsToHex(numericalExamples.conversion.bits)}</code>
+          </p>
+          <a href="#microscope">Explore the spacing near one →</a>
+        </div>
+        <div>
+          <p className="eyebrow">One rounding preserves a lost residual</p>
+          <p>
+            <code>(1 + 2⁻¹⁰)² − (1 + 2⁻⁹)</code>: fused{' '}
+            <code>
+              2⁻²⁰ ({fp16BitsToHex(numericalExamples.fma.fused.bits)})
+            </code>
+            , nonfused{' '}
+            <code>
+              0 ({fp16BitsToHex(numericalExamples.fma.nonfused.bits)})
+            </code>
+            .
+          </p>
+          <a
+            href="#fma"
+            onClick={() => {
+              if (window.location.hash === '#fma')
+                window.dispatchEvent(new Event('hashchange'))
+            }}
+          >
+            Trace this verified FMA example →
+          </a>
+        </div>
+      </div>
+      <p className="showcase-hardware-preview">
+        Measured baseline FMA:{' '}
+        <strong>{formatMetric(measured!.fused.area)} µm²</strong> /{' '}
+        <strong>{formatMetric(measured!.fused.delay!)} ns</strong>, versus
+        nonfused <strong>{formatMetric(measured!.nonfused.area)} µm²</strong> /{' '}
+        <strong>{formatMetric(measured!.nonfused.delay!)} ns</strong>. One
+        Nangate45 experiment; cell area and constrained timing estimates, not
+        physical chip measurements.
+      </p>
+      <p className="showcase-architecture" aria-label="Architecture overview">
+        Bits and formats <span aria-hidden="true">→</span> exact BigInt
+        arithmetic <span aria-hidden="true">→</span> verified FP16 SystemVerilog{' '}
+        <span aria-hidden="true">→</span> mapped cells and timing
       </p>
       <p className="landing-limits text-small muted">
         Educational floating-point models with nearest-even rounding. No full
