@@ -183,3 +183,9 @@ Try **Lost product residual** (fused `0x0010`, nonfused zero) or **Avoid interme
 ## Hardware Analysis
 
 Open `#hardware` or use the footer link. Compare real generic/mapped counts, cell area, timing, depth, IO, and verification status. Select a baseline or tree-leading-bit experiment with the native selector or table buttons. Inspect its critical-path cell sequence, a separate maximum-depth path, and experimental assumptions. Circles/B identify baselines and diamonds/T the tree variant, with exact text alternatives in the table. Missing timing is labeled unavailable and omitted from the scatterplot. These are recorded, constrained synthesis estimates; the browser does not run tools. See [the methodology and reproduction commands](HARDWARE_SYNTHESIS.md).
+
+## Hardware Datapath Explorer
+
+Use the footer link or `/fp-play/#datapath`. Choose an operation and recorded example, then select logical stages with native buttons or Left/Right/Home/End on the labeled navigation group. The GRS microscope has its own six-step controls. Exact software and actual recorded wires occupy separate labeled columns. Missing nonfused-adder signals remain unavailable; special-value finite defaults are bypassed. Long codes are focusable and scroll without changing stages.
+
+True FMA rounds once; nonfused shows a rounded product and second-rounding adder, with final flag union. Expand full software trace/provenance, inspect source-linked whole-unit synthesis, or open recorded waveforms for signal selection, zoom/pan, exact values and genuine raw VCD downloads. These are logical functions and recorded observations, not physical placement, hardware clocks or live HDL execution. See the [datapath guide](HARDWARE_DATAPATH.md) for examples, evidence layers, supported signals, reproduction and the pending real-browser checklist.

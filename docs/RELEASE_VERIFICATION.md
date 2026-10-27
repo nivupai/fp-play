@@ -87,3 +87,62 @@ Milestone 11 quality checks: lint, Prettier, TypeScript, 74 theme-token contrast
 Strict Verilator 5.052 lint, the original 462,172 add/sub corpus, all 301,544 multiplication/FMA/nonfused triples, both directed VCD flows, and the alternative rounder's entire corpus pass without result/flag/signal mismatches. All seven actual functional measurement wrappers additionally pass strict lint and full raw result/flag corpus replay. A pre-optimization structural check rejects undriven boundary signals. Yosys/ABC map seven controlled Nangate45 configurations; OpenSTA 3.1.0 completes constrained timing for all seven. The checksum-pinned OpenSTA/CUDD builder was tested end to end on macOS ARM64. The changed rounder separately passes combinational formal equivalence (98 proven, zero unproven equivalence cells), without claiming whole-unit IEEE proof. Repeated direct SoftFloat baseline checks pass under the existing documented NaN metadata policy.
 
 [The full methodology](HARDWARE_SYNTHESIS.md) records actual area/delay/depth values, timing endpoints, library/tool source identifiers, raw-report locations, and limits. Per-run manifests capture commands, constraints, source/report hashes, source commit, dirty state, timestamps, seed, and verification evidence. No physical area, power, post-layout timing, silicon, GUI waveform, or rendered-browser verification is claimed. The separate manual-only Linux analysis workflow passes actionlint; no GitHub execution, push, merge, publication, or deployment was performed.
+
+## Milestone 13 verification update
+
+`feature/hardware-datapath-explorer` starts from latest main `135670a`, which
+contains merged Milestone 12. All **473 historical tests**, numerical APIs,
+original RTL, historical simulation/synthesis records, workflow permissions and
+deployment triggers are unchanged. Six bounded pure record/provenance/reference/
+VCD modules, a lazy dedicated workspace, and an offline waveform exporter add no
+runtime or npm dependency. The suite now has **502 tests in 25 files** (29 new),
+passing on **Node 22.9.0 and Node 24.22.0**. Lint, Prettier, TypeScript, 74 theme
+contrast checks, production build, release asset checks and actionlint pass.
+
+All 97 selectable operation/examples (28 add/sub plus 23 shared triples) agree
+with the actual exact engine in raw result bits and every exception flag. They
+also pass **768 available finite internal-signal checks**, using exact grid
+scales and BigInt for wide values. Tests detect bit/flag/GRS corruption, stale
+source hashes, unsupported signal widths, malformed artifacts, missing optional
+data, mismatched synthesis sources, unsafe download paths and VCD inconsistencies.
+Missing nonfused-adder wires remain explicitly unavailable. Two historical
+product midpoint titles are corrected only in presentation using actual retained
+parity/increment; original titles remain inspectable and old artifacts unchanged.
+
+**Verilator 5.052** strict lint, full **462,172-case add/sub** regression and
+**301,544-triple multiply/FMA/nonfused** regression pass with zero mismatches.
+Both directed waveform flows pass (28 and 23). The new exporter checks full and
+directed certificates/source hashes and correlates genuine VCD operands,
+results/flags, GRS/increment, and available magnitude/product observations with
+all 51 recorded sets before writing the curated artifact and raw downloads.
+Normal tests independently reparse both raw VCDs and compare the exported subset.
+Generic multiplier/FMA/comparison synthesis sanity checks also pass with the
+CI-pinned **Yosys 0.70+219 (5053d0e26)**. No RTL arithmetic or synthesis
+architecture changes, new physical measurements, new SoftFloat run, whole-unit
+formal proof or new timing analysis are claimed. Milestone 12 measurements and
+exact library/tool/constraint metadata are reused with core-source compatibility
+checks.
+
+An isolated **Chrome 156.0.8078.48** headless instance was driven using its local
+DevTools protocol and Node's native WebSocket API. Actual rendered desktop
+1440×1200 and mobile-emulated 390×844 / 320×800 checks covered direct `#datapath`
+opening, SVGs, light/dark themes, visible focus outlines, bounded keyboard stage
+controls, native waveform range-arrow behavior, long-code focus isolation,
+emulated touch stage selection, signed zero/NaN/infinity, exact midpoint parity,
+subnormal transition, fused/nonfused residuals, waveform controls and both raw
+VCD URLs. Accessibility-tree checks found labeled combobox/navigation controls;
+no runtime exceptions occurred. Every operation/stage with expanded software,
+provenance/synthesis and waveform details was checked at 320 px. This caught and
+fixed implicit grid minimum-width overflow and long provenance-label wrapping.
+The diagram/long codes scroll internally while the page stays within its client
+width. Actual light desktop and dark mobile screenshots are committed under
+`docs/images/`.
+
+This is not screen-reader certification, physical-device testing, cross-browser
+verification, full contrast sampling or a complete accessibility audit. System
+appearance and 200% zoom also remain manual. Follow the remaining
+[reproducible manual checklist](HARDWARE_DATAPATH.md#browser-verification-and-remaining-manual-checklist).
+Synthesis values are whole-unit mapping/timing estimates; logical blocks and VCD
+observation indices are not physical placement, measured stage delay, hardware
+clocks or latency. No push, merge, deployment, publication or repository-settings
+change was performed.
