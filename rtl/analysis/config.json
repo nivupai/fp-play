@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "toolchain": {
+    "suite": "2026-10-24",
+    "yosys": "Yosys 0.70+219 (git sha1 5053d0e26,"
+  },
+  "library": {
+    "name": "Nangate45 typical",
+    "revision": "64939f3717ad7c694199ba04cb98924b98022868",
+    "url": "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/lib/NangateOpenCellLibrary_typical.lib",
+    "sha256": "8d540a4d4cf6d09d27c87ad067857a9c0c2eeb023ab7a56e058cd3113db4e9b1",
+    "licenseUrl": "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/64939f3717ad7c694199ba04cb98924b98022868/flow/platforms/nangate45/LICENSE",
+    "corner": "typical, 1.10 V, 25 C",
+    "timeUnit": "ns",
+    "capacitanceUnit": "fF",
+    "areaUnit": "library area units (Nangate45 square micrometres)"
+  },
+  "mapping": {
+    "driver": "INV_X1",
+    "outputLoadFf": 10,
+    "abcDelayTargetPs": 1000
+  },
+  "timing": {
+    "virtualClockPeriodNs": 100,
+    "inputDelayNs": 0,
+    "outputDelayNs": 0,
+    "inputTransitionNs": 0.05,
+    "outputLoadFf": 10,
+    "wireModel": "no parasitics; ideal interconnect"
+  },
+  "units": ["add", "mul", "fma", "nonfused"],
+  "variants": ["baseline", "tree-leading-bit"]
+}

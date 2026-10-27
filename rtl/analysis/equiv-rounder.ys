@@ -1,0 +1,14 @@
+# Optional, combinational proof of the changed rounder over all 81-bit magnitudes and signs.
+read_verilog -sv rtl/src/fp16_round_grid48.sv
+rename fp16_round_grid48 baseline_rounder
+read_verilog -sv rtl/variants/tree-leading-bit/fp16_round_grid48.sv
+rename fp16_round_grid48 tree_rounder
+proc
+memory
+opt
+equiv_make baseline_rounder tree_rounder equivalence
+hierarchy -top equivalence
+flatten
+opt
+equiv_simple
+equiv_status -assert

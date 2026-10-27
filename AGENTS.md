@@ -3,7 +3,7 @@
 ## Scope and architecture
 
 - Use **FP Play** as the public project name and `fp-play` as the npm package name and project-specific tool prefix. Preserve the original MIT copyright notice in `LICENSE`.
-- Build incrementally. Milestone 11 extends the original combinational adder with FP16 multiplier, true FMA, and nonfused RTL comparison. Preserve all 430 Milestone 10 tests and public numerical APIs. HLS, transformer hardware, and area/power optimization remain future work.
+- Build incrementally. Milestone 12 adds controlled RTL mapping/timing/depth analysis and a read-only Hardware Analysis view. Preserve all 457 Milestone 11 tests, immutable baseline RTL, and public numerical APIs. HLS, transformer hardware, and area/power optimization remain future work.
 - Use React, strict TypeScript, Vite, Tailwind CSS, Vitest, ESLint, and Prettier. Prefer native platform APIs and keep dependencies minimal.
 - Put reusable UI in `src/components/`, pure numerical code in `src/lib/numerics/`, and tests in `src/tests/`. Keep numerical models independent of React, the DOM, and display formatting.
 - Favor small components, explicit types, deterministic pure functions, and documented module boundaries. Do not introduce routing or state libraries without a concrete need.
@@ -87,3 +87,11 @@
 - Keep the original add/sub source, corpus, tests, and artifact intact. New commands use `make -C rtl -f mul-fma.mk`. Verify at least 100,000 deterministic random triples plus full raw-pattern families, special cross products, independent boundary constants, and the separate lattice oracle. Compare every flag and strict FP Play NaN metadata; direct SoftFloat permits only documented NaN metadata differences.
 - Serialize wide RTL observations as hexadecimal strings and compare with BigInt. Export artifacts only after complete actual simulation, with current source hashes. Keep finite-stage special-path defaults visibly bypassed. Browser inspection is recorded RTL versus explicitly computed software, never live hardware.
 - Attempt generic synthesis with `make -C rtl -f mul-fma.mk synth`, check unsupported constructs/latches/loops, and report actual versions. Do not infer physical cost or timing. Preserve read-only RTL CI and manual-only deployment.
+
+## Hardware analysis conventions
+
+- Follow [the controlled synthesis contract](docs/HARDWARE_SYNTHESIS.md). Use functional-only wrappers in `rtl/analysis/units/`; prune debug outputs consistently. Nonfused must retain real intermediate rounding and exception union. Keep original `rtl/src/` sources and all historical tests unchanged.
+- Analysis/variants belong in `rtl/analysis/` and `rtl/variants/`; pure netlist graph analysis in `src/lib/hardware/`, read-only UI in `src/components/hardware/`. Run `make -C rtl -f analysis.mk analysis` with the pinned suite. Reject stale verification certificates and mismatches before measuring.
+- Every variant needs strict Verilator lint, full deterministic result/flag comparisons, and identical synthesis/library/IO assumptions. Keep combinational rounder equivalence distinct from whole-unit sampled verification and IEEE conformance. No numerical shortcuts are optimization tradeoffs.
+- Download checksum-pinned public libraries/tools into ignored build output; preserve source/license identifiers. Keep raw scripts/netlists/reports/constraints and per-run manifests with commit, dirty state, timestamp, versions, settings, source/report hashes, verification results, and real measurements. Refresh browser artifacts only after actual successful analysis; reject stale hashes in ordinary tests.
+- Cell area is not physical chip area or power; ideal-interconnect OpenSTA delay is not post-layout timing. Graph depth is not delay. Show unavailable values and stage attribution explicitly; do not fabricate metrics, path stages, or optimization wins. Keep expensive analysis manual and separate from frontend CI.

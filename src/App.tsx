@@ -9,6 +9,7 @@ import { Header } from './components/Header'
 import type { ColorTheme } from './components/Header'
 import { Landing } from './components/Landing'
 import { Roadmap } from './components/Roadmap'
+import { HardwareAnalysisEntry } from './components/hardware/HardwareAnalysisEntry'
 
 export default function App() {
   const [theme, setTheme] = useState<ColorTheme>('system')
@@ -26,6 +27,7 @@ export default function App() {
         <FormatComparison />
         <DotProductLab />
         <AttentionLab />
+        <HardwareAnalysisEntry />
         <Roadmap />
         <section
           id="about"
@@ -50,6 +52,7 @@ export default function App() {
         <a href="https://github.com/nivupai/fp-play/blob/main/LICENSE">
           MIT License
         </a>
+        <a href="#hardware">Hardware analysis</a>
         <a href="#main">Back to top ↑</a>
       </footer>
     </div>

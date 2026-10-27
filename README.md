@@ -21,6 +21,8 @@ Milestone 10 adds an original **[FP16 RTL adder/subtractor](rtl/README.md)** wit
 
 Milestone 11 adds **[FP16 multiplier and true FMA RTL](rtl/MULTIPLY_FMA.md)**, a nonfused hardware comparison, exact fixed-width intermediates, generic Yosys synthesis checks, and genuine recorded signal inspection. Each path passes 301,544 RTL triples; direct SoftFloat checks cover 904,632 outputs with all supported flags.
 
+Milestone 12 adds **[Hardware Analysis](docs/HARDWARE_SYNTHESIS.md)** (`#hardware`): controlled Nangate45 cell area, OpenSTA timing, logic depth, baseline/normalization-variant comparisons, real critical-path records, and reproducible source-hashed manifests. It displays recorded results rather than running tools in the browser.
+
 The landing page links directly to each workspace. `#fma` opens a verified example, including on a page reload. Keyboard controls and text alternatives accompany charts and bit diagrams. Light, dark, and system themes share labeled field colors; mathematical meaning never depends on color alone.
 
 FP16 has one sign bit, five exponent bits, ten stored fraction bits, and exponent bias 15. Its eleven-bit normal precision helps explain why alignment, cancellation, accumulation precision, and rounding matter to numerical computing and accelerator workloads. These are educational models, not a particular chip's implementation or timing.
@@ -89,7 +91,7 @@ rtl/                     Original FP16 add/sub/multiply/FMA RTL, simulation, syn
 
 ## Numerical verification
 
-All **430 Milestone 10 tests are preserved unchanged**. The current suite contains **457 tests**, including exhaustive BF16 decoding and midpoint checks, FP32 native conversions, independent BF16/FP32 arithmetic, exact dot references, reduction boundaries, and UI integration. Coverage includes all 65,536 raw binary16 encodings, representable midpoint boundaries, signed zeros, subnormals, infinity/NaN behavior, exhaustive identities/cancellation, deterministic differential cases, exact trace reconstruction, and actual-engine UI/keyboard interaction. CI runs the complete suite on Node 22.9.0 and 24; no numerical coverage or timeout budgets were reduced.
+All **457 Milestone 11 tests are preserved unchanged**. The current suite contains **473 tests**, including exhaustive BF16 decoding and midpoint checks, FP32 native conversions, independent BF16/FP32 arithmetic, exact dot references, reduction boundaries, and UI integration. Coverage includes all 65,536 raw binary16 encodings, representable midpoint boundaries, signed zeros, subnormals, infinity/NaN behavior, exhaustive identities/cancellation, deterministic differential cases, exact trace reconstruction, and actual-engine UI/keyboard interaction. CI runs the complete suite on Node 22.9.0 and 24; no numerical coverage or timeout budgets were reduced.
 
 The Milestone 6 Berkeley SoftFloat reference run compared **536,888 operations with zero mismatches**: 115,936 additions, 115,936 subtractions, 181,476 multiplications, and 123,540 FMAs. Non-NaN bits and all four flags match; 28,618 NaN outputs match quiet classification and flags, with implementation-specific payload/sign selection tested separately. Seven counterexamples have independent lattice checks and another 21 SoftFloat checks. The [verification instructions](src/lib/arithmetic/MULTIPLY_FMA.md#verification-and-reproducible-counterexamples) pin the upstream revision and describe corpus limits. SoftFloat is optional development tooling, not a bundled dependency.
 
@@ -103,7 +105,7 @@ RTL validation completed **462,172 add/subtract transactions with zero mismatche
 
 The release adds a responsive landing page, larger controls, stronger control borders, visible trace stages, keyboard-focusable long-value/plot regions, and direct FMA entry. Static checks cover **74 theme-token pairs**: text contrast is at least **5.46:1**, and the tested control/focus pairs are at least **3.39:1**. DOM tests cover semantic labels, keyboard behavior, links, input states, and real numerical outputs.
 
-**Browser automation is unavailable through Milestone 11; Milestone 7 also had no connected browser.** Actual rendering, mobile/touch behavior, theme/focus appearance, and screen-reader announcements remain unverified. No screenshot or full accessibility-conformance claim is made. The [release verification record](docs/RELEASE_VERIFICATION.md) distinguishes automated evidence from the remaining manual review.
+**Browser automation is unavailable through Milestone 12; Milestone 7 also had no connected browser.** Actual rendering, mobile/touch behavior, theme/focus appearance, and screen-reader announcements remain unverified. No screenshot or full accessibility-conformance claim is made. The [release verification record](docs/RELEASE_VERIFICATION.md) distinguishes automated evidence from the remaining manual review.
 
 ## GitHub Pages readiness
 
@@ -121,7 +123,7 @@ NaN payload selection is a documented FP Play policy. Tininess after rounding us
 
 ## Roadmap and contributing
 
-Milestones 1–6 provide the foundation, numerical engine, representation explorer, precision microscope, arithmetic traces, multiplication, and FMA comparison. **Milestone 7 prepares v0.1.0 for public release; Milestone 8 adds multi-precision representations and accumulation experiments**. **Milestone 9 adds the bounded Attention Precision Lab**. **Milestone 10 adds original FP16 add/subtract RTL and differential verification; Milestone 11 adds multiplier/FMA RTL and generic synthesis checks**. Future work may extend original hardware experiments; these are planned capabilities, not release promises.
+Milestones 1–6 provide the foundation, numerical engine, representation explorer, precision microscope, arithmetic traces, multiplication, and FMA comparison. **Milestone 7 prepares v0.1.0 for public release; Milestone 8 adds multi-precision representations and accumulation experiments**. **Milestone 9 adds the bounded Attention Precision Lab**. **Milestone 10 adds original FP16 add/subtract RTL and differential verification; Milestone 11 adds multiplier/FMA RTL and generic synthesis checks; Milestone 12 adds controlled hardware synthesis and design-space analysis**. Future work may extend original hardware experiments; these are planned capabilities, not release promises.
 
 Contributions improving clarity, accessibility, independent verification, documentation, or carefully scoped experiments are welcome. Follow [CONTRIBUTING.md](CONTRIBUTING.md), preserve numerical tests, and disclose unsupported behavior. [CHANGELOG.md](CHANGELOG.md) records the prepared release.
 

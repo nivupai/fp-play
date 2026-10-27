@@ -1,5 +1,11 @@
 # Changelog
 
+## Milestone 12 — RTL synthesis and design-space analysis
+
+- Reproducible functional-only Yosys/ABC mapping with pinned public Nangate45, constrained OpenSTA timing, graph depth, raw netlists/reports, per-run manifests, and a read-only Hardware Analysis view.
+- Seven measured baseline/normalization-variant configurations; all result/flag/signal comparisons pass. The changed rounder additionally passes two-state combinational formal equivalence.
+- Preserves 457 historical tests, numerical APIs, and original RTL. Cell area/timing are synthesis estimates, not physical implementation, power, or post-layout claims. See [the methodology and actual results](docs/HARDWARE_SYNTHESIS.md).
+
 ## Milestone 11 — FP16 multiplier and true FMA RTL (local preparation)
 
 - Exact 11×11 multiplication, 81-bit exact fused accumulation, shared nearest-even rounder, and nonfused comparison through the unchanged adder.
