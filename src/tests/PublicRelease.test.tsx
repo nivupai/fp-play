@@ -41,27 +41,36 @@ describe('public release entry points and accessibility', () => {
   it('opens an independently verified FMA example through a hash link without resetting the bit explorer', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Sign bit 15' }))
+    // Keep role/label queries inside their workspace instead of traversing every lab.
+    const explorer = within(
+      screen.getByRole('region', { name: 'FP16 Explorer' }),
+    )
+    const arithmetic = within(
+      screen.getByRole('region', { name: 'FP16 Arithmetic Explorer' }),
+    )
+    await user.click(explorer.getByRole('button', { name: 'Sign bit 15' }))
     act(() => {
       window.history.replaceState(null, '', '#fma')
       fireEvent(window, new Event('hashchange'))
     })
-    expect(screen.getByLabelText('Fused output hex')).toHaveTextContent(
+    expect(arithmetic.getByLabelText('Fused output hex')).toHaveTextContent(
       '0x0010',
     )
-    expect(screen.getByLabelText('Nonfused output hex')).toHaveTextContent(
+    expect(arithmetic.getByLabelText('Nonfused output hex')).toHaveTextContent(
       '0x0000',
     )
-    expect(screen.getByLabelText('Hexadecimal')).toHaveTextContent('0xbe00')
-    await user.click(screen.getByRole('button', { name: /^Exact addition/ }))
-    expect(screen.queryByLabelText('Fused output')).not.toBeInTheDocument()
+    expect(explorer.getByLabelText('Hexadecimal')).toHaveTextContent('0xbe00')
+    await user.click(
+      arithmetic.getByRole('button', { name: /^Exact addition/ }),
+    )
+    expect(arithmetic.queryByLabelText('Fused output')).not.toBeInTheDocument()
     const landing = screen.getByRole('navigation', {
       name: 'Four ways to see the same sixteen bits',
     })
     await user.click(
       within(landing).getByRole('link', { name: 'FMA Comparison' }),
     )
-    expect(screen.getByLabelText('Fused output hex')).toHaveTextContent(
+    expect(arithmetic.getByLabelText('Fused output hex')).toHaveTextContent(
       '0x0010',
     )
   })
