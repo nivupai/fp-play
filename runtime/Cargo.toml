@@ -1,0 +1,20 @@
+[package]
+name = "fp-play-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "FP Play runtime: exact simulation of multi-device collectives and their numerical effects"
+license = "MIT"
+publish = false
+
+# Deliberately dependency-free: every number in the recorded artifacts comes from
+# code in this crate, and builds work offline.
+[dependencies]
+
+[profile.release]
+debug = false
+lto = "thin"
+codegen-units = 1
+
+[profile.test]
+opt-level = 2

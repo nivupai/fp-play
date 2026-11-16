@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — runtime milestone R1
+
+- New `runtime/` Rust crate (no dependencies): exact FP16/BF16/FP32 superaccumulator numerics, five message-level AllReduce schedules with a single-port round model and α–β cost estimate, and a row-parallel linear-layer experiment with a recorded, stale-checked artifact.
+- Independent checks: Python `Fraction` sum vectors, host IEEE FP32 add/convert differentials, BF16 bit-rounding oracle, exhaustive FP16/BF16 round trips. New `runtime.yml` CI workflow.
+- Frontend, numerical APIs, RTL and historical records are unchanged.
+
 ## 0.2.0-rc.1 — research showcase candidate (local preparation)
 
 - Compact landing evidence, exact FP16/FMA examples and architecture overview, with entry points to all existing workspaces.
