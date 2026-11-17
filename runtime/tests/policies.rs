@@ -193,3 +193,51 @@ fn policy_names_round_trip() {
     }
     assert_eq!(WirePolicy::parse("nope"), None);
 }
+
+/// Roundings per element derived by hand from each reduction tree: P - 1
+/// additions; under bf16-wire/fp32-add also one BF16 rounding per send of a
+/// partial (P - 1 of them); one rounding to BF16 for the mixed policies.
+/// Exact-gather: one rounding of the exact sum, plus one per input converted
+/// to a narrower wire. With one rank only the output conversion remains.
+fn expected_roundings(policy: WirePolicy, algorithm: Algorithm, world: u32) -> u32 {
+    let mixed = !policy.is_uniform();
+    if world == 1 {
+        return u32::from(mixed);
+    }
+    match (policy, algorithm) {
+        (p, Algorithm::ExactGather) if p == WirePolicy::BF16_WIRE_FP32_ADD => world + 1,
+        (_, Algorithm::ExactGather) => 1,
+        (p, _) if p == WirePolicy::BF16_WIRE_FP32_ADD => 2 * world - 1,
+        (p, _) if p == WirePolicy::FP32_RS_BF16_AG => world,
+        _ => world - 1,
+    }
+}
+
+#[test]
+fn measured_roundings_match_the_hand_derived_counts() {
+    for policy in MIXED
+        .into_iter()
+        .chain([WirePolicy::uniform(Format::Bf16), WirePolicy::uniform(Format::Fp32)])
+    {
+        for world in 1..=16usize {
+            let inputs = if policy.is_uniform() {
+                (0..world).map(|_| vec![0; 37]).collect()
+            } else {
+                fp32_normal_inputs(world, 37, world as u64)
+            };
+            for algorithm in Algorithm::ALL.into_iter().filter(|a| a.supports(world)) {
+                let out = all_reduce_with(algorithm, policy, &inputs).unwrap();
+                let want = expected_roundings(policy, algorithm, world as u32);
+                assert_eq!(
+                    out.roundings_range(),
+                    Some((want, want)),
+                    "{} {algorithm} P={world}",
+                    policy.name()
+                );
+                if policy.is_uniform() {
+                    assert_eq!(want as usize, algorithm.roundings_per_element(world), "R1 formula");
+                }
+            }
+        }
+    }
+}

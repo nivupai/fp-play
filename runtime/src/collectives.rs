@@ -252,6 +252,12 @@ impl Round {
 pub struct AllReduceOutcome {
     /// Final buffer on every rank, in the policy's output format.
     pub results: Vec<Vec<u32>>,
+    /// For every rank and element, the operations that can round in the
+    /// reduction tree of that output value: additions, exact-sum roundings and
+    /// narrowing conversions, counted from the schedule and policy (not from
+    /// whether a given operation happened to be exact). Conversions of the
+    /// inputs made before the collective are not included.
+    pub roundings: Vec<Vec<u32>>,
     pub rounds: Vec<Round>,
     /// Correctly rounded accumulator-format additions performed across all ranks.
     pub additions: usize,
@@ -261,6 +267,13 @@ impl AllReduceOutcome {
     /// True if every rank ended with bit-identical buffers.
     pub fn consistent(&self) -> bool {
         self.results.windows(2).all(|w| w[0] == w[1])
+    }
+
+    /// Smallest and largest rounding count over every rank and element
+    /// (`None` for an empty buffer).
+    pub fn roundings_range(&self) -> Option<(u32, u32)> {
+        let all = self.roundings.iter().flatten();
+        Some((*all.clone().min()?, *all.max()?))
     }
 }
 
@@ -300,11 +313,42 @@ pub fn chunk_range(len: usize, parts: usize, i: usize) -> Range<usize> {
     start..start + base + usize::from(i < extra)
 }
 
+/// Rounding provenance of one buffered value, tracked beside it.
+///
+/// `roundings` counts the operations that can round in the value's whole
+/// reduction tree: every accumulator-format addition, every exact-sum
+/// rounding, and every conversion to a format that does not contain the
+/// value's `exact_in` format. `exact_in` is the narrowest format the value is
+/// known to be exactly representable in, so a BF16 value relayed through an
+/// FP32 buffer and sent on as BF16 again is not counted twice. Counts depend
+/// only on the schedule and the policy, never on the data, and an operation
+/// is counted even when it happens to be exact for particular values.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Track {
+    roundings: u32,
+    exact_in: Format,
+}
+
+impl Track {
+    /// Track of `self` after converting the value to `to`.
+    fn converted(self, to: Format) -> Track {
+        if to.contains(self.exact_in) {
+            self
+        } else {
+            Track {
+                roundings: self.roundings + 1,
+                exact_in: to,
+            }
+        }
+    }
+}
+
 struct Message {
     src: usize,
     dst: usize,
     range: Range<usize>,
     data: Vec<u32>,
+    tracks: Vec<Track>,
 }
 
 struct Simulator {
@@ -312,6 +356,8 @@ struct Simulator {
     /// Every rank's buffer, in the accumulator format (or, once `final_output`
     /// is set, already in the output format).
     buffers: Vec<Vec<u32>>,
+    /// Rounding provenance of every buffered value (never affects values).
+    tracks: Vec<Vec<Track>>,
     rounds: Vec<Round>,
     additions: usize,
     /// Set by exact-gather, which rounds straight to the output format.
@@ -320,9 +366,14 @@ struct Simulator {
 
 impl Simulator {
     fn new(policy: WirePolicy, inputs: &[Vec<u32>]) -> Simulator {
+        let fresh = Track {
+            roundings: 0,
+            exact_in: policy.accumulator,
+        };
         Simulator {
             policy,
             buffers: inputs.to_vec(),
+            tracks: inputs.iter().map(|b| vec![fresh; b.len()]).collect(),
             rounds: Vec::new(),
             additions: 0,
             final_output: false,
@@ -358,20 +409,36 @@ impl Simulator {
                     .iter()
                     .map(|&v| transcode(acc, wire, v))
                     .collect(),
+                tracks: self.tracks[*src][range.clone()]
+                    .iter()
+                    .map(|t| t.converted(wire))
+                    .collect(),
             })
             .collect();
         for m in &messages {
             let target = &mut self.buffers[m.dst][m.range.clone()];
+            let target_tracks = &mut self.tracks[m.dst][m.range.clone()];
             match kind {
                 TransferKind::Reduce => {
                     for (local, &incoming) in target.iter_mut().zip(&m.data) {
                         *local = ops::add(acc, *local, transcode(wire, acc, incoming));
+                    }
+                    for (local, incoming) in target_tracks.iter_mut().zip(&m.tracks) {
+                        // Widening the payload back to the accumulator is exact.
+                        let incoming = incoming.converted(acc);
+                        *local = Track {
+                            roundings: local.roundings + incoming.roundings + 1,
+                            exact_in: acc,
+                        };
                     }
                     self.additions += m.data.len();
                 }
                 TransferKind::Gather => {
                     for (local, &incoming) in target.iter_mut().zip(&m.data) {
                         *local = transcode(wire, acc, incoming);
+                    }
+                    for (local, incoming) in target_tracks.iter_mut().zip(&m.tracks) {
+                        *local = incoming.converted(acc);
                     }
                 }
             }
@@ -560,30 +627,50 @@ impl Simulator {
             });
         }
         debug_assert!(have.iter().all(|row| row.iter().all(|&h| h)));
+        // Every input's provenance, after its conversion to the wire, plus the
+        // one rounding of the exact sum.
+        let output = self.policy.output;
+        let summed: Vec<Track> = (0..len)
+            .map(|e| Track {
+                roundings: self.tracks.iter().map(|t| t[e].converted(wire).roundings).sum::<u32>() + 1,
+                exact_in: output,
+            })
+            .collect();
         for r in 0..n {
             for e in 0..len {
                 let mut sum = ExactSum::new();
                 for input in &gathered {
                     sum.add_raw(wire, input[e]);
                 }
-                self.buffers[r][e] = sum.round(self.policy.output);
+                self.buffers[r][e] = sum.round(output);
             }
+            self.tracks[r].clone_from(&summed);
         }
         self.final_output = true;
     }
 
     fn into_outcome(self) -> AllReduceOutcome {
         let (acc, output) = (self.policy.accumulator, self.policy.output);
-        let results = if self.final_output {
-            self.buffers
+        let (results, tracks) = if self.final_output {
+            (self.buffers, self.tracks)
         } else {
-            self.buffers
-                .into_iter()
-                .map(|b| b.into_iter().map(|v| transcode(acc, output, v)).collect())
-                .collect()
+            (
+                self.buffers
+                    .into_iter()
+                    .map(|b| b.into_iter().map(|v| transcode(acc, output, v)).collect())
+                    .collect(),
+                self.tracks
+                    .into_iter()
+                    .map(|t| t.into_iter().map(|t| t.converted(output)).collect())
+                    .collect(),
+            )
         };
         AllReduceOutcome {
             results,
+            roundings: tracks
+                .into_iter()
+                .map(|t| t.into_iter().map(|t| t.roundings).collect())
+                .collect(),
             rounds: self.rounds,
             additions: self.additions,
         }

@@ -237,3 +237,33 @@ fn special_values_and_zero_signs() {
     assert_eq!(from_f64(Format::Fp16, 1e-300), 0x0000);
     assert_eq!(from_f64(Format::Fp16, -1e300), 0xfc00);
 }
+
+#[test]
+fn format_containment_matches_exhaustive_round_trips() {
+    // A 16-bit format is contained in a target exactly when every one of its
+    // non-NaN patterns survives a round trip through the target.
+    for source in [Format::Fp16, Format::Bf16] {
+        for target in Format::ALL {
+            let survives = (0..=source.max_raw())
+                .filter(|&raw| !is_nan(source, raw))
+                .all(|raw| convert(target, source, convert(source, target, raw)) == raw);
+            assert_eq!(
+                target.contains(source),
+                survives,
+                "{} in {}",
+                source.name(),
+                target.name()
+            );
+        }
+    }
+    // FP32 is contained only in itself: 1 + 2^-23 has no 16-bit encoding.
+    let one_plus_ulp = 0x3f80_0001;
+    assert!(Format::Fp32.contains(Format::Fp32));
+    for target in [Format::Fp16, Format::Bf16] {
+        assert!(!target.contains(Format::Fp32));
+        assert_ne!(
+            convert(target, Format::Fp32, convert(Format::Fp32, target, one_plus_ulp)),
+            one_plus_ulp
+        );
+    }
+}

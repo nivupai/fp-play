@@ -130,6 +130,15 @@ impl Format {
             self.width()
         );
     }
+
+    /// True if every value of `other` is exactly representable in `self`
+    /// (so converting from `other` to `self` never rounds).
+    pub const fn contains(self, other: Format) -> bool {
+        matches!(
+            (self, other),
+            (Format::Fp32, _) | (Format::Bf16, Format::Bf16) | (Format::Fp16, Format::Fp16)
+        )
+    }
 }
 
 /// A nonzero finite value `(-1)^negative × significand × 2^exponent`.
