@@ -31,14 +31,14 @@ round  6 [all-gather] 0→1 (2)  1→2 (2)  2→3 (2)  3→0 (2)
 
 ## What it models
 
-| Module | Role |
-| --- | --- |
-| `format` | FP16 / BF16 / FP32 encodings, exact decoding, ulp distance |
-| `exact` | 768-bit fixed-point superaccumulator; **one** round-to-nearest-even per operation, with gradual underflow and overflow |
-| `ops` | add, convert, exact products, sequential fused-chain dot, exact dot |
-| `collectives` | sequential chain, ring, binomial tree, halving-doubling (Rabenseifner), exact-gather — executed as synchronous rounds over virtual ranks |
-| `cost` | α–β estimate: per round, latency + largest message / bandwidth |
-| `tensor_parallel` | row-parallel `Y = X·W` (BF16 inputs, FP32 local accumulation) AllReduced in a chosen wire format |
+| Module            | Role                                                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`          | FP16 / BF16 / FP32 encodings, exact decoding, ulp distance                                                                               |
+| `exact`           | 768-bit fixed-point superaccumulator; **one** round-to-nearest-even per operation, with gradual underflow and overflow                   |
+| `ops`             | add, convert, exact products, sequential fused-chain dot, exact dot                                                                      |
+| `collectives`     | sequential chain, ring, binomial tree, halving-doubling (Rabenseifner), exact-gather — executed as synchronous rounds over virtual ranks |
+| `cost`            | α–β estimate: per round, latency + largest message / bandwidth                                                                           |
+| `tensor_parallel` | row-parallel `Y = X·W` (BF16 inputs, FP32 local accumulation) AllReduced in a chosen wire format                                         |
 
 Every addition a simulated rank performs is a real correctly rounded addition
 in the wire format. The association order comes from the schedule being

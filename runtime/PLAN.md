@@ -51,6 +51,7 @@ run tensor-parallel across virtual devices inside the R2 runtime, with the
 exact numerics from R1.
 
 Headline experiments:
+
 - Does greedy decoding diverge across P, AllReduce schedule, or **batch
   composition** (batch invariance)? After how many tokens?
 - What does making it deterministic cost in latency?
