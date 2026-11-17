@@ -175,15 +175,16 @@ pub struct ExperimentResult {
 
 /// Evaluate `f(token)` for every token in parallel; output is token-ordered, so
 /// results do not depend on thread scheduling.
-fn per_token<F>(tokens: usize, f: F) -> Vec<Vec<u32>>
+fn per_token<T, F>(tokens: usize, f: F) -> Vec<T>
 where
-    F: Fn(usize) -> Vec<u32> + Sync,
+    T: Send,
+    F: Fn(usize) -> T + Sync,
 {
     let threads = thread::available_parallelism()
         .map_or(1, |n| n.get())
         .min(tokens)
         .max(1);
-    let mut rows: Vec<Vec<u32>> = vec![Vec::new(); tokens];
+    let mut rows: Vec<Option<T>> = (0..tokens).map(|_| None).collect();
     thread::scope(|scope| {
         let f = &f;
         let handles: Vec<_> = (0..threads)
@@ -191,51 +192,105 @@ where
             .collect();
         for h in handles {
             for (m, row) in h.join().expect("worker panicked") {
-                rows[m] = row;
+                rows[m] = Some(row);
             }
         }
     });
-    rows
+    rows.into_iter().map(|r| r.expect("every token computed")).collect()
 }
 
-pub fn run(config: &ExperimentConfig) -> Result<ExperimentResult, String> {
+/// The expensive part of an experiment on one configuration, shared by every
+/// analysis of it: the exact dot products, the unsharded FP32 kernel, and the
+/// FP32 partial sums for every world size. All are token-major
+/// (`tokens × outputs` elements).
+pub struct Prepared {
+    /// Exact dot product of every output element (round with [`ExactSum::round`]).
+    pub exact: Vec<ExactSum>,
+    /// The FP32 fused-chain kernel run over the whole hidden dimension.
+    pub single_fp32: Vec<u32>,
+    /// `(world, partials)`, in `config.world_sizes` order; `partials[r]` is
+    /// rank `r`'s FP32 partial over its contiguous slice of the hidden dimension.
+    pub partials: Vec<(usize, Vec<Vec<u32>>)>,
+}
+
+impl Prepared {
+    /// The exact dot products rounded once to `format`.
+    pub fn exact_in(&self, format: Format) -> Vec<u32> {
+        self.exact.iter().map(|s| s.round(format)).collect()
+    }
+}
+
+pub fn prepare(config: &ExperimentConfig) -> Result<Prepared, String> {
     config.validate()?;
     let problem = generate(config);
     let (tokens, hidden, outputs) = (config.tokens, config.hidden, config.outputs);
     let x_row = |m: usize| &problem.activations[m * hidden..(m + 1) * hidden];
     let w_col = |n: usize| &problem.weights[n * hidden..(n + 1) * hidden];
 
-    // Exact references, one ExactSum per element rounded to each wire format.
-    let exact_rows = per_token(tokens, |m| {
-        let mut row = Vec::with_capacity(outputs * config.wire_formats.len());
-        for n in 0..outputs {
-            let mut sum = ExactSum::new();
-            for (&a, &b) in x_row(m).iter().zip(w_col(n)) {
-                sum.add_value(exact_product(INPUT_FORMAT, a, INPUT_FORMAT, b));
-            }
-            row.extend(config.wire_formats.iter().map(|&wire| sum.round(wire)));
-        }
-        row
-    });
+    // One ExactSum per element (rounded later to whatever format is needed).
+    let exact: Vec<ExactSum> = per_token(tokens, |m| {
+        (0..outputs)
+            .map(|n| {
+                let mut sum = ExactSum::new();
+                for (&a, &b) in x_row(m).iter().zip(w_col(n)) {
+                    sum.add_value(exact_product(INPUT_FORMAT, a, INPUT_FORMAT, b));
+                }
+                sum
+            })
+            .collect::<Vec<_>>()
+    })
+    .concat();
     let single_fp32: Vec<u32> = per_token(tokens, |m| {
         (0..outputs)
             .map(|n| fused_chain_dot(LOCAL_ACCUMULATOR, INPUT_FORMAT, x_row(m), w_col(n)))
-            .collect()
+            .collect::<Vec<u32>>()
     })
     .concat();
+    let partials = config
+        .world_sizes
+        .iter()
+        .map(|&world| {
+            let partials: Vec<Vec<u32>> = (0..world)
+                .map(|r| {
+                    let slice = chunk_range(hidden, world, r);
+                    per_token(tokens, |m| {
+                        (0..outputs)
+                            .map(|n| {
+                                fused_chain_dot(
+                                    LOCAL_ACCUMULATOR,
+                                    INPUT_FORMAT,
+                                    &x_row(m)[slice.clone()],
+                                    &w_col(n)[slice.clone()],
+                                )
+                            })
+                            .collect::<Vec<u32>>()
+                    })
+                    .concat()
+                })
+                .collect();
+            (world, partials)
+        })
+        .collect();
+    Ok(Prepared {
+        exact,
+        single_fp32,
+        partials,
+    })
+}
 
-    let wires = config.wire_formats.len();
-    let exact_for = |wi: usize| -> Vec<u32> {
-        exact_rows
-            .iter()
-            .flat_map(|row| row.iter().skip(wi).step_by(wires).copied())
-            .collect()
-    };
+pub fn run(config: &ExperimentConfig) -> Result<ExperimentResult, String> {
+    run_prepared(config, &prepare(config)?)
+}
+
+/// The R1 experiment (results/tp-allreduce.*) on prepared data.
+pub fn run_prepared(config: &ExperimentConfig, prepared: &Prepared) -> Result<ExperimentResult, String> {
+    let (tokens, outputs) = (config.tokens, config.outputs);
     let mut baselines = Vec::new();
     let mut references = Vec::new();
-    for (wi, &wire) in config.wire_formats.iter().enumerate() {
-        let exact = exact_for(wi);
-        let single: Vec<u32> = single_fp32
+    for &wire in &config.wire_formats {
+        let exact = prepared.exact_in(wire);
+        let single: Vec<u32> = prepared
+            .single_fp32
             .iter()
             .map(|&v| convert(LOCAL_ACCUMULATOR, wire, v))
             .collect();
@@ -247,27 +302,8 @@ pub fn run(config: &ExperimentConfig) -> Result<ExperimentResult, String> {
     }
 
     let mut worlds = Vec::new();
-    for &world in &config.world_sizes {
-        // FP32 partial sums: partials[r] holds tokens × outputs values.
-        let partials: Vec<Vec<u32>> = (0..world)
-            .map(|r| {
-                let slice = chunk_range(hidden, world, r);
-                per_token(tokens, |m| {
-                    (0..outputs)
-                        .map(|n| {
-                            fused_chain_dot(
-                                LOCAL_ACCUMULATOR,
-                                INPUT_FORMAT,
-                                &x_row(m)[slice.clone()],
-                                &w_col(n)[slice.clone()],
-                            )
-                        })
-                        .collect()
-                })
-                .concat()
-            })
-            .collect();
-
+    for (world, partials) in &prepared.partials {
+        let world = *world;
         for (wi, &wire) in config.wire_formats.iter().enumerate() {
             let (exact, single) = &references[wi];
             let inputs: Vec<Vec<u32>> = partials

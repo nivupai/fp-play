@@ -6,9 +6,10 @@ use fp_play_runtime::collectives::{all_reduce_with, Algorithm, WirePolicy};
 use fp_play_runtime::cost::{estimate_recorded, LinkModel};
 use fp_play_runtime::format::{to_f64, Format};
 use fp_play_runtime::ops::from_f64;
+use fp_play_runtime::policies;
 use fp_play_runtime::report;
 use fp_play_runtime::rng::SplitMix64;
-use fp_play_runtime::tensor_parallel::{run, ExperimentConfig};
+use fp_play_runtime::tensor_parallel::{prepare, run_prepared, ExperimentConfig};
 
 const USAGE: &str = "\
 fp-play-runtime — exact simulation of AllReduce numerics
@@ -17,8 +18,8 @@ USAGE:
   fp-play-runtime experiment [--tokens N] [--hidden N] [--outputs N]
                              [--world 2,3,4,8] [--wire fp32,bf16] [--seed N]
                              [--latency-us X] [--bandwidth-gbps X] [--out DIR]
-      Run the tensor-parallel experiment; write tp-allreduce.json and
-      tp-allreduce.md to DIR (default: results).
+      Run the tensor-parallel experiments; write tp-allreduce.{json,md}
+      (R1) and r1.1-policies.{json,md} (R1.1) to DIR (default: results).
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
@@ -143,15 +144,30 @@ fn experiment(args: &[String]) -> Result<(), String> {
         .chain(args.iter().cloned())
         .collect::<Vec<_>>()
         .join(" ");
-    let result = run(&config)?;
+    let prepared = prepare(&config)?;
+    let result = run_prepared(&config, &prepared)?;
+    let policies = policies::run_prepared(&config, &prepared)?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
-    let json_path = out.join("tp-allreduce.json");
-    let md_path = out.join("tp-allreduce.md");
-    fs::write(&json_path, report::to_json(&result, &command).to_pretty()).map_err(|e| e.to_string())?;
-    let markdown = report::to_markdown(&result, &command);
-    fs::write(&md_path, &markdown).map_err(|e| e.to_string())?;
-    print!("{markdown}");
-    eprintln!("wrote {} and {}", json_path.display(), md_path.display());
+    let artifacts = [
+        (
+            "tp-allreduce",
+            report::to_json(&result, &command).to_pretty(),
+            report::to_markdown(&result, &command),
+        ),
+        (
+            "r1.1-policies",
+            report::policies_to_json(&policies, &command).to_pretty(),
+            report::policies_to_markdown(&policies, &command),
+        ),
+    ];
+    for (name, json, markdown) in artifacts {
+        let json_path = out.join(format!("{name}.json"));
+        let md_path = out.join(format!("{name}.md"));
+        fs::write(&json_path, json).map_err(|e| e.to_string())?;
+        fs::write(&md_path, &markdown).map_err(|e| e.to_string())?;
+        print!("{markdown}");
+        eprintln!("wrote {} and {}", json_path.display(), md_path.display());
+    }
     Ok(())
 }
 

@@ -17,6 +17,7 @@ pub mod exact;
 pub mod format;
 pub mod json;
 pub mod ops;
+pub mod policies;
 pub mod report;
 pub mod rng;
 pub mod tensor_parallel;
