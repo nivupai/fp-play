@@ -79,3 +79,20 @@ fn recorded_artifact_is_current() {
         "results/tp-allreduce.md is stale; re-run the documented command"
     );
 }
+
+/// FNV-1a, 64-bit.
+fn fnv1a(bytes: &[u8]) -> u64 {
+    bytes.iter().fold(0xcbf2_9ce4_8422_2325, |h, &b| {
+        (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
+    })
+}
+
+#[test]
+fn r1_json_artifact_is_frozen() {
+    // results/tp-allreduce.json must stay byte-identical to the file recorded
+    // in R1 (commit 627f532): later milestones add new artifacts instead.
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/results/tp-allreduce.json");
+    let bytes = std::fs::read(path).expect("results/tp-allreduce.json missing");
+    assert_eq!(bytes.len(), 42_647, "tp-allreduce.json changed size");
+    assert_eq!(fnv1a(&bytes), 0xd421_f8f0_3664_4728, "tp-allreduce.json changed");
+}

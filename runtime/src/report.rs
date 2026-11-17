@@ -165,7 +165,9 @@ Each device accumulates its slice in FP32 (exact products, one rounding per term
 and the partials are AllReduced. {} output elements per run. All arithmetic is exact with one round-to-nearest-even per modeled operation.\n\n",
         c.tokens, c.hidden, c.hidden, c.outputs, c.seed, n
     ));
-    md.push_str("Columns: **≠ exact** — elements differing from the exact dot product rounded once to the wire format; \
+    md.push_str("Columns: **roundings/elem** — roundings each output element undergoes inside the collective \
+(not counting the conversion of the partials to the wire format before it; see the last section); \
+**≠ exact** — elements differing from the exact dot product rounded once to the wire format; \
 **≠ 1-device** — elements differing from the same FP32 kernel run unsharded on one device; \
 **rel. RMS err** — ‖Y − Y_exact‖₂ / ‖Y_exact‖₂ computed in binary64 (a display estimate; per-element ulp statistics are in the JSON); **top-1 Δ** — tokens whose argmax output changes vs 1-device; **est. µs** — α–β estimate (");
     md.push_str(&format!(
@@ -202,7 +204,10 @@ and the partials are AllReduced. {} output elements per run. All arithmetic is e
             }
         }
         md.push('\n');
-        md.push_str("Pairwise disagreement between algorithms at the same P (elements whose bits differ):\n\n");
+        md.push_str(
+            "Pairwise disagreement between the four reduction schedules at the same P (elements whose bits differ; \
+pairs that include exact-gather are in the JSON):\n\n",
+        );
         for w in result.worlds.iter().filter(|w| w.wire == wire) {
             let parts: Vec<String> = w
                 .pairwise_mismatches
@@ -216,8 +221,12 @@ and the partials are AllReduced. {} output elements per run. All arithmetic is e
     }
 
     md.push_str("## What this does and does not show\n\n");
-    md.push_str("- Every algorithm performs the same number of wire-format roundings per element (P − 1) except exact-gather (one); \
-the differences come only from association order, which each schedule fixes differently. Ring folds every chunk starting at a different rank.\n");
+    md.push_str("- Inside the collective, every reduction schedule performs the same number of wire-format roundings per element \
+(P − 1 additions) and exact-gather performs one; the differences between schedules come only from association order, \
+which each schedule fixes differently. Ring folds every chunk starting at a different rank.\n");
+    md.push_str("- Before the collective, each device's FP32 partial is converted to the wire format: exact for the FP32 wire, \
+but one rounding of each of the P partials for the BF16 wire. That conversion, not the collective, is why BF16 exact-gather \
+stays far from the single-device baseline even though it rounds only once.\n");
     md.push_str("- exact-gather is topology-independent: for fixed partials its result does not depend on the schedule, at the cost of all-gathering every input.\n");
     md.push_str("- Changing P changes the local partial sums themselves, so no AllReduce can make a sharded run match the unsharded kernel bit for bit.\n");
     md.push_str("- Inputs are synthetic (Irwin–Hall normal, weights scaled by 1/√hidden); the local kernel is one sequential order, not a blocked GEMM; \

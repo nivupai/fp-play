@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — runtime milestone R1.1 (in progress)
+
+- `runtime/results/tp-allreduce.md` regenerated with corrected **text only**: it now defines the roundings/elem column, says the pairwise list covers the four reduction schedules (pairs with exact-gather are in the JSON), and states that the BF16 wire rounds each FP32 partial before the collective. No number changed; `tp-allreduce.json` is byte-identical to R1 and a test pins it.
+
 ## Unreleased — runtime milestone R1
 
 - New `runtime/` Rust crate (no dependencies): exact FP16/BF16/FP32 superaccumulator numerics, five message-level AllReduce schedules with a single-port round model and α–β cost estimate, and a row-parallel linear-layer experiment with a recorded, stale-checked artifact.
