@@ -281,8 +281,25 @@ impl AllReduceOutcome {
 pub enum CollectiveError {
     EmptyWorld,
     RaggedInputs,
-    InvalidRaw { rank: usize, index: usize, raw: u32 },
-    UnsupportedWorld { algorithm: Algorithm, world: usize },
+    InvalidRaw {
+        rank: usize,
+        index: usize,
+        raw: u32,
+    },
+    UnsupportedWorld {
+        algorithm: Algorithm,
+        world: usize,
+    },
+    /// Only ring and halving-doubling have separate reduce-scatter and all-gather phases.
+    NoSeparatePhases {
+        algorithm: Algorithm,
+    },
+    /// An all-gather shard does not match the range its rank owns.
+    ShardLength {
+        rank: usize,
+        expected: usize,
+        got: usize,
+    },
 }
 
 impl fmt::Display for CollectiveError {
@@ -299,11 +316,64 @@ impl fmt::Display for CollectiveError {
             CollectiveError::UnsupportedWorld { algorithm, world } => {
                 write!(f, "{algorithm} does not support a world of {world} ranks")
             }
+            CollectiveError::NoSeparatePhases { algorithm } => {
+                write!(f, "{algorithm} has no separate reduce-scatter and all-gather phases")
+            }
+            CollectiveError::ShardLength { rank, expected, got } => {
+                write!(f, "rank {rank} owns {expected} elements but its shard has {got}")
+            }
         }
     }
 }
 
 impl std::error::Error for CollectiveError {}
+
+/// Element range covered by a contiguous range of chunk indices.
+fn chunk_elements(len: usize, parts: usize, chunks: &Range<usize>) -> Range<usize> {
+    if chunks.is_empty() {
+        0..0
+    } else {
+        chunk_range(len, parts, chunks.start).start..chunk_range(len, parts, chunks.end - 1).end
+    }
+}
+
+/// One round of a plan: (src, dst, chunk-index range sent).
+type ChunkPlan = Vec<(usize, usize, Range<usize>)>;
+
+/// The recursive-halving reduce-scatter over chunk indices for a
+/// power-of-two world `n`: each round's plan, and the chunk range every rank
+/// owns at the end. The simulator executes exactly this schedule.
+fn halving_schedule(n: usize) -> (Vec<ChunkPlan>, Vec<Range<usize>>) {
+    let mut plans = Vec::new();
+    let mut owned: Vec<Range<usize>> = vec![0..n; n];
+    let mut distance = n / 2;
+    while distance >= 1 {
+        let mut plan = Vec::with_capacity(n);
+        let mut next = owned.clone();
+        for r in 0..n {
+            let partner = r ^ distance;
+            let current = owned[r].clone();
+            let mid = (current.start + current.end) / 2;
+            let (keep, give) = if r & distance == 0 {
+                (current.start..mid, mid..current.end)
+            } else {
+                (mid..current.end, current.start..mid)
+            };
+            plan.push((r, partner, give));
+            next[r] = keep;
+        }
+        plans.push(plan);
+        owned = next;
+        distance /= 2;
+    }
+    (plans, owned)
+}
+
+/// Chunk index rank `r` owns after a ring reduce-scatter over `n` ranks: its
+/// last receive completes chunk `r + 1`.
+fn ring_owned_chunk(r: usize, n: usize) -> usize {
+    (r + 1) % n
+}
 
 /// Element range of chunk `i` when `len` elements are split into `parts` near-equal chunks.
 pub fn chunk_range(len: usize, parts: usize, i: usize) -> Range<usize> {
@@ -524,39 +594,17 @@ impl Simulator {
         self.ring_all_gather();
     }
 
-    /// Element range covered by a contiguous range of chunk indices.
-    fn chunk_elements(len: usize, n: usize, chunks: &Range<usize>) -> Range<usize> {
-        if chunks.is_empty() {
-            0..0
-        } else {
-            chunk_range(len, n, chunks.start).start..chunk_range(len, n, chunks.end - 1).end
-        }
-    }
-
     /// Recursive halving; returns the chunk-index range each rank owns afterwards.
     fn halving_reduce_scatter(&mut self) -> Vec<Range<usize>> {
         let n = self.world();
         let len = self.len();
-        let mut owned: Vec<Range<usize>> = vec![0..n; n];
-        let mut distance = n / 2;
-        while distance >= 1 {
-            let mut plan = Vec::with_capacity(n);
-            let mut next = owned.clone();
-            for r in 0..n {
-                let partner = r ^ distance;
-                let current = owned[r].clone();
-                let mid = (current.start + current.end) / 2;
-                let (keep, give) = if r & distance == 0 {
-                    (current.start..mid, mid..current.end)
-                } else {
-                    (mid..current.end, current.start..mid)
-                };
-                plan.push((r, partner, Simulator::chunk_elements(len, n, &give)));
-                next[r] = keep;
-            }
+        let (plans, owned) = halving_schedule(n);
+        for plan in plans {
+            let plan: Vec<_> = plan
+                .into_iter()
+                .map(|(src, dst, give)| (src, dst, chunk_elements(len, n, &give)))
+                .collect();
             self.round("reduce-scatter", TransferKind::Reduce, &plan);
-            owned = next;
-            distance /= 2;
         }
         owned
     }
@@ -568,7 +616,7 @@ impl Simulator {
         let mut distance = 1;
         while distance < n {
             let plan: Vec<_> = (0..n)
-                .map(|r| (r, r ^ distance, Simulator::chunk_elements(len, n, &owned[r])))
+                .map(|r| (r, r ^ distance, chunk_elements(len, n, &owned[r])))
                 .collect();
             self.round("all-gather", TransferKind::Gather, &plan);
             owned = (0..n)
@@ -722,6 +770,161 @@ pub fn all_reduce_with(
             Algorithm::BinomialTree => sim.binomial_tree(),
             Algorithm::HalvingDoubling => sim.halving_doubling(),
             Algorithm::ExactGather => sim.exact_gather(),
+        }
+    }
+    Ok(sim.into_outcome())
+}
+
+/// Result of a reduce-scatter: each rank holds only the fully reduced range it owns.
+#[derive(Clone, Debug)]
+pub struct ReduceScatterOutcome {
+    /// Element range each rank owns; together they partition the buffer.
+    pub owned: Vec<Range<usize>>,
+    /// Each rank's owned values, in the policy's output format.
+    pub shards: Vec<Vec<u32>>,
+    /// Rounding count of every owned value (see [`AllReduceOutcome::roundings`]).
+    pub roundings: Vec<Vec<u32>>,
+    pub rounds: Vec<Round>,
+    pub additions: usize,
+}
+
+impl ReduceScatterOutcome {
+    /// The owned shards placed at their positions in one buffer of `len` elements.
+    pub fn assemble(&self, len: usize) -> Vec<u32> {
+        let mut out = vec![0; len];
+        for (range, shard) in self.owned.iter().zip(&self.shards) {
+            out[range.clone()].copy_from_slice(shard);
+        }
+        out
+    }
+}
+
+fn check_separate_phases(algorithm: Algorithm, world: usize) -> Result<(), CollectiveError> {
+    if !matches!(algorithm, Algorithm::Ring | Algorithm::HalvingDoubling) {
+        return Err(CollectiveError::NoSeparatePhases { algorithm });
+    }
+    if world == 0 {
+        return Err(CollectiveError::EmptyWorld);
+    }
+    if !algorithm.supports(world) {
+        return Err(CollectiveError::UnsupportedWorld { algorithm, world });
+    }
+    Ok(())
+}
+
+/// Element range each rank owns after `algorithm`'s reduce-scatter of a
+/// `len`-element buffer over `world` ranks (ring or halving-doubling).
+pub fn owned_ranges(algorithm: Algorithm, len: usize, world: usize) -> Result<Vec<Range<usize>>, CollectiveError> {
+    check_separate_phases(algorithm, world)?;
+    if world == 1 {
+        // One rank owns the whole buffer.
+        return Ok(std::iter::once(0..len).collect());
+    }
+    Ok(match algorithm {
+        Algorithm::Ring => (0..world)
+            .map(|r| chunk_range(len, world, ring_owned_chunk(r, world)))
+            .collect(),
+        _ => halving_schedule(world)
+            .1
+            .iter()
+            .map(|chunks| chunk_elements(len, world, chunks))
+            .collect(),
+    })
+}
+
+/// The reduce-scatter phase of `algorithm` alone (ring or halving-doubling),
+/// under `policy`. Inputs are in the accumulator format; each rank's owned
+/// range is converted to the output format. The rounds and bits are exactly
+/// those of the corresponding phase of [`all_reduce_with`].
+pub fn reduce_scatter(
+    algorithm: Algorithm,
+    policy: WirePolicy,
+    inputs: &[Vec<u32>],
+) -> Result<ReduceScatterOutcome, CollectiveError> {
+    check_separate_phases(algorithm, inputs.len())?;
+    validate(algorithm, policy.accumulator, inputs)?;
+    let (world, len) = (inputs.len(), inputs[0].len());
+    let owned = owned_ranges(algorithm, len, world)?;
+    let mut sim = Simulator::new(policy, inputs);
+    if world > 1 {
+        match algorithm {
+            Algorithm::Ring => sim.ring_reduce_scatter(),
+            _ => {
+                let chunks = sim.halving_reduce_scatter();
+                debug_assert!(chunks
+                    .iter()
+                    .map(|c| chunk_elements(len, world, c))
+                    .eq(owned.iter().cloned()));
+            }
+        }
+    }
+    let (acc, output) = (policy.accumulator, policy.output);
+    let shards = owned
+        .iter()
+        .enumerate()
+        .map(|(r, range)| {
+            sim.buffers[r][range.clone()]
+                .iter()
+                .map(|&v| transcode(acc, output, v))
+                .collect()
+        })
+        .collect();
+    let roundings = owned
+        .iter()
+        .enumerate()
+        .map(|(r, range)| {
+            sim.tracks[r][range.clone()]
+                .iter()
+                .map(|t| t.converted(output).roundings)
+                .collect()
+        })
+        .collect();
+    Ok(ReduceScatterOutcome {
+        owned,
+        shards,
+        roundings,
+        rounds: sim.rounds,
+        additions: sim.additions,
+    })
+}
+
+/// The all-gather phase of `algorithm` alone: `shards[r]` must hold exactly
+/// the range rank `r` owns after that algorithm's reduce-scatter (see
+/// [`owned_ranges`]). Values are only copied, in `format`, so no bit changes
+/// and no rounding is added.
+pub fn all_gather(
+    algorithm: Algorithm,
+    format: Format,
+    len: usize,
+    shards: &[Vec<u32>],
+) -> Result<AllReduceOutcome, CollectiveError> {
+    let world = shards.len();
+    let owned = owned_ranges(algorithm, len, world)?;
+    for (rank, (range, shard)) in owned.iter().zip(shards).enumerate() {
+        if shard.len() != range.len() {
+            return Err(CollectiveError::ShardLength {
+                rank,
+                expected: range.len(),
+                got: shard.len(),
+            });
+        }
+        if let Some((i, &raw)) = shard.iter().enumerate().find(|(_, &raw)| raw > format.max_raw()) {
+            return Err(CollectiveError::InvalidRaw {
+                rank,
+                index: range.start + i,
+                raw,
+            });
+        }
+    }
+    let mut buffers = vec![vec![0u32; len]; world];
+    for (r, (range, shard)) in owned.iter().zip(shards).enumerate() {
+        buffers[r][range.clone()].copy_from_slice(shard);
+    }
+    let mut sim = Simulator::new(WirePolicy::uniform(format), &buffers);
+    if world > 1 {
+        match algorithm {
+            Algorithm::Ring => sim.ring_all_gather(),
+            _ => sim.doubling_all_gather(halving_schedule(world).1),
         }
     }
     Ok(sim.into_outcome())
