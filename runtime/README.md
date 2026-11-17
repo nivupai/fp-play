@@ -17,7 +17,7 @@ Rust 1.80+; no dependencies, works offline.
 ```sh
 cd runtime
 cargo test --release                              # 23 tests, including the recorded-artifact check
-cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~4 s)
+cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~1 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 ```
 
@@ -51,12 +51,17 @@ of the schedule.
 it): 8 tokens × 4096 hidden × 512 outputs, P ∈ {2, 3, 4, 8}.
 
 - **With two devices every schedule agrees**: there is only one way to add
-  two partials. From P = 3 on they diverge; at P = 8, any two schedules
-  disagree on **51–58% of output elements**, in FP32 and in BF16 alike.
+  two partials. From P = 3 on they diverge; at P = 8, any two of the four
+  reduction schedules (sequential, ring, binomial-tree, halving-doubling)
+  disagree on **51–58% of output elements**, in FP32 and in BF16 alike, and
+  exact-gather disagrees with each of them on 46–52%.
 - **BF16 on the wire**: error against the exact result grows with P for
   every reduction schedule (sequential: 37% of elements wrong at P = 2, 61% at
-  P = 8). Exact-gather stays nearly flat (37% at P = 2, 39–40% from P = 3 to 8) because it rounds once, but at
-  P = 8 each rank sends 4× the bytes that ring does.
+  P = 8). Exact-gather stays nearly flat (37% at P = 2, 39–40% from P = 3 to 8) because the collective itself adds only one rounding, but at P = 8 each
+  rank sends 4× the bytes that ring does. Its floor is not the collective:
+  each FP32 partial is rounded to BF16 before it goes on the wire, which is why
+  exact-gather sits near 39% while the unsharded kernel differs from exact on
+  only 0.05% of elements.
 - **FP32 on the wire**: every schedule is within 4×10⁻⁷ relative RMS error
   of exact, yet the bits still depend on the schedule.
 - **Top-1 changes: 0** of 8 tokens in every configuration. Bit differences at
@@ -66,7 +71,7 @@ it): 8 tokens × 4096 hidden × 512 outputs, P ∈ {2, 3, 4, 8}.
 ## Evidence
 
 - **Independent oracles** — Python `Fraction` reference vectors
-  (`scripts/gen_sum_vectors.py`, 18,000 multi-term sums across all three
+  (`scripts/gen_sum_vectors.py`, 18,000 sums of 1–12 terms across all three
   formats, shares no code with the crate); 400,000 FP32 additions and
   ~400,000 binary64→FP32 conversions against the host's IEEE hardware; BF16
   addition and FP32→BF16 conversion against the standard integer bit-rounding
@@ -75,7 +80,7 @@ it): 8 tokens × 4096 hidden × 512 outputs, P ∈ {2, 3, 4, 8}.
 - **Exhaustive** — all 65,536 FP16 and all 65,536 BF16 patterns round-trip
   through the exact path and through binary64.
 - **Schedules** — exact results on integer data for P = 1…9 and lengths
-  0…37 in every format; the single-port model (each rank sends and receives
+  0, 1, 2, 5, 9, 16 and 37 in every format; the single-port model (each rank sends and receives
   at most one message per round) and the round counts for P = 2…16;
   bandwidth-optimal bytes for ring and halving-doubling; a hand-derived case
   where ring folds each chunk from a different rank.
