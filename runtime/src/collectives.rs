@@ -137,6 +137,58 @@ impl WirePolicy {
     pub fn is_uniform(&self) -> bool {
         *self == WirePolicy::uniform(self.accumulator)
     }
+
+    /// FP32 accumulation and FP32 messages in every reduce phase, one rounding
+    /// to BF16 when a finished value is first sent or output, BF16 messages in
+    /// every gather phase. "rs" names the reduce phases generally: for ring
+    /// and halving-doubling they are the reduce-scatter; for sequential and
+    /// binomial-tree, the chain or tree reduce; for exact-gather, the gather of
+    /// inputs. Reduce phases carry 4 bytes per element instead of 2.
+    pub const FP32_RS_BF16_AG: WirePolicy = WirePolicy {
+        accumulator: Format::Fp32,
+        reduce_wire: Format::Fp32,
+        gather_wire: Format::Bf16,
+        output: Format::Bf16,
+    };
+
+    /// BF16 messages in every phase with FP32 accumulation at each rank: a
+    /// receiver widens the BF16 payload exactly, adds it to its FP32 buffer
+    /// with one FP32 rounding, and the next send rounds the FP32 partial to
+    /// BF16 again. Same bytes as a BF16 wire.
+    pub const BF16_WIRE_FP32_ADD: WirePolicy = WirePolicy {
+        accumulator: Format::Fp32,
+        reduce_wire: Format::Bf16,
+        gather_wire: Format::Bf16,
+        output: Format::Bf16,
+    };
+
+    /// Name used in reports and on the command line.
+    pub fn name(&self) -> String {
+        if self.is_uniform() {
+            self.accumulator.name().to_string()
+        } else if *self == WirePolicy::FP32_RS_BF16_AG {
+            "fp32-rs/bf16-ag".to_string()
+        } else if *self == WirePolicy::BF16_WIRE_FP32_ADD {
+            "bf16-wire/fp32-add".to_string()
+        } else {
+            format!(
+                "acc={},rs={},ag={},out={}",
+                self.accumulator.name(),
+                self.reduce_wire.name(),
+                self.gather_wire.name(),
+                self.output.name()
+            )
+        }
+    }
+
+    /// Parse a uniform format name or one of the named mixed policies.
+    pub fn parse(text: &str) -> Option<WirePolicy> {
+        let text = text.trim();
+        [WirePolicy::FP32_RS_BF16_AG, WirePolicy::BF16_WIRE_FP32_ADD]
+            .into_iter()
+            .find(|p| p.name() == text)
+            .or_else(|| Format::parse(text).map(WirePolicy::uniform))
+    }
 }
 
 /// Convert a raw pattern between formats: a bit copy when the formats are

@@ -2,8 +2,8 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use fp_play_runtime::collectives::{all_reduce, Algorithm};
-use fp_play_runtime::cost::{estimate, LinkModel};
+use fp_play_runtime::collectives::{all_reduce_with, Algorithm, WirePolicy};
+use fp_play_runtime::cost::{estimate_recorded, LinkModel};
 use fp_play_runtime::format::{to_f64, Format};
 use fp_play_runtime::ops::from_f64;
 use fp_play_runtime::report;
@@ -20,9 +20,11 @@ USAGE:
       Run the tensor-parallel experiment; write tp-allreduce.json and
       tp-allreduce.md to DIR (default: results).
 
-  fp-play-runtime schedule --algorithm NAME --world N [--format bf16] [--len N] [--seed N]
+  fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
+                           [--len N] [--seed N]
       Print one AllReduce schedule round by round with its result and cost.
       Algorithms: sequential, ring, binomial-tree, halving-doubling, exact-gather.
+      Policies: fp16, bf16, fp32 (uniform), fp32-rs/bf16-ag, bf16-wire/fp32-add.
 ";
 
 fn main() -> ExitCode {
@@ -155,22 +157,36 @@ fn experiment(args: &[String]) -> Result<(), String> {
 
 fn schedule(args: &[String]) -> Result<(), String> {
     let flags = Flags(args);
-    flags.check_known(&["--algorithm", "--world", "--format", "--len", "--seed"])?;
+    flags.check_known(&["--algorithm", "--world", "--format", "--policy", "--len", "--seed"])?;
     let name = flags.get("--algorithm")?.ok_or("--algorithm is required")?;
     let algorithm = Algorithm::parse(name).ok_or(format!("unknown algorithm `{name}`"))?;
     let world: usize = flags.parse("--world", 4)?;
-    let format = match flags.get("--format")? {
-        None => Format::Bf16,
-        Some(v) => Format::parse(v).ok_or(format!("unknown format `{v}`"))?,
+    let policy = match (flags.get("--format")?, flags.get("--policy")?) {
+        (Some(_), Some(_)) => return Err("give --format or --policy, not both".into()),
+        (None, None) => WirePolicy::uniform(Format::Bf16),
+        (Some(v), None) => WirePolicy::uniform(Format::parse(v).ok_or(format!("unknown format `{v}`"))?),
+        (None, Some(v)) => WirePolicy::parse(v).ok_or(format!("unknown wire policy `{v}`"))?,
     };
+    let (input, output) = (policy.accumulator, policy.output);
     let len: usize = flags.parse("--len", 8)?;
     let mut rng = SplitMix64::new(flags.seed(1)?);
     let inputs: Vec<Vec<u32>> = (0..world)
-        .map(|_| (0..len).map(|_| from_f64(format, rng.next_normalish())).collect())
+        .map(|_| (0..len).map(|_| from_f64(input, rng.next_normalish())).collect())
         .collect();
-    let outcome = all_reduce(algorithm, format, &inputs).map_err(|e| e.to_string())?;
+    let outcome = all_reduce_with(algorithm, policy, &inputs).map_err(|e| e.to_string())?;
     println!("{algorithm}: {}", algorithm.description());
-    println!("world {world}, {len} {} elements per rank\n", format.name());
+    if policy.is_uniform() {
+        println!("world {world}, {len} {} elements per rank\n", input.name());
+    } else {
+        println!(
+            "world {world}, {len} {} elements per rank, wire policy {} (reduce phases {}, gather phases {}, output {})\n",
+            input.name(),
+            policy.name(),
+            policy.reduce_wire.name(),
+            policy.gather_wire.name(),
+            output.name()
+        );
+    }
     for (i, round) in outcome.rounds.iter().enumerate() {
         let transfers: Vec<String> = round
             .transfers
@@ -179,7 +195,7 @@ fn schedule(args: &[String]) -> Result<(), String> {
             .collect();
         println!("round {:>2} [{}] {}", i + 1, round.phase, transfers.join("  "));
     }
-    let shown = |raw: u32| format!("{} ({raw:#06x})", to_f64(format, raw));
+    let shown = |raw: u32| format!("{} ({raw:#06x})", to_f64(output, raw));
     println!(
         "\nrank 0 result: {}",
         outcome.results[0]
@@ -189,7 +205,7 @@ fn schedule(args: &[String]) -> Result<(), String> {
             .join(", ")
     );
     println!("ranks agree: {}", outcome.consistent());
-    let cost = estimate(&outcome.rounds, world, format.bytes(), LinkModel::default());
+    let cost = estimate_recorded(&outcome.rounds, world, LinkModel::default());
     println!(
         "{} rounds, est. {:.3} µs under the default link model",
         cost.rounds, cost.estimated_us
