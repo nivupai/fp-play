@@ -80,20 +80,25 @@ descriptions of any library): `bf16` (R1), `fp32-rs/bf16-ag` (FP32 partials
 and reduce phases, one rounding to BF16, BF16 gather) and
 `bf16-wire/fp32-add` (FP32 additions, every message BF16).
 
-- **`fp32-rs/bf16-ag` is essentially exact**: 0.00–0.10% of elements differ
-  from exact for every schedule and P, against 37–61% for `bf16`. It differs
-  from the ideal for these partials (their exact sum rounded once) on at most
-  0.02% (binomial tree, P = 4). It sends 1.5× the bytes of `bf16` for ring and
-  halving-doubling (2× in the reduce-scatter, equal in the all-gather).
-- **It beats BF16 exact-gather by far**, so the recovery ratio is 283–766%
-  for P = 3…8: BF16 exact-gather still rounds each FP32 partial to BF16, and
-  that input rounding, not the collective, sets its ~39% floor.
-- **`bf16-wire/fp32-add`** (same bytes as `bf16`) helps much less: 26–54% of
-  elements differ from exact. It closes more than the whole gap to BF16
-  exact-gather at P = 3 (158–200%) and for three of four schedules at P = 4
-  (ring: 90%), but only 34–75% at P = 8. Measured on relative RMS error
-  instead of mismatch counts the ratios are lower (63–103% at P = 4). Under exact-gather it equals `bf16`
+Each policy applies to all five schedules: every round is a reduce phase
+(payload combined or summed) or a gather phase (payload copied); the
+results page has the per-schedule table. Only ring and halving-doubling can
+stop after the reduce-scatter.
+
+- **`fp32-rs/bf16-ag` is as good as the ideal**: at P = 8, 55–61% of
+  elements wrong under `bf16` become 0.02% for every reduction schedule,
+  for 1.5× the bytes per rank in a ring AllReduce (2× in the reduce-scatter,
+  equal in the all-gather). Across P = 2…8 it is 0.00–0.10% wrong and closes
+  100% of the gap from `bf16` to the ideal for these partials (their exact sum
+  rounded once to BF16), on mismatch count and on RMS error, except 99.9% for
+  binomial-tree at P = 4.
+- **`bf16-wire/fp32-add`** sends the same bytes as `bf16` and helps much less:
+  26–54% of elements wrong, closing 12–30% of the gap to the ideal (11–29%
+  on RMS error), less as P grows. Under exact-gather it equals `bf16`
   exact-gather bit for bit.
+- **BF16 exact-gather is not the target**: it stays near 39% wrong because it
+  rounds each FP32 partial to BF16 before its one rounding. Ratios against it
+  exceed 100%, so they appear only in the JSON.
 - **Reduce-scatter only**: the owned slices equal the AllReduce output bit for
   bit in every case, at half the rounds and half the estimated time (e.g.
   ring P = 8: 7 rounds, ~14 µs in the illustrative model, versus 14 and ~28).
