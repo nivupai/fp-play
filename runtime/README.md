@@ -13,7 +13,7 @@ cache, continuous batching) is the next milestone — see [PLAN.md](PLAN.md).
 
 ## Run it
 
-Rust 1.80+; no dependencies, works offline.
+Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup installs it on first use; CI installs from the same file). No dependencies; works offline.
 
 ```sh
 cd runtime
