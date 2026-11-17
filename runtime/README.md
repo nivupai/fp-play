@@ -6,8 +6,9 @@ This Rust crate asks what happens when an inference layer is split across
 devices and the partial sums are combined by a collective: which bits change,
 why, and what it costs to make them stop changing.
 
-Milestone **R1** (this crate today) is an exact, message-level AllReduce
-simulator plus a tensor-parallel experiment. The serving runtime (paged KV
+Milestone **R1** is an exact, message-level AllReduce simulator plus a
+tensor-parallel experiment. **R1.1** (in progress) adds mixed wire policies
+and reduce-scatter / all-gather as separate collectives. The serving runtime (paged KV
 cache, continuous batching) is the next milestone — see [PLAN.md](PLAN.md).
 
 ## Run it
@@ -16,9 +17,10 @@ Rust 1.80+; no dependencies, works offline.
 
 ```sh
 cd runtime
-cargo test --release                              # 23 tests, including the recorded-artifact check
-cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~1 s on 10 cores)
+cargo test --release                              # 43 tests, including the recorded-artifact checks
+cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~1.5 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
+cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
 ```
 
 `schedule` prints a schedule round by round:
@@ -31,17 +33,19 @@ round  6 [all-gather] 0→1 (2)  1→2 (2)  2→3 (2)  3→0 (2)
 
 ## What it models
 
-| Module            | Role                                                                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `format`          | FP16 / BF16 / FP32 encodings, exact decoding, ulp distance                                                                               |
-| `exact`           | 768-bit fixed-point superaccumulator; **one** round-to-nearest-even per operation, with gradual underflow and overflow                   |
-| `ops`             | add, convert, exact products, sequential fused-chain dot, exact dot                                                                      |
-| `collectives`     | sequential chain, ring, binomial tree, halving-doubling (Rabenseifner), exact-gather — executed as synchronous rounds over virtual ranks |
-| `cost`            | α–β estimate: per round, latency + largest message / bandwidth                                                                           |
-| `tensor_parallel` | row-parallel `Y = X·W` (BF16 inputs, FP32 local accumulation) AllReduced in a chosen wire format                                         |
+| Module            | Role                                                                                                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`          | FP16 / BF16 / FP32 encodings, exact decoding, ulp distance                                                                                                                                          |
+| `exact`           | 768-bit fixed-point superaccumulator; **one** round-to-nearest-even per operation, with gradual underflow and overflow                                                                              |
+| `ops`             | add, convert, exact products, sequential fused-chain dot, exact dot                                                                                                                                 |
+| `collectives`     | sequential chain, ring, binomial tree, halving-doubling (Rabenseifner), exact-gather — executed as synchronous rounds over virtual ranks; wire policies; reduce-scatter and all-gather on their own |
+| `cost`            | α–β estimate: per round, latency + largest message / bandwidth                                                                                                                                      |
+| `tensor_parallel` | row-parallel `Y = X·W` (BF16 inputs, FP32 local accumulation) AllReduced in a chosen wire format                                                                                                    |
+| `policies`        | R1.1: BF16 output under three wire policies, recovery of exact-gather's accuracy, reduce-scatter-only cost                                                                                          |
 
 Every addition a simulated rank performs is a real correctly rounded addition
-in the wire format. The association order comes from the schedule being
+in the policy's accumulator format, and every message is converted (one
+correct rounding) to its wire format. The association order comes from the schedule being
 executed, not from a separate formula, so the output bits are an observation
 of the schedule.
 
@@ -68,6 +72,32 @@ it): 8 tokens × 4096 hidden × 512 outputs, P ∈ {2, 3, 4, 8}.
   this magnitude did not flip an argmax over 512 outputs here; whether they
   flip greedy decoding over a real vocabulary is an R3 experiment.
 
+## R1.1 result: FP32 where it can help
+
+[`results/r1.1-policies.md`](results/r1.1-policies.md) (and the JSON beside
+it): the same problem, BF16 output, three modeled wire policies (not
+descriptions of any library): `bf16` (R1), `fp32-rs/bf16-ag` (FP32 partials
+and reduce phases, one rounding to BF16, BF16 gather) and
+`bf16-wire/fp32-add` (FP32 additions, every message BF16).
+
+- **`fp32-rs/bf16-ag` is essentially exact**: 0.00–0.10% of elements differ
+  from exact for every schedule and P, against 37–61% for `bf16`. It differs
+  from the ideal for these partials (their exact sum rounded once) on at most
+  0.02% (binomial tree, P = 4). It sends 1.5× the bytes of `bf16` for ring and
+  halving-doubling (2× in the reduce-scatter, equal in the all-gather).
+- **It beats BF16 exact-gather by far**, so the recovery ratio is 283–766%
+  for P = 3…8: BF16 exact-gather still rounds each FP32 partial to BF16, and
+  that input rounding, not the collective, sets its ~39% floor.
+- **`bf16-wire/fp32-add`** (same bytes as `bf16`) helps much less: 26–54% of
+  elements differ from exact. It closes more than the whole gap to BF16
+  exact-gather at P = 3 (158–200%) and for three of four schedules at P = 4
+  (ring: 90%), but only 34–75% at P = 8. Measured on relative RMS error
+  instead of mismatch counts the ratios are lower (63–103% at P = 4). Under exact-gather it equals `bf16`
+  exact-gather bit for bit.
+- **Reduce-scatter only**: the owned slices equal the AllReduce output bit for
+  bit in every case, at half the rounds and half the estimated time (e.g.
+  ring P = 8: 7 rounds, ~14 µs in the illustrative model, versus 14 and ~28).
+
 ## Evidence
 
 - **Independent oracles** — Python `Fraction` reference vectors
@@ -84,8 +114,13 @@ it): 8 tokens × 4096 hidden × 512 outputs, P ∈ {2, 3, 4, 8}.
   at most one message per round) and the round counts for P = 2…16;
   bandwidth-optimal bytes for ring and halving-doubling; a hand-derived case
   where ring folds each chunk from a different rank.
-- **Stale-artifact detection** — a test re-runs the documented command and
-  fails if `results/` differs.
+- **Wire policies** — the uniform policy reproduces R1 exactly against a
+  frozen copy of the R1 simulator (2,898 cases: bits, rounds, transfers,
+  additions); a hand-derived three-rank case for each policy; measured
+  rounding counts per element against hand-derived formulas; all-gather after
+  reduce-scatter equals the AllReduce in bits, rounds and roundings.
+- **Stale-artifact detection** — tests re-run the documented command and fail
+  if `results/` differs; `tp-allreduce.json` is also pinned by size and hash.
 
 ## Limits
 

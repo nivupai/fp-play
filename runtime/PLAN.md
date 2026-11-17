@@ -13,6 +13,10 @@ artifact with stale detection. See [README.md](README.md).
 
 ## R1.1 — Policies people actually choose (small, next)
 
+Progress: PR A (wire policies, reduce-scatter / all-gather, recorded in
+`results/r1.1-policies.*`) is done. PR B (the shard tree and the sweep) is
+next.
+
 - **Wire ≠ accumulator**: BF16 on the wire with FP32 accumulation inside
   reduce-scatter (2× bytes in that phase). Measure how much of exact-gather's
   accuracy it recovers, and at what cost.
