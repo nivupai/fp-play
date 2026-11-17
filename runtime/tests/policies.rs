@@ -98,7 +98,8 @@ fn bf16_wire_with_fp32_add_on_two_ranks_matches_direct_operations() {
     // added in FP32 by rank 1 - c, which rounds the FP32 sum to BF16 once.
     let inputs = fp32_normal_inputs(2, 64, 7);
     let out = all_reduce_with(Algorithm::Ring, WirePolicy::BF16_WIRE_FP32_ADD, &inputs).unwrap();
-    for e in 0..64 {
+    assert_eq!(out.results[0].len(), 64);
+    for (e, &got) in out.results[0].iter().enumerate() {
         let chunk = usize::from(e >= 32);
         let (sender, owner) = (chunk, 1 - chunk);
         let sent = convert(
@@ -107,7 +108,7 @@ fn bf16_wire_with_fp32_add_on_two_ranks_matches_direct_operations() {
             convert(Format::Fp32, Format::Bf16, inputs[sender][e]),
         );
         let sum = add(Format::Fp32, inputs[owner][e], sent);
-        assert_eq!(out.results[0][e], convert(Format::Fp32, Format::Bf16, sum), "e={e}");
+        assert_eq!(got, convert(Format::Fp32, Format::Bf16, sum), "e={e}");
     }
     assert!(out.consistent());
 }
