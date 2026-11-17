@@ -31,6 +31,16 @@ static hosting without server rewrites. Native controls, exact tables and full
 scrollable binary values complement SVGs; light/dark/system themes share labeled
 fields and visible focus states.
 
+## Runtime (Part 2, in progress)
+
+[`runtime/`](runtime/README.md) is a dependency-free Rust crate that carries the
+same exact-arithmetic discipline to multiple devices. Milestone R1 simulates
+sequential, ring, binomial-tree, halving-doubling and exact-gather AllReduce
+schedules message by message and records how they change the output bits of a
+tensor-parallel layer ([recorded result](runtime/results/tp-allreduce.md)).
+A serving runtime (paged KV cache, continuous batching) follows; see the
+[runtime plan](runtime/PLAN.md). Run it with `cd runtime && cargo test --release`.
+
 ## Run in minutes
 
 Use Node **22.9.0** / npm **10.8.3**, or Node **24**, and retain the lockfile.

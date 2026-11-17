@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — runtime milestone R1.1 (in progress)
+
+- Wire policies: a policy names the accumulator, reduce-wire, gather-wire and output formats. Two mixed BF16-output policies are modeled, `fp32-rs/bf16-ag` and `bf16-wire/fp32-add`, and neither is attributed to any library. The uniform policy reproduces R1 bit for bit against a frozen copy of the R1 simulator.
+- Reduce-scatter and all-gather are available as separate collectives (ring and halving-doubling). Per-element rounding counts are now measured from the schedule.
+- New recorded artifact `runtime/results/r1.1-policies.{json,md}`, which is stale-checked like R1's. It leads with absolute error and bytes, and gives the share of the gap from `bf16` to the ideal for these partials (their exact sum rounded once) that each mixed policy closes. The ratio against BF16 exact-gather is in the JSON only. Every policy applies to all five schedules through their reduce and gather phases; the reduce-scatter-only comparison covers ring and halving-doubling.
+- `runtime/results/tp-allreduce.md` regenerated with corrected **text only**: it now defines the roundings/elem column, says the pairwise list covers the four reduction schedules (pairs with exact-gather are in the JSON), and states that the BF16 wire rounds each FP32 partial before the collective. No number changed; `tp-allreduce.json` is byte-identical to R1 and a test pins it.
+
+## Unreleased — runtime milestone R1
+
+- New `runtime/` Rust crate (no dependencies): exact FP16/BF16/FP32 superaccumulator numerics, five message-level AllReduce schedules with a single-port round model and α–β cost estimate, and a row-parallel linear-layer experiment with a recorded, stale-checked artifact.
+- Independent checks: Python `Fraction` sum vectors, host IEEE FP32 add/convert differentials, BF16 bit-rounding oracle, exhaustive FP16/BF16 round trips. New `runtime.yml` CI workflow.
+- Frontend, numerical APIs, RTL and historical records are unchanged.
+
 ## 0.2.0-rc.1 — research showcase candidate (local preparation)
 
 - Compact landing evidence, exact FP16/FMA examples and architecture overview, with entry points to all existing workspaces.

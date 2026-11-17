@@ -1,0 +1,4015 @@
+{
+  "schema": "fp-play-runtime/r1.1-policies/v1",
+  "tool": "fp-play-runtime 0.1.0",
+  "command": "fp-play-runtime experiment --out results",
+  "config": {
+    "tokens": 8,
+    "hidden": 4096,
+    "outputs": 512,
+    "world_sizes": [2, 3, 4, 8],
+    "seed": 16355751,
+    "input_format": "bf16",
+    "local_accumulator": "fp32",
+    "local_kernel": "sequential fused chain: exact products, one rounding per term, start +0",
+    "output_format": "bf16",
+    "policies": [
+      {
+        "name": "bf16",
+        "accumulator": "bf16",
+        "reduce_wire": "bf16",
+        "gather_wire": "bf16",
+        "output": "bf16"
+      },
+      {
+        "name": "fp32-rs/bf16-ag",
+        "accumulator": "fp32",
+        "reduce_wire": "fp32",
+        "gather_wire": "bf16",
+        "output": "bf16"
+      },
+      {
+        "name": "bf16-wire/fp32-add",
+        "accumulator": "fp32",
+        "reduce_wire": "bf16",
+        "gather_wire": "bf16",
+        "output": "bf16"
+      }
+    ],
+    "ideal": "exact sum of the P FP32 partials rounded once to the output format",
+    "recovered_fraction": "(err_bf16 - err_policy) / (err_bf16 - err_ideal), errors against exact; null when err_bf16 <= err_ideal",
+    "vs_bf16_exact_gather_note": "same ratio with bf16 exact-gather as the target; it can exceed 1 because bf16 exact-gather rounds each FP32 partial to BF16 before its one rounding",
+    "phases": [
+      {
+        "algorithm": "sequential",
+        "reduce_phase": "chain reduce to the last rank",
+        "gather_phase": "binomial broadcast",
+        "reduce_scatter_only": false
+      },
+      {
+        "algorithm": "ring",
+        "reduce_phase": "ring reduce-scatter",
+        "gather_phase": "ring all-gather",
+        "reduce_scatter_only": true
+      },
+      {
+        "algorithm": "binomial-tree",
+        "reduce_phase": "binomial-tree reduce to rank 0",
+        "gather_phase": "binomial broadcast",
+        "reduce_scatter_only": false
+      },
+      {
+        "algorithm": "halving-doubling",
+        "reduce_phase": "recursive-halving reduce-scatter",
+        "gather_phase": "recursive-doubling all-gather",
+        "reduce_scatter_only": true
+      },
+      {
+        "algorithm": "exact-gather",
+        "reduce_phase": "all-gather of every input (summed exactly on arrival)",
+        "gather_phase": "none",
+        "reduce_scatter_only": false
+      }
+    ],
+    "rounding": "round-to-nearest, ties-to-even",
+    "link_model": {
+      "latency_us": 2.0,
+      "bandwidth_gbps": 100.0,
+      "note": "illustrative alpha-beta model; not a measurement"
+    }
+  },
+  "elements_per_run": 4096,
+  "single_device_vs_exact": {
+    "mismatched": 2,
+    "mismatched_fraction": 0.00048828125,
+    "max_ulp": 1,
+    "mean_ulp": 0.00048828125,
+    "relative_rms_error": 1.5244040764990188e-5
+  },
+  "runs": [
+    {
+      "world": 2,
+      "ideal_vs_exact": {
+        "mismatched": 2,
+        "mismatched_fraction": 0.00048828125,
+        "max_ulp": 1,
+        "mean_ulp": 0.00048828125,
+        "relative_rms_error": 4.798492939369974e-7
+      },
+      "algorithms": [
+        {
+          "policy": "bf16",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 2,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 2,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 2,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 2,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 2,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 1,
+            "estimated_us": 2.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.523671965647457e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.245760000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.523671965647457e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.523671965647457e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.245760000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.523671965647457e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.523671965647457e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 1,
+            "estimated_us": 2.16384,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1093,
+            "mismatched_fraction": 0.266845703125,
+            "max_ulp": 29467,
+            "mean_ulp": 7.832763671875,
+            "relative_rms_error": 0.0021923617441333893
+          },
+          "vs_ideal": {
+            "mismatched": 1093,
+            "mismatched_fraction": 0.266845703125,
+            "max_ulp": 29467,
+            "mean_ulp": 7.832763671875,
+            "relative_rms_error": 0.0021923605839315
+          },
+          "vs_single_device": {
+            "mismatched": 1093,
+            "mismatched_fraction": 0.266845703125,
+            "max_ulp": 29467,
+            "mean_ulp": 7.832275390625,
+            "relative_rms_error": 0.0021919898802971434
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1078,
+            "mismatched_fraction": 0.26318359375,
+            "max_ulp": 163,
+            "mean_ulp": 0.663818359375,
+            "relative_rms_error": 0.0021050130845608876
+          },
+          "vs_ideal": {
+            "mismatched": 1078,
+            "mismatched_fraction": 0.26318359375,
+            "max_ulp": 163,
+            "mean_ulp": 0.663818359375,
+            "relative_rms_error": 0.0021050118762211668
+          },
+          "vs_single_device": {
+            "mismatched": 1078,
+            "mismatched_fraction": 0.26318359375,
+            "max_ulp": 163,
+            "mean_ulp": 0.663330078125,
+            "relative_rms_error": 0.0021046257804855154
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1066,
+            "mismatched_fraction": 0.26025390625,
+            "max_ulp": 398,
+            "mean_ulp": 0.735595703125,
+            "relative_rms_error": 0.002098830685861919
+          },
+          "vs_ideal": {
+            "mismatched": 1066,
+            "mismatched_fraction": 0.26025390625,
+            "max_ulp": 398,
+            "mean_ulp": 0.736083984375,
+            "relative_rms_error": 0.002098832558402876
+          },
+          "vs_single_device": {
+            "mismatched": 1067,
+            "mismatched_fraction": 0.260498046875,
+            "max_ulp": 398,
+            "mean_ulp": 0.736083984375,
+            "relative_rms_error": 0.0020988877445566995
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1081,
+            "mismatched_fraction": 0.263916015625,
+            "max_ulp": 29467,
+            "mean_ulp": 7.904541015625,
+            "relative_rms_error": 0.0021864263488356214
+          },
+          "vs_ideal": {
+            "mismatched": 1081,
+            "mismatched_fraction": 0.263916015625,
+            "max_ulp": 29467,
+            "mean_ulp": 7.905029296875,
+            "relative_rms_error": 0.0021864281463510925
+          },
+          "vs_single_device": {
+            "mismatched": 1082,
+            "mismatched_fraction": 0.26416015625,
+            "max_ulp": 29467,
+            "mean_ulp": 7.905029296875,
+            "relative_rms_error": 0.0021864811281351432
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "vs_ideal": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.469482421875,
+            "relative_rms_error": 0.0028777833669671876
+          },
+          "vs_single_device": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028775008677499846
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 1,
+            "estimated_us": 2.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "algorithm": "sequential",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "sequential",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 1093,
+            "mismatched_fraction": 0.266845703125,
+            "max_ulp": 29467,
+            "mean_ulp": 7.832763671875,
+            "relative_rms_error": 0.0021923617441333893
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 0.2831800262812089,
+          "recovered_fraction_rms": 0.23821653905554271,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 1078,
+            "mismatched_fraction": 0.26318359375,
+            "max_ulp": 163,
+            "mean_ulp": 0.663818359375,
+            "relative_rms_error": 0.0021050130845608876
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 0.29303547963206306,
+          "recovered_fraction_rms": 0.26857436278439534,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 1066,
+            "mismatched_fraction": 0.26025390625,
+            "max_ulp": 398,
+            "mean_ulp": 0.735595703125,
+            "relative_rms_error": 0.002098830685861919
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 0.3009198423127464,
+          "recovered_fraction_rms": 0.27072304109088957,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1524,
+            "mismatched_fraction": 0.3720703125,
+            "max_ulp": 15072,
+            "mean_ulp": 15.468994140625,
+            "relative_rms_error": 0.0028777829245299922
+          },
+          "policy_vs_exact": {
+            "mismatched": 1081,
+            "mismatched_fraction": 0.263916015625,
+            "max_ulp": 29467,
+            "mean_ulp": 7.904541015625,
+            "relative_rms_error": 0.0021864263488356214
+          },
+          "ideal_vs_exact": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 4.798492939369974e-7
+          },
+          "recovered_fraction_mismatched": 0.29106438896189224,
+          "recovered_fraction_rms": 0.2402793719037233,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1524,
+              "mismatched_fraction": 0.3720703125,
+              "max_ulp": 15072,
+              "mean_ulp": 15.468994140625,
+              "relative_rms_error": 0.0028777829245299922
+            },
+            "recovered_fraction_mismatched": null,
+            "recovered_fraction_rms": null
+          }
+        }
+      ],
+      "reduce_scatter_only": [
+        {
+          "algorithm": "ring",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.04096,
+            "max_bytes_sent_per_rank": 4096,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 8192
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.04096,
+            "max_bytes_sent_per_rank": 4096,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 8192
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.04096,
+            "max_bytes_sent_per_rank": 4096,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 8192
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 1,
+            "estimated_us": 2.04096,
+            "max_bytes_sent_per_rank": 4096,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 8192
+          },
+          "all_reduce": {
+            "rounds": 2,
+            "estimated_us": 4.08192,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 4096,
+            "max_gather_bytes_per_rank": 4096,
+            "total_bytes": 16384
+          }
+        }
+      ]
+    },
+    {
+      "world": 3,
+      "ideal_vs_exact": {
+        "mismatched": 0,
+        "mismatched_fraction": 0.0,
+        "max_ulp": 0,
+        "mean_ulp": 0.0,
+        "relative_rms_error": 0.0
+      },
+      "algorithms": [
+        {
+          "policy": "bf16",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 3,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "vs_ideal": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "vs_single_device": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.0032821853315041787
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 3,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 1856,
+            "mismatched_fraction": 0.453125,
+            "max_ulp": 30350,
+            "mean_ulp": 19.5712890625,
+            "relative_rms_error": 0.0033475474436694963
+          },
+          "vs_ideal": {
+            "mismatched": 1856,
+            "mismatched_fraction": 0.453125,
+            "max_ulp": 30350,
+            "mean_ulp": 19.5712890625,
+            "relative_rms_error": 0.0033475474436694963
+          },
+          "vs_single_device": {
+            "mismatched": 1856,
+            "mismatched_fraction": 0.453125,
+            "max_ulp": 30350,
+            "mean_ulp": 19.5712890625,
+            "relative_rms_error": 0.0033473050044233598
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.10928,
+            "max_bytes_sent_per_rank": 10924,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 3,
+            "collective_min": 2,
+            "collective_max": 2
+          },
+          "vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "vs_ideal": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "vs_single_device": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.0032821853315041787
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 3,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.0027741123738692416
+          },
+          "vs_ideal": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.0027741123738692416
+          },
+          "vs_single_device": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.002773819767323343
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.5244041343160158e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.491520000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.5244041343160158e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.16392,
+            "max_bytes_sent_per_rank": 16386,
+            "max_reduce_bytes_per_rank": 10924,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.5244041343160158e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.491520000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 2,
+            "mismatched_fraction": 0.00048828125,
+            "max_ulp": 1,
+            "mean_ulp": 0.00048828125,
+            "relative_rms_error": 1.5244041343160158e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.32768,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 98304
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 5,
+            "collective_max": 5
+          },
+          "vs_exact": {
+            "mismatched": 1465,
+            "mismatched_fraction": 0.357666015625,
+            "max_ulp": 125,
+            "mean_ulp": 0.85888671875,
+            "relative_rms_error": 0.0026757316753327027
+          },
+          "vs_ideal": {
+            "mismatched": 1465,
+            "mismatched_fraction": 0.357666015625,
+            "max_ulp": 125,
+            "mean_ulp": 0.85888671875,
+            "relative_rms_error": 0.0026757316753327027
+          },
+          "vs_single_device": {
+            "mismatched": 1465,
+            "mismatched_fraction": 0.357666015625,
+            "max_ulp": 125,
+            "mean_ulp": 0.85888671875,
+            "relative_rms_error": 0.0026759483785928828
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 5,
+            "collective_max": 5
+          },
+          "vs_exact": {
+            "mismatched": 1440,
+            "mismatched_fraction": 0.3515625,
+            "max_ulp": 421,
+            "mean_ulp": 0.908203125,
+            "relative_rms_error": 0.002613613909174313
+          },
+          "vs_ideal": {
+            "mismatched": 1440,
+            "mismatched_fraction": 0.3515625,
+            "max_ulp": 421,
+            "mean_ulp": 0.908203125,
+            "relative_rms_error": 0.002613613909174313
+          },
+          "vs_single_device": {
+            "mismatched": 1440,
+            "mismatched_fraction": 0.3515625,
+            "max_ulp": 421,
+            "mean_ulp": 0.90771484375,
+            "relative_rms_error": 0.0026133916329142857
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.10928,
+            "max_bytes_sent_per_rank": 10924,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 5,
+            "collective_max": 5
+          },
+          "vs_exact": {
+            "mismatched": 1365,
+            "mismatched_fraction": 0.333251953125,
+            "max_ulp": 30357,
+            "mean_ulp": 8.256103515625,
+            "relative_rms_error": 0.002337663681813161
+          },
+          "vs_ideal": {
+            "mismatched": 1365,
+            "mismatched_fraction": 0.333251953125,
+            "max_ulp": 30357,
+            "mean_ulp": 8.256103515625,
+            "relative_rms_error": 0.002337663681813161
+          },
+          "vs_single_device": {
+            "mismatched": 1365,
+            "mismatched_fraction": 0.333251953125,
+            "max_ulp": 30357,
+            "mean_ulp": 8.256103515625,
+            "relative_rms_error": 0.0023374161604977827
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 4,
+            "collective_max": 4
+          },
+          "vs_exact": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.0027741123738692416
+          },
+          "vs_ideal": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.0027741123738692416
+          },
+          "vs_single_device": {
+            "mismatched": 1605,
+            "mismatched_fraction": 0.391845703125,
+            "max_ulp": 30350,
+            "mean_ulp": 8.470703125,
+            "relative_rms_error": 0.002773819767323343
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 49152
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "algorithm": "sequential",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "policy_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 7.659751037344399,
+            "recovered_fraction_rms": 6.454375623012127
+          }
+        },
+        {
+          "algorithm": "sequential",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "policy_vs_exact": {
+            "mismatched": 1465,
+            "mismatched_fraction": 0.357666015625,
+            "max_ulp": 125,
+            "mean_ulp": 0.85888671875,
+            "relative_rms_error": 0.0026757316753327027
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 0.20639219934994582,
+          "recovered_fraction_rms": 0.18490295819761782,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 1.5809128630705394,
+            "recovered_fraction_rms": 1.1934331460135348
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1856,
+            "mismatched_fraction": 0.453125,
+            "max_ulp": 30350,
+            "mean_ulp": 19.5712890625,
+            "relative_rms_error": 0.0033475474436694963
+          },
+          "policy_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 7.394422310756972,
+            "recovered_fraction_rms": 5.837709655315555
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1856,
+            "mismatched_fraction": 0.453125,
+            "max_ulp": 30350,
+            "mean_ulp": 19.5712890625,
+            "relative_rms_error": 0.0033475474436694963
+          },
+          "policy_vs_exact": {
+            "mismatched": 1440,
+            "mismatched_fraction": 0.3515625,
+            "max_ulp": 421,
+            "mean_ulp": 0.908203125,
+            "relative_rms_error": 0.002613613909174313
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 0.22413793103448276,
+          "recovered_fraction_rms": 0.2192451479315448,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 1.657370517928287,
+            "recovered_fraction_rms": 1.2798895169610662
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "policy_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 7.659751037344399,
+            "recovered_fraction_rms": 6.454375623012127
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1846,
+            "mismatched_fraction": 0.45068359375,
+            "max_ulp": 15214,
+            "mean_ulp": 12.135986328125,
+            "relative_rms_error": 0.003282715478166863
+          },
+          "policy_vs_exact": {
+            "mismatched": 1365,
+            "mismatched_fraction": 0.333251953125,
+            "max_ulp": 30357,
+            "mean_ulp": 8.256103515625,
+            "relative_rms_error": 0.002337663681813161
+          },
+          "ideal_vs_exact": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "recovered_fraction_mismatched": 0.2605633802816901,
+          "recovered_fraction_rms": 0.28788720881818214,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1605,
+              "mismatched_fraction": 0.391845703125,
+              "max_ulp": 30350,
+              "mean_ulp": 8.470703125,
+              "relative_rms_error": 0.0027741123738692416
+            },
+            "recovered_fraction_mismatched": 1.995850622406639,
+            "recovered_fraction_rms": 1.8581321827730766
+          }
+        }
+      ],
+      "reduce_scatter_only": [
+        {
+          "algorithm": "ring",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.05464,
+            "max_bytes_sent_per_rank": 5462,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.10928,
+            "max_bytes_sent_per_rank": 10924,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 32768
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.10928,
+            "max_bytes_sent_per_rank": 10924,
+            "max_reduce_bytes_per_rank": 10924,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 32768
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.16392,
+            "max_bytes_sent_per_rank": 16386,
+            "max_reduce_bytes_per_rank": 10924,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.05464,
+            "max_bytes_sent_per_rank": 5462,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 16384
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.10928,
+            "max_bytes_sent_per_rank": 10924,
+            "max_reduce_bytes_per_rank": 5462,
+            "max_gather_bytes_per_rank": 5462,
+            "total_bytes": 32768
+          }
+        }
+      ]
+    },
+    {
+      "world": 4,
+      "ideal_vs_exact": {
+        "mismatched": 3,
+        "mismatched_fraction": 0.000732421875,
+        "max_ulp": 1,
+        "mean_ulp": 0.000732421875,
+        "relative_rms_error": 1.5273756272265323e-5
+      },
+      "algorithms": [
+        {
+          "policy": "bf16",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 4,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 2034,
+            "mismatched_fraction": 0.49658203125,
+            "max_ulp": 15354,
+            "mean_ulp": 16.1787109375,
+            "relative_rms_error": 0.0035387878278046498
+          },
+          "vs_ideal": {
+            "mismatched": 2033,
+            "mismatched_fraction": 0.496337890625,
+            "max_ulp": 15354,
+            "mean_ulp": 16.178466796875,
+            "relative_rms_error": 0.0035387529061973177
+          },
+          "vs_single_device": {
+            "mismatched": 2034,
+            "mismatched_fraction": 0.49658203125,
+            "max_ulp": 15354,
+            "mean_ulp": 16.17822265625,
+            "relative_rms_error": 0.003538555429930367
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 5,
+            "estimated_us": 10.409600000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 4,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 2057,
+            "mismatched_fraction": 0.502197265625,
+            "max_ulp": 15271,
+            "mean_ulp": 12.475830078125,
+            "relative_rms_error": 0.0035290333427211704
+          },
+          "vs_ideal": {
+            "mismatched": 2056,
+            "mismatched_fraction": 0.501953125,
+            "max_ulp": 15271,
+            "mean_ulp": 12.4755859375,
+            "relative_rms_error": 0.0035289983237357502
+          },
+          "vs_single_device": {
+            "mismatched": 2058,
+            "mismatched_fraction": 0.50244140625,
+            "max_ulp": 15271,
+            "mean_ulp": 12.475830078125,
+            "relative_rms_error": 0.0035290634454409296
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.122879999999999,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 4,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 1976,
+            "mismatched_fraction": 0.482421875,
+            "max_ulp": 15354,
+            "mean_ulp": 19.805908203125,
+            "relative_rms_error": 0.0034613181394097295
+          },
+          "vs_ideal": {
+            "mismatched": 1976,
+            "mismatched_fraction": 0.482421875,
+            "max_ulp": 15354,
+            "mean_ulp": 19.8056640625,
+            "relative_rms_error": 0.0034614071385558305
+          },
+          "vs_single_device": {
+            "mismatched": 1976,
+            "mismatched_fraction": 0.482421875,
+            "max_ulp": 15354,
+            "mean_ulp": 19.805419921875,
+            "relative_rms_error": 0.003461079485756875
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 4,
+            "collective_min": 3,
+            "collective_max": 3
+          },
+          "vs_exact": {
+            "mismatched": 2020,
+            "mismatched_fraction": 0.4931640625,
+            "max_ulp": 15091,
+            "mean_ulp": 12.414306640625,
+            "relative_rms_error": 0.003513336693885381
+          },
+          "vs_ideal": {
+            "mismatched": 2020,
+            "mismatched_fraction": 0.4931640625,
+            "max_ulp": 15091,
+            "mean_ulp": 12.4140625,
+            "relative_rms_error": 0.003513560659568976
+          },
+          "vs_single_device": {
+            "mismatched": 2021,
+            "mismatched_fraction": 0.493408203125,
+            "max_ulp": 15091,
+            "mean_ulp": 12.414306640625,
+            "relative_rms_error": 0.0035133658974423427
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 4,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1632,
+            "mismatched_fraction": 0.3984375,
+            "max_ulp": 14919,
+            "mean_ulp": 4.8427734375,
+            "relative_rms_error": 0.002637382591485331
+          },
+          "vs_ideal": {
+            "mismatched": 1632,
+            "mismatched_fraction": 0.3984375,
+            "max_ulp": 14919,
+            "mean_ulp": 4.842529296875,
+            "relative_rms_error": 0.00263750893765311
+          },
+          "vs_single_device": {
+            "mismatched": 1633,
+            "mismatched_fraction": 0.398681640625,
+            "max_ulp": 14919,
+            "mean_ulp": 4.8427734375,
+            "relative_rms_error": 0.002637425542898952
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 3,
+            "estimated_us": 6.245760000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 98304
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 4,
+            "collective_max": 4
+          },
+          "vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 2.1568843707725454e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 5,
+            "estimated_us": 10.65536,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 4,
+            "collective_max": 4
+          },
+          "vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 2.1568843707725454e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.18432,
+            "max_bytes_sent_per_rank": 18432,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 4,
+            "collective_max": 4
+          },
+          "vs_exact": {
+            "mismatched": 4,
+            "mismatched_fraction": 0.0009765625,
+            "max_ulp": 1,
+            "mean_ulp": 0.0009765625,
+            "relative_rms_error": 1.5273872235110704e-5
+          },
+          "vs_ideal": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 5.951798241033182e-8
+          },
+          "vs_single_device": {
+            "mismatched": 4,
+            "mismatched_fraction": 0.0009765625,
+            "max_ulp": 1,
+            "mean_ulp": 0.0009765625,
+            "relative_rms_error": 2.1568925825791093e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.491520000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 4,
+            "collective_max": 4
+          },
+          "vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 2.1568843707725454e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.18432,
+            "max_bytes_sent_per_rank": 18432,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 2.1568843707725454e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 3,
+            "estimated_us": 6.4915199999999995,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 196608
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 1608,
+            "mismatched_fraction": 0.392578125,
+            "max_ulp": 30113,
+            "mean_ulp": 15.777099609375,
+            "relative_rms_error": 0.0028681936846801327
+          },
+          "vs_ideal": {
+            "mismatched": 1608,
+            "mismatched_fraction": 0.392578125,
+            "max_ulp": 30113,
+            "mean_ulp": 15.77685546875,
+            "relative_rms_error": 0.002868072830580758
+          },
+          "vs_single_device": {
+            "mismatched": 1608,
+            "mismatched_fraction": 0.392578125,
+            "max_ulp": 30113,
+            "mean_ulp": 15.776611328125,
+            "relative_rms_error": 0.00286790949830286
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 5,
+            "estimated_us": 10.409600000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 1673,
+            "mismatched_fraction": 0.408447265625,
+            "max_ulp": 29843,
+            "mean_ulp": 8.409423828125,
+            "relative_rms_error": 0.0029689486742315273
+          },
+          "vs_ideal": {
+            "mismatched": 1673,
+            "mismatched_fraction": 0.408447265625,
+            "max_ulp": 29843,
+            "mean_ulp": 8.40869140625,
+            "relative_rms_error": 0.002968822461068596
+          },
+          "vs_single_device": {
+            "mismatched": 1673,
+            "mismatched_fraction": 0.408447265625,
+            "max_ulp": 29843,
+            "mean_ulp": 8.409423828125,
+            "relative_rms_error": 0.0029690651210919857
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.122879999999999,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 1498,
+            "mismatched_fraction": 0.36572265625,
+            "max_ulp": 29923,
+            "mean_ulp": 15.59716796875,
+            "relative_rms_error": 0.002614335289030131
+          },
+          "vs_ideal": {
+            "mismatched": 1498,
+            "mismatched_fraction": 0.36572265625,
+            "max_ulp": 29923,
+            "mean_ulp": 15.597900390625,
+            "relative_rms_error": 0.002614482257749398
+          },
+          "vs_single_device": {
+            "mismatched": 1498,
+            "mismatched_fraction": 0.36572265625,
+            "max_ulp": 29923,
+            "mean_ulp": 15.59765625,
+            "relative_rms_error": 0.0026144720106543316
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 1567,
+            "mismatched_fraction": 0.382568359375,
+            "max_ulp": 29736,
+            "mean_ulp": 8.31103515625,
+            "relative_rms_error": 0.002703516035741759
+          },
+          "vs_ideal": {
+            "mismatched": 1567,
+            "mismatched_fraction": 0.382568359375,
+            "max_ulp": 29736,
+            "mean_ulp": 8.310791015625,
+            "relative_rms_error": 0.002703724911400243
+          },
+          "vs_single_device": {
+            "mismatched": 1566,
+            "mismatched_fraction": 0.38232421875,
+            "max_ulp": 29736,
+            "mean_ulp": 8.310546875,
+            "relative_rms_error": 0.002703471147787484
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 5,
+            "collective_max": 5
+          },
+          "vs_exact": {
+            "mismatched": 1632,
+            "mismatched_fraction": 0.3984375,
+            "max_ulp": 14919,
+            "mean_ulp": 4.8427734375,
+            "relative_rms_error": 0.002637382591485331
+          },
+          "vs_ideal": {
+            "mismatched": 1632,
+            "mismatched_fraction": 0.3984375,
+            "max_ulp": 14919,
+            "mean_ulp": 4.842529296875,
+            "relative_rms_error": 0.00263750893765311
+          },
+          "vs_single_device": {
+            "mismatched": 1633,
+            "mismatched_fraction": 0.398681640625,
+            "max_ulp": 14919,
+            "mean_ulp": 4.8427734375,
+            "relative_rms_error": 0.002637425542898952
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 3,
+            "estimated_us": 6.245760000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 98304
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "algorithm": "sequential",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2034,
+            "mismatched_fraction": 0.49658203125,
+            "max_ulp": 15354,
+            "mean_ulp": 16.1787109375,
+            "relative_rms_error": 0.0035387878278046498
+          },
+          "policy_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 5.052238805970149,
+            "recovered_fraction_rms": 3.9089123621245476
+          }
+        },
+        {
+          "algorithm": "sequential",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2034,
+            "mismatched_fraction": 0.49658203125,
+            "max_ulp": 15354,
+            "mean_ulp": 16.1787109375,
+            "relative_rms_error": 0.0035387878278046498
+          },
+          "policy_vs_exact": {
+            "mismatched": 1608,
+            "mismatched_fraction": 0.392578125,
+            "max_ulp": 30113,
+            "mean_ulp": 15.777099609375,
+            "relative_rms_error": 0.0028681936846801327
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 0.20974889217134415,
+          "recovered_fraction_rms": 0.1903197005916523,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 1.0597014925373134,
+            "recovered_fraction_rms": 0.7439430303985521
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2057,
+            "mismatched_fraction": 0.502197265625,
+            "max_ulp": 15271,
+            "mean_ulp": 12.475830078125,
+            "relative_rms_error": 0.0035290333427211704
+          },
+          "policy_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 4.832941176470588,
+            "recovered_fraction_rms": 3.9407352952698003
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2057,
+            "mismatched_fraction": 0.502197265625,
+            "max_ulp": 15271,
+            "mean_ulp": 12.475830078125,
+            "relative_rms_error": 0.0035290333427211704
+          },
+          "policy_vs_exact": {
+            "mismatched": 1673,
+            "mismatched_fraction": 0.408447265625,
+            "max_ulp": 29843,
+            "mean_ulp": 8.409423828125,
+            "relative_rms_error": 0.0029689486742315273
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 0.186952288218111,
+          "recovered_fraction_rms": 0.15939754974974796,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 0.9035294117647059,
+            "recovered_fraction_rms": 0.6281435502783557
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 1976,
+            "mismatched_fraction": 0.482421875,
+            "max_ulp": 15354,
+            "mean_ulp": 19.805908203125,
+            "relative_rms_error": 0.0034613181394097295
+          },
+          "policy_vs_exact": {
+            "mismatched": 4,
+            "mismatched_fraction": 0.0009765625,
+            "max_ulp": 1,
+            "mean_ulp": 0.0009765625,
+            "relative_rms_error": 1.5273872235110704e-5
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 0.9994931576279777,
+          "recovered_fraction_rms": 0.9999999663489983,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 5.732558139534884,
+            "recovered_fraction_rms": 4.182419700006457
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 1976,
+            "mismatched_fraction": 0.482421875,
+            "max_ulp": 15354,
+            "mean_ulp": 19.805908203125,
+            "relative_rms_error": 0.0034613181394097295
+          },
+          "policy_vs_exact": {
+            "mismatched": 1498,
+            "mismatched_fraction": 0.36572265625,
+            "max_ulp": 29923,
+            "mean_ulp": 15.59716796875,
+            "relative_rms_error": 0.002614335289030131
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 0.2422706538266599,
+          "recovered_fraction_rms": 0.24578408058936826,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 1.3895348837209303,
+            "recovered_fraction_rms": 1.0279722151972432
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2020,
+            "mismatched_fraction": 0.4931640625,
+            "max_ulp": 15091,
+            "mean_ulp": 12.414306640625,
+            "relative_rms_error": 0.003513336693885381
+          },
+          "policy_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 5.198453608247423,
+            "recovered_fraction_rms": 3.993431765464285
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2020,
+            "mismatched_fraction": 0.4931640625,
+            "max_ulp": 15091,
+            "mean_ulp": 12.414306640625,
+            "relative_rms_error": 0.003513336693885381
+          },
+          "policy_vs_exact": {
+            "mismatched": 1567,
+            "mismatched_fraction": 0.382568359375,
+            "max_ulp": 29736,
+            "mean_ulp": 8.31103515625,
+            "relative_rms_error": 0.002703516035741759
+          },
+          "ideal_vs_exact": {
+            "mismatched": 3,
+            "mismatched_fraction": 0.000732421875,
+            "max_ulp": 1,
+            "mean_ulp": 0.000732421875,
+            "relative_rms_error": 1.5273756272265323e-5
+          },
+          "recovered_fraction_mismatched": 0.22459097669806644,
+          "recovered_fraction_rms": 0.23150545675893383,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1632,
+              "mismatched_fraction": 0.3984375,
+              "max_ulp": 14919,
+              "mean_ulp": 4.8427734375,
+              "relative_rms_error": 0.002637382591485331
+            },
+            "recovered_fraction_mismatched": 1.1675257731958764,
+            "recovered_fraction_rms": 0.9245012448994449
+          }
+        }
+      ],
+      "reduce_scatter_only": [
+        {
+          "algorithm": "ring",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.06144,
+            "max_bytes_sent_per_rank": 6144,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 24576
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.122879999999999,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.06144,
+            "max_bytes_sent_per_rank": 6144,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 24576
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 49152
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.18432,
+            "max_bytes_sent_per_rank": 18432,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 49152
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.18432,
+            "max_bytes_sent_per_rank": 18432,
+            "max_reduce_bytes_per_rank": 12288,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.06144,
+            "max_bytes_sent_per_rank": 6144,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 24576
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.122879999999999,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 2,
+            "estimated_us": 4.06144,
+            "max_bytes_sent_per_rank": 6144,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 24576
+          },
+          "all_reduce": {
+            "rounds": 4,
+            "estimated_us": 8.12288,
+            "max_bytes_sent_per_rank": 12288,
+            "max_reduce_bytes_per_rank": 6144,
+            "max_gather_bytes_per_rank": 6144,
+            "total_bytes": 49152
+          }
+        }
+      ]
+    },
+    {
+      "world": 8,
+      "ideal_vs_exact": {
+        "mismatched": 1,
+        "mismatched_fraction": 0.000244140625,
+        "max_ulp": 1,
+        "mean_ulp": 0.000244140625,
+        "relative_rms_error": 4.7614383853035637e-7
+      },
+      "algorithms": [
+        {
+          "policy": "bf16",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 8,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 2504,
+            "mismatched_fraction": 0.611328125,
+            "max_ulp": 15091,
+            "mean_ulp": 9.46533203125,
+            "relative_rms_error": 0.004476846682246593
+          },
+          "vs_ideal": {
+            "mismatched": 2504,
+            "mismatched_fraction": 0.611328125,
+            "max_ulp": 15091,
+            "mean_ulp": 9.465576171875,
+            "relative_rms_error": 0.004476846808717176
+          },
+          "vs_single_device": {
+            "mismatched": 2504,
+            "mismatched_fraction": 0.611328125,
+            "max_ulp": 15091,
+            "mean_ulp": 9.46533203125,
+            "relative_rms_error": 0.004476458037216111
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 8,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 2448,
+            "mismatched_fraction": 0.59765625,
+            "max_ulp": 30295,
+            "mean_ulp": 16.7373046875,
+            "relative_rms_error": 0.004275281084544997
+          },
+          "vs_ideal": {
+            "mismatched": 2448,
+            "mismatched_fraction": 0.59765625,
+            "max_ulp": 30295,
+            "mean_ulp": 16.737548828125,
+            "relative_rms_error": 0.004275281216990464
+          },
+          "vs_single_device": {
+            "mismatched": 2449,
+            "mismatched_fraction": 0.597900390625,
+            "max_ulp": 30295,
+            "mean_ulp": 16.73779296875,
+            "relative_rms_error": 0.0042753085299192545
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 14,
+            "estimated_us": 28.143359999999998,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 8,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 2264,
+            "mismatched_fraction": 0.552734375,
+            "max_ulp": 15354,
+            "mean_ulp": 24.00146484375,
+            "relative_rms_error": 0.00388620458082182
+          },
+          "vs_ideal": {
+            "mismatched": 2264,
+            "mismatched_fraction": 0.552734375,
+            "max_ulp": 15354,
+            "mean_ulp": 24.001708984375,
+            "relative_rms_error": 0.0038862047265515523
+          },
+          "vs_single_device": {
+            "mismatched": 2264,
+            "mismatched_fraction": 0.552734375,
+            "max_ulp": 15354,
+            "mean_ulp": 24.00146484375,
+            "relative_rms_error": 0.003885756813276244
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.491520000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 8,
+            "collective_min": 7,
+            "collective_max": 7
+          },
+          "vs_exact": {
+            "mismatched": 2254,
+            "mismatched_fraction": 0.55029296875,
+            "max_ulp": 15271,
+            "mean_ulp": 16.622802734375,
+            "relative_rms_error": 0.0038689826468558844
+          },
+          "vs_ideal": {
+            "mismatched": 2254,
+            "mismatched_fraction": 0.55029296875,
+            "max_ulp": 15271,
+            "mean_ulp": 16.623046875,
+            "relative_rms_error": 0.0038689865434774033
+          },
+          "vs_single_device": {
+            "mismatched": 2254,
+            "mismatched_fraction": 0.55029296875,
+            "max_ulp": 15271,
+            "mean_ulp": 16.622802734375,
+            "relative_rms_error": 0.003868776671170291
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.14336,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 8,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.361572265625,
+            "relative_rms_error": 0.0025492257019540552
+          },
+          "vs_ideal": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.36181640625,
+            "relative_rms_error": 0.002549228770101362
+          },
+          "vs_single_device": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.361572265625,
+            "relative_rms_error": 0.0025490011858039117
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 7,
+            "estimated_us": 14.573440000000002,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 57344,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 458752
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 8,
+            "collective_max": 8
+          },
+          "vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 1.5236603410859271e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.39264,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 8,
+            "collective_max": 8
+          },
+          "vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 1.5236603410859271e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 14,
+            "estimated_us": 28.215039999999995,
+            "max_bytes_sent_per_rank": 21504,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 8,
+            "collective_max": 8
+          },
+          "vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 1.5236603410859271e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.73728,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 8,
+            "collective_max": 8
+          },
+          "vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 1.5236603410859271e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.21504,
+            "max_bytes_sent_per_rank": 21504,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 1,
+            "collective_max": 1
+          },
+          "vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "vs_ideal": {
+            "mismatched": 0,
+            "mismatched_fraction": 0.0,
+            "max_ulp": 0,
+            "mean_ulp": 0.0,
+            "relative_rms_error": 0.0
+          },
+          "vs_single_device": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 1.5236603410859271e-5
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 7,
+            "estimated_us": 15.146880000000001,
+            "max_bytes_sent_per_rank": 114688,
+            "max_reduce_bytes_per_rank": 114688,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 917504
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "sequential",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 15,
+            "collective_max": 15
+          },
+          "vs_exact": {
+            "mismatched": 2207,
+            "mismatched_fraction": 0.538818359375,
+            "max_ulp": 29871,
+            "mean_ulp": 23.395751953125,
+            "relative_rms_error": 0.003869201607679145
+          },
+          "vs_ideal": {
+            "mismatched": 2207,
+            "mismatched_fraction": 0.538818359375,
+            "max_ulp": 29871,
+            "mean_ulp": 23.39599609375,
+            "relative_rms_error": 0.003869202281398453
+          },
+          "vs_single_device": {
+            "mismatched": 2207,
+            "mismatched_fraction": 0.538818359375,
+            "max_ulp": 29871,
+            "mean_ulp": 23.395751953125,
+            "relative_rms_error": 0.003868872411433851
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "ring",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 15,
+            "collective_max": 15
+          },
+          "vs_exact": {
+            "mismatched": 2134,
+            "mismatched_fraction": 0.52099609375,
+            "max_ulp": 30203,
+            "mean_ulp": 16.24755859375,
+            "relative_rms_error": 0.0038087397312773297
+          },
+          "vs_ideal": {
+            "mismatched": 2134,
+            "mismatched_fraction": 0.52099609375,
+            "max_ulp": 30203,
+            "mean_ulp": 16.247314453125,
+            "relative_rms_error": 0.0038087393442560115
+          },
+          "vs_single_device": {
+            "mismatched": 2134,
+            "mismatched_fraction": 0.52099609375,
+            "max_ulp": 30203,
+            "mean_ulp": 16.2470703125,
+            "relative_rms_error": 0.0038083432737412073
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 14,
+            "estimated_us": 28.143359999999998,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "binomial-tree",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 15,
+            "collective_max": 15
+          },
+          "vs_exact": {
+            "mismatched": 1798,
+            "mismatched_fraction": 0.43896484375,
+            "max_ulp": 29980,
+            "mean_ulp": 15.97509765625,
+            "relative_rms_error": 0.002925568878977641
+          },
+          "vs_ideal": {
+            "mismatched": 1798,
+            "mismatched_fraction": 0.43896484375,
+            "max_ulp": 29980,
+            "mean_ulp": 15.975341796875,
+            "relative_rms_error": 0.0029255732960247133
+          },
+          "vs_single_device": {
+            "mismatched": 1798,
+            "mismatched_fraction": 0.43896484375,
+            "max_ulp": 29980,
+            "mean_ulp": 15.9755859375,
+            "relative_rms_error": 0.0029256924346918356
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.491520000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "halving-doubling",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 15,
+            "collective_max": 15
+          },
+          "vs_exact": {
+            "mismatched": 1776,
+            "mismatched_fraction": 0.43359375,
+            "max_ulp": 29834,
+            "mean_ulp": 8.674072265625,
+            "relative_rms_error": 0.002936323199443126
+          },
+          "vs_ideal": {
+            "mismatched": 1776,
+            "mismatched_fraction": 0.43359375,
+            "max_ulp": 29834,
+            "mean_ulp": 8.67431640625,
+            "relative_rms_error": 0.0029363269440296266
+          },
+          "vs_single_device": {
+            "mismatched": 1776,
+            "mismatched_fraction": 0.43359375,
+            "max_ulp": 29834,
+            "mean_ulp": 8.674072265625,
+            "relative_rms_error": 0.002936050322829107
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.14336,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "policy": "bf16-wire/fp32-add",
+          "algorithm": "exact-gather",
+          "consistent_across_ranks": true,
+          "roundings_per_element": {
+            "before_collective": 0,
+            "collective_min": 9,
+            "collective_max": 9
+          },
+          "vs_exact": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.361572265625,
+            "relative_rms_error": 0.0025492257019540552
+          },
+          "vs_ideal": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.36181640625,
+            "relative_rms_error": 0.002549228770101362
+          },
+          "vs_single_device": {
+            "mismatched": 1619,
+            "mismatched_fraction": 0.395263671875,
+            "max_ulp": 526,
+            "mean_ulp": 1.361572265625,
+            "relative_rms_error": 0.0025490011858039117
+          },
+          "argmax_changes_vs_single_device": 0,
+          "cost": {
+            "rounds": 7,
+            "estimated_us": 14.573440000000002,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 57344,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 458752
+          }
+        }
+      ],
+      "recovery": [
+        {
+          "algorithm": "sequential",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2504,
+            "mismatched_fraction": 0.611328125,
+            "max_ulp": 15091,
+            "mean_ulp": 9.46533203125,
+            "relative_rms_error": 0.004476846682246593
+          },
+          "policy_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 2.8282485875706214,
+            "recovered_fraction_rms": 2.3222254707607113
+          }
+        },
+        {
+          "algorithm": "sequential",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2504,
+            "mismatched_fraction": 0.611328125,
+            "max_ulp": 15091,
+            "mean_ulp": 9.46533203125,
+            "relative_rms_error": 0.004476846682246593
+          },
+          "policy_vs_exact": {
+            "mismatched": 2207,
+            "mismatched_fraction": 0.538818359375,
+            "max_ulp": 29871,
+            "mean_ulp": 23.395751953125,
+            "relative_rms_error": 0.003869201607679145
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 0.11865761086695965,
+          "recovered_fraction_rms": 0.13574503481196304,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 0.33559322033898303,
+            "recovered_fraction_rms": 0.31523057736964
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2448,
+            "mismatched_fraction": 0.59765625,
+            "max_ulp": 30295,
+            "mean_ulp": 16.7373046875,
+            "relative_rms_error": 0.004275281084544997
+          },
+          "policy_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 2.9517490952955368,
+            "recovered_fraction_rms": 2.4766325483077236
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2448,
+            "mismatched_fraction": 0.59765625,
+            "max_ulp": 30295,
+            "mean_ulp": 16.7373046875,
+            "relative_rms_error": 0.004275281084544997
+          },
+          "policy_vs_exact": {
+            "mismatched": 2134,
+            "mismatched_fraction": 0.52099609375,
+            "max_ulp": 30203,
+            "mean_ulp": 16.24755859375,
+            "relative_rms_error": 0.0038087397312773297
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 0.128320392317123,
+          "recovered_fraction_rms": 0.10913746001017884,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 0.37876960193003617,
+            "recovered_fraction_rms": 0.2702933857008415
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2264,
+            "mismatched_fraction": 0.552734375,
+            "max_ulp": 15354,
+            "mean_ulp": 24.00146484375,
+            "relative_rms_error": 0.00388620458082182
+          },
+          "policy_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 3.508527131782946,
+            "recovered_fraction_rms": 2.9063499045504453
+          }
+        },
+        {
+          "algorithm": "binomial-tree",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2264,
+            "mismatched_fraction": 0.552734375,
+            "max_ulp": 15354,
+            "mean_ulp": 24.00146484375,
+            "relative_rms_error": 0.00388620458082182
+          },
+          "policy_vs_exact": {
+            "mismatched": 1798,
+            "mismatched_fraction": 0.43896484375,
+            "max_ulp": 29980,
+            "mean_ulp": 15.97509765625,
+            "relative_rms_error": 0.002925568878977641
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 0.20592134334953602,
+          "recovered_fraction_rms": 0.24722152291990193,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 0.7224806201550388,
+            "recovered_fraction_rms": 0.7185122495410727
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bf16_vs_exact": {
+            "mismatched": 2254,
+            "mismatched_fraction": 0.55029296875,
+            "max_ulp": 15271,
+            "mean_ulp": 16.622802734375,
+            "relative_rms_error": 0.0038689826468558844
+          },
+          "policy_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 1.0,
+          "recovered_fraction_rms": 1.0,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 3.548031496062992,
+            "recovered_fraction_rms": 2.9312264792098635
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bf16_vs_exact": {
+            "mismatched": 2254,
+            "mismatched_fraction": 0.55029296875,
+            "max_ulp": 15271,
+            "mean_ulp": 16.622802734375,
+            "relative_rms_error": 0.0038689826468558844
+          },
+          "policy_vs_exact": {
+            "mismatched": 1776,
+            "mismatched_fraction": 0.43359375,
+            "max_ulp": 29834,
+            "mean_ulp": 8.674072265625,
+            "relative_rms_error": 0.002936323199443126
+          },
+          "ideal_vs_exact": {
+            "mismatched": 1,
+            "mismatched_fraction": 0.000244140625,
+            "max_ulp": 1,
+            "mean_ulp": 0.000244140625,
+            "relative_rms_error": 4.7614383853035637e-7
+          },
+          "recovered_fraction_mismatched": 0.21216156236129605,
+          "recovered_fraction_rms": 0.24109031397137465,
+          "vs_bf16_exact_gather": {
+            "bf16_exact_gather_vs_exact": {
+              "mismatched": 1619,
+              "mismatched_fraction": 0.395263671875,
+              "max_ulp": 526,
+              "mean_ulp": 1.361572265625,
+              "relative_rms_error": 0.0025492257019540552
+            },
+            "recovered_fraction_mismatched": 0.752755905511811,
+            "recovered_fraction_rms": 0.706690312193913
+          }
+        }
+      ],
+      "reduce_scatter_only": [
+        {
+          "algorithm": "ring",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 7,
+            "estimated_us": 14.071679999999999,
+            "max_bytes_sent_per_rank": 7168,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 57344
+          },
+          "all_reduce": {
+            "rounds": 14,
+            "estimated_us": 28.143359999999998,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.071680000000001,
+            "max_bytes_sent_per_rank": 7168,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 57344
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.14336,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 7,
+            "estimated_us": 14.143359999999998,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 114688
+          },
+          "all_reduce": {
+            "rounds": 14,
+            "estimated_us": 28.215039999999995,
+            "max_bytes_sent_per_rank": 21504,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "fp32-rs/bf16-ag",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.14336,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 114688
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.21504,
+            "max_bytes_sent_per_rank": 21504,
+            "max_reduce_bytes_per_rank": 14336,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "algorithm": "ring",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 7,
+            "estimated_us": 14.071679999999999,
+            "max_bytes_sent_per_rank": 7168,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 57344
+          },
+          "all_reduce": {
+            "rounds": 14,
+            "estimated_us": 28.143359999999998,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "algorithm": "halving-doubling",
+          "policy": "bf16-wire/fp32-add",
+          "bits_match_all_reduce": true,
+          "reduce_scatter": {
+            "rounds": 3,
+            "estimated_us": 6.071680000000001,
+            "max_bytes_sent_per_rank": 7168,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 57344
+          },
+          "all_reduce": {
+            "rounds": 6,
+            "estimated_us": 12.14336,
+            "max_bytes_sent_per_rank": 14336,
+            "max_reduce_bytes_per_rank": 7168,
+            "max_gather_bytes_per_rank": 7168,
+            "total_bytes": 114688
+          }
+        }
+      ]
+    }
+  ]
+}
