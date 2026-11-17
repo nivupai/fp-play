@@ -2,14 +2,33 @@
 //!
 //! Each algorithm is executed as synchronous rounds of point-to-point
 //! transfers between virtual ranks. Every addition a rank performs is a real
-//! correctly rounded addition in the wire format, so the association order
-//! each algorithm implies — and therefore the output bits — come from the
-//! simulated schedule itself, never from a separate formula.
+//! correctly rounded addition, so the association order each algorithm
+//! implies — and therefore the output bits — come from the simulated schedule
+//! itself, never from a separate formula.
 //!
 //! Round semantics: all transfers in a round read the senders' buffers as they
 //! were at the start of the round, then every receiver applies what it got.
 //! Every schedule here obeys a single-port model (each rank sends at most one
 //! message and receives at most one message per round); tests enforce this.
+//!
+//! # Wire policies
+//!
+//! A [`WirePolicy`] separates where numbers live from what crosses the wire:
+//!
+//! * every rank's buffer, and every combine, is in the **accumulator** format
+//!   (one correctly rounded addition per combine);
+//! * a message in a reduce phase (its payload will be combined or summed) is
+//!   converted to the **reduce wire** format when sent, and back to the
+//!   accumulator format when received;
+//! * a message in a gather phase (its payload is a finished value that is only
+//!   copied) uses the **gather wire** format the same way;
+//! * at the end every rank converts its buffer to the **output** format.
+//!
+//! A conversion between two different formats is one correctly rounded
+//! conversion ([`ops::convert`]); between equal formats it copies the raw bits,
+//! so NaN payloads survive copies exactly as in R1. [`all_reduce`] uses a
+//! uniform policy (all four formats equal), which reproduces the R1 simulator
+//! bit for bit; `tests/regression.rs` checks this against a frozen copy.
 
 use std::fmt;
 use std::ops::Range;
@@ -74,7 +93,9 @@ impl Algorithm {
         }
     }
 
-    /// Rounding events each output element undergoes.
+    /// Roundings each output element undergoes inside the collective under a
+    /// uniform wire policy (additions only; any conversion of the inputs to
+    /// the wire format before the collective is not counted here).
     pub fn roundings_per_element(self, world: usize) -> usize {
         match self {
             Algorithm::ExactGather => usize::from(world > 1),
@@ -89,16 +110,73 @@ impl fmt::Display for Algorithm {
     }
 }
 
+/// Formats used by a collective; see the module documentation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct WirePolicy {
+    /// Format of every rank's buffer and of every combine.
+    pub accumulator: Format,
+    /// Message format in reduce phases (payload is combined or summed).
+    pub reduce_wire: Format,
+    /// Message format in gather phases (payload is a finished value, copied).
+    pub gather_wire: Format,
+    /// Format of the final buffers.
+    pub output: Format,
+}
+
+impl WirePolicy {
+    /// Everything in one format: the R1 behaviour.
+    pub const fn uniform(format: Format) -> WirePolicy {
+        WirePolicy {
+            accumulator: format,
+            reduce_wire: format,
+            gather_wire: format,
+            output: format,
+        }
+    }
+
+    pub fn is_uniform(&self) -> bool {
+        *self == WirePolicy::uniform(self.accumulator)
+    }
+}
+
+/// Convert a raw pattern between formats: a bit copy when the formats are
+/// equal, otherwise one correctly rounded conversion.
+pub fn transcode(from: Format, to: Format, raw: u32) -> u32 {
+    if from == to {
+        raw
+    } else {
+        ops::convert(from, to, raw)
+    }
+}
+
+/// Whether a phase's messages are reduced at the receiver or only copied.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum TransferKind {
+    /// The payload is an input to a reduction (sent in the reduce wire format).
+    Reduce,
+    /// The payload is a finished value that is copied (sent in the gather wire format).
+    Gather,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Transfer {
     pub src: usize,
     pub dst: usize,
     pub elements: usize,
+    /// Bytes per element of the message's wire format.
+    pub bytes_per_element: usize,
+}
+
+impl Transfer {
+    pub fn bytes(&self) -> usize {
+        self.elements * self.bytes_per_element
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Round {
     pub phase: &'static str,
+    pub kind: TransferKind,
     pub transfers: Vec<Transfer>,
 }
 
@@ -120,10 +198,10 @@ impl Round {
 
 #[derive(Clone, Debug)]
 pub struct AllReduceOutcome {
-    /// Final buffer on every rank.
+    /// Final buffer on every rank, in the policy's output format.
     pub results: Vec<Vec<u32>>,
     pub rounds: Vec<Round>,
-    /// Correctly rounded wire-format additions performed across all ranks.
+    /// Correctly rounded accumulator-format additions performed across all ranks.
     pub additions: usize,
 }
 
@@ -150,7 +228,7 @@ impl fmt::Display for CollectiveError {
             CollectiveError::InvalidRaw { rank, index, raw } => {
                 write!(
                     f,
-                    "rank {rank} element {index}: raw pattern {raw:#x} does not fit the wire format"
+                    "rank {rank} element {index}: raw pattern {raw:#x} does not fit the input format"
                 )
             }
             CollectiveError::UnsupportedWorld { algorithm, world } => {
@@ -178,13 +256,27 @@ struct Message {
 }
 
 struct Simulator {
-    format: Format,
+    policy: WirePolicy,
+    /// Every rank's buffer, in the accumulator format (or, once `final_output`
+    /// is set, already in the output format).
     buffers: Vec<Vec<u32>>,
     rounds: Vec<Round>,
     additions: usize,
+    /// Set by exact-gather, which rounds straight to the output format.
+    final_output: bool,
 }
 
 impl Simulator {
+    fn new(policy: WirePolicy, inputs: &[Vec<u32>]) -> Simulator {
+        Simulator {
+            policy,
+            buffers: inputs.to_vec(),
+            rounds: Vec::new(),
+            additions: 0,
+            final_output: false,
+        }
+    }
+
     fn world(&self) -> usize {
         self.buffers.len()
     }
@@ -193,36 +285,55 @@ impl Simulator {
         self.buffers[0].len()
     }
 
+    fn wire(&self, kind: TransferKind) -> Format {
+        match kind {
+            TransferKind::Reduce => self.policy.reduce_wire,
+            TransferKind::Gather => self.policy.gather_wire,
+        }
+    }
+
     /// Execute one round. `plan` lists (src, dst, element range).
-    fn round(&mut self, phase: &'static str, plan: &[(usize, usize, Range<usize>)], combine: bool) {
+    fn round(&mut self, phase: &'static str, kind: TransferKind, plan: &[(usize, usize, Range<usize>)]) {
+        let acc = self.policy.accumulator;
+        let wire = self.wire(kind);
         let messages: Vec<Message> = plan
             .iter()
             .map(|(src, dst, range)| Message {
                 src: *src,
                 dst: *dst,
                 range: range.clone(),
-                data: self.buffers[*src][range.clone()].to_vec(),
+                data: self.buffers[*src][range.clone()]
+                    .iter()
+                    .map(|&v| transcode(acc, wire, v))
+                    .collect(),
             })
             .collect();
         for m in &messages {
             let target = &mut self.buffers[m.dst][m.range.clone()];
-            if combine {
-                for (local, &incoming) in target.iter_mut().zip(&m.data) {
-                    *local = ops::add(self.format, *local, incoming);
+            match kind {
+                TransferKind::Reduce => {
+                    for (local, &incoming) in target.iter_mut().zip(&m.data) {
+                        *local = ops::add(acc, *local, transcode(wire, acc, incoming));
+                    }
+                    self.additions += m.data.len();
                 }
-                self.additions += m.data.len();
-            } else {
-                target.copy_from_slice(&m.data);
+                TransferKind::Gather => {
+                    for (local, &incoming) in target.iter_mut().zip(&m.data) {
+                        *local = transcode(wire, acc, incoming);
+                    }
+                }
             }
         }
         self.rounds.push(Round {
             phase,
+            kind,
             transfers: messages
                 .iter()
                 .map(|m| Transfer {
                     src: m.src,
                     dst: m.dst,
                     elements: m.data.len(),
+                    bytes_per_element: wire.bytes(),
                 })
                 .collect(),
         });
@@ -237,7 +348,7 @@ impl Simulator {
                 .filter(|rel| rel + distance < n)
                 .map(|rel| ((rel + root) % n, (rel + distance + root) % n, all.clone()))
                 .collect();
-            self.round("broadcast", &plan, false);
+            self.round("broadcast", TransferKind::Gather, &plan);
             distance *= 2;
         }
     }
@@ -246,7 +357,7 @@ impl Simulator {
         let n = self.world();
         let all = 0..self.len();
         for r in 1..n {
-            self.round("chain-reduce", &[(r - 1, r, all.clone())], true);
+            self.round("chain-reduce", TransferKind::Reduce, &[(r - 1, r, all.clone())]);
         }
         self.binomial_broadcast(n - 1);
     }
@@ -261,39 +372,52 @@ impl Simulator {
                 .filter(|r| r + distance < n)
                 .map(|r| (r + distance, r, all.clone()))
                 .collect();
-            self.round("tree-reduce", &plan, true);
+            self.round("tree-reduce", TransferKind::Reduce, &plan);
             distance *= 2;
         }
         self.binomial_broadcast(0);
     }
 
-    fn ring(&mut self) {
+    fn ring_reduce_scatter(&mut self) {
         let n = self.world();
         let len = self.len();
         for step in 0..n - 1 {
             let plan: Vec<_> = (0..n)
                 .map(|r| (r, (r + 1) % n, chunk_range(len, n, (r + n - step) % n)))
                 .collect();
-            self.round("reduce-scatter", &plan, true);
+            self.round("reduce-scatter", TransferKind::Reduce, &plan);
         }
+    }
+
+    fn ring_all_gather(&mut self) {
+        let n = self.world();
+        let len = self.len();
         for step in 0..n - 1 {
             let plan: Vec<_> = (0..n)
                 .map(|r| (r, (r + 1) % n, chunk_range(len, n, (r + 1 + n - step) % n)))
                 .collect();
-            self.round("all-gather", &plan, false);
+            self.round("all-gather", TransferKind::Gather, &plan);
         }
     }
 
-    fn halving_doubling(&mut self) {
+    fn ring(&mut self) {
+        self.ring_reduce_scatter();
+        self.ring_all_gather();
+    }
+
+    /// Element range covered by a contiguous range of chunk indices.
+    fn chunk_elements(len: usize, n: usize, chunks: &Range<usize>) -> Range<usize> {
+        if chunks.is_empty() {
+            0..0
+        } else {
+            chunk_range(len, n, chunks.start).start..chunk_range(len, n, chunks.end - 1).end
+        }
+    }
+
+    /// Recursive halving; returns the chunk-index range each rank owns afterwards.
+    fn halving_reduce_scatter(&mut self) -> Vec<Range<usize>> {
         let n = self.world();
         let len = self.len();
-        let elements = |chunks: &Range<usize>| -> Range<usize> {
-            if chunks.is_empty() {
-                0..0
-            } else {
-                chunk_range(len, n, chunks.start).start..chunk_range(len, n, chunks.end - 1).end
-            }
-        };
         let mut owned: Vec<Range<usize>> = vec![0..n; n];
         let mut distance = n / 2;
         while distance >= 1 {
@@ -308,17 +432,26 @@ impl Simulator {
                 } else {
                     (mid..current.end, current.start..mid)
                 };
-                plan.push((r, partner, elements(&give)));
+                plan.push((r, partner, Simulator::chunk_elements(len, n, &give)));
                 next[r] = keep;
             }
-            self.round("reduce-scatter", &plan, true);
+            self.round("reduce-scatter", TransferKind::Reduce, &plan);
             owned = next;
             distance /= 2;
         }
+        owned
+    }
+
+    /// Recursive doubling from the ownership left by [`Self::halving_reduce_scatter`].
+    fn doubling_all_gather(&mut self, mut owned: Vec<Range<usize>>) {
+        let n = self.world();
+        let len = self.len();
         let mut distance = 1;
         while distance < n {
-            let plan: Vec<_> = (0..n).map(|r| (r, r ^ distance, elements(&owned[r]))).collect();
-            self.round("all-gather", &plan, false);
+            let plan: Vec<_> = (0..n)
+                .map(|r| (r, r ^ distance, Simulator::chunk_elements(len, n, &owned[r])))
+                .collect();
+            self.round("all-gather", TransferKind::Gather, &plan);
             owned = (0..n)
                 .map(|r| {
                     let (a, b) = (&owned[r], &owned[r ^ distance]);
@@ -330,10 +463,25 @@ impl Simulator {
         debug_assert!(owned.iter().all(|r| *r == (0..n)));
     }
 
+    fn halving_doubling(&mut self) {
+        let owned = self.halving_reduce_scatter();
+        self.doubling_all_gather(owned);
+    }
+
+    /// Every rank receives every input in the reduce wire format, then sums
+    /// all of them exactly and rounds once to the output format. A rank's own
+    /// input is also taken in its wire form, so every rank sums the same
+    /// gathered tensor and all ranks agree.
     fn exact_gather(&mut self) {
         let n = self.world();
         let len = self.len();
-        let inputs = self.buffers.clone();
+        let acc = self.policy.accumulator;
+        let wire = self.policy.reduce_wire;
+        let gathered: Vec<Vec<u32>> = self
+            .buffers
+            .iter()
+            .map(|b| b.iter().map(|&v| transcode(acc, wire, v)).collect())
+            .collect();
         // have[r][s]: rank r holds rank s's input. Ring all-gather of whole buffers.
         let mut have = vec![vec![false; n]; n];
         for (r, row) in have.iter_mut().enumerate() {
@@ -350,10 +498,12 @@ impl Simulator {
                     src: r,
                     dst,
                     elements: len,
+                    bytes_per_element: wire.bytes(),
                 });
             }
             self.rounds.push(Round {
                 phase: "all-gather-inputs",
+                kind: TransferKind::Reduce,
                 transfers,
             });
         }
@@ -361,21 +511,34 @@ impl Simulator {
         for r in 0..n {
             for e in 0..len {
                 let mut sum = ExactSum::new();
-                for input in &inputs {
-                    sum.add_raw(self.format, input[e]);
+                for input in &gathered {
+                    sum.add_raw(wire, input[e]);
                 }
-                self.buffers[r][e] = sum.round(self.format);
+                self.buffers[r][e] = sum.round(self.policy.output);
             }
+        }
+        self.final_output = true;
+    }
+
+    fn into_outcome(self) -> AllReduceOutcome {
+        let (acc, output) = (self.policy.accumulator, self.policy.output);
+        let results = if self.final_output {
+            self.buffers
+        } else {
+            self.buffers
+                .into_iter()
+                .map(|b| b.into_iter().map(|v| transcode(acc, output, v)).collect())
+                .collect()
+        };
+        AllReduceOutcome {
+            results,
+            rounds: self.rounds,
+            additions: self.additions,
         }
     }
 }
 
-/// Run `algorithm` over `inputs` (one buffer per rank, raw patterns in `format`).
-pub fn all_reduce(
-    algorithm: Algorithm,
-    format: Format,
-    inputs: &[Vec<u32>],
-) -> Result<AllReduceOutcome, CollectiveError> {
+fn validate(algorithm: Algorithm, input_format: Format, inputs: &[Vec<u32>]) -> Result<(), CollectiveError> {
     let world = inputs.len();
     if world == 0 {
         return Err(CollectiveError::EmptyWorld);
@@ -384,20 +547,36 @@ pub fn all_reduce(
         return Err(CollectiveError::RaggedInputs);
     }
     for (rank, buffer) in inputs.iter().enumerate() {
-        if let Some((index, &raw)) = buffer.iter().enumerate().find(|(_, &raw)| raw > format.max_raw()) {
+        if let Some((index, &raw)) = buffer.iter().enumerate().find(|(_, &raw)| raw > input_format.max_raw()) {
             return Err(CollectiveError::InvalidRaw { rank, index, raw });
         }
     }
     if !algorithm.supports(world) {
         return Err(CollectiveError::UnsupportedWorld { algorithm, world });
     }
-    let mut sim = Simulator {
-        format,
-        buffers: inputs.to_vec(),
-        rounds: Vec::new(),
-        additions: 0,
-    };
-    if world > 1 {
+    Ok(())
+}
+
+/// Run `algorithm` over `inputs` (one buffer per rank, raw patterns in `format`)
+/// with everything in that one format.
+pub fn all_reduce(
+    algorithm: Algorithm,
+    format: Format,
+    inputs: &[Vec<u32>],
+) -> Result<AllReduceOutcome, CollectiveError> {
+    all_reduce_with(algorithm, WirePolicy::uniform(format), inputs)
+}
+
+/// Run `algorithm` under `policy`. `inputs` are raw patterns in the policy's
+/// accumulator format; results are in its output format.
+pub fn all_reduce_with(
+    algorithm: Algorithm,
+    policy: WirePolicy,
+    inputs: &[Vec<u32>],
+) -> Result<AllReduceOutcome, CollectiveError> {
+    validate(algorithm, policy.accumulator, inputs)?;
+    let mut sim = Simulator::new(policy, inputs);
+    if inputs.len() > 1 {
         match algorithm {
             Algorithm::Sequential => sim.sequential(),
             Algorithm::Ring => sim.ring(),
@@ -406,9 +585,5 @@ pub fn all_reduce(
             Algorithm::ExactGather => sim.exact_gather(),
         }
     }
-    Ok(AllReduceOutcome {
-        results: sim.buffers,
-        rounds: sim.rounds,
-        additions: sim.additions,
-    })
+    Ok(sim.into_outcome())
 }
