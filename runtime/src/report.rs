@@ -304,6 +304,31 @@ pub fn policies_to_json(result: &PoliciesResult, command: &str) -> Json {
                     "ideal",
                     Json::str("exact sum of the P FP32 partials rounded once to the output format"),
                 ),
+                (
+                    "recovered_fraction",
+                    Json::str("(err_bf16 - err_policy) / (err_bf16 - err_ideal), errors against exact; null when err_bf16 <= err_ideal"),
+                ),
+                (
+                    "vs_bf16_exact_gather_note",
+                    Json::str("same ratio with bf16 exact-gather as the target; it can exceed 1 because bf16 exact-gather rounds each FP32 partial to BF16 before its one rounding"),
+                ),
+                (
+                    "phases",
+                    Json::Arr(
+                        Algorithm::ALL
+                            .iter()
+                            .map(|a| {
+                                let (reduce, gather) = a.phases();
+                                Json::obj(vec![
+                                    ("algorithm", Json::str(a.name())),
+                                    ("reduce_phase", Json::str(reduce)),
+                                    ("gather_phase", Json::str(gather)),
+                                    ("reduce_scatter_only", Json::Bool(policies::SPLIT_ALGORITHMS.contains(a))),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
                 ("rounding", Json::str("round-to-nearest, ties-to-even")),
                 (
                     "link_model",
@@ -373,11 +398,25 @@ pub fn policies_to_json(result: &PoliciesResult, command: &str) -> Json {
                                             Json::obj(vec![
                                                 ("algorithm", Json::str(r.algorithm.name())),
                                                 ("policy", Json::str(r.policy.name())),
-                                                ("bf16_mismatched", Json::uint(r.baseline_mismatched)),
-                                                ("policy_mismatched", Json::uint(r.policy_mismatched)),
-                                                ("bf16_exact_gather_mismatched", Json::uint(r.exact_gather_mismatched)),
+                                                ("bf16_vs_exact", comparison(&r.baseline, n)),
+                                                ("policy_vs_exact", comparison(&r.policy_result, n)),
+                                                ("ideal_vs_exact", comparison(&r.ideal, n)),
                                                 ("recovered_fraction_mismatched", optional(r.mismatch_fraction)),
                                                 ("recovered_fraction_rms", optional(r.rms_fraction)),
+                                                (
+                                                    "vs_bf16_exact_gather",
+                                                    Json::obj(vec![
+                                                        ("bf16_exact_gather_vs_exact", comparison(&r.bf16_exact_gather, n)),
+                                                        (
+                                                            "recovered_fraction_mismatched",
+                                                            optional(r.mismatch_fraction_vs_bf16_exact_gather),
+                                                        ),
+                                                        (
+                                                            "recovered_fraction_rms",
+                                                            optional(r.rms_fraction_vs_bf16_exact_gather),
+                                                        ),
+                                                    ]),
+                                                ),
                                             ])
                                         })
                                         .collect(),
@@ -408,8 +447,83 @@ pub fn policies_to_json(result: &PoliciesResult, command: &str) -> Json {
     ])
 }
 
+/// `lo–hi` over the given values, or one value when they agree.
+fn pct_range(values: impl Iterator<Item = usize>, total: usize) -> String {
+    let values: Vec<usize> = values.collect();
+    let (lo, hi) = (values.iter().min(), values.iter().max());
+    match (lo, hi) {
+        (Some(lo), Some(hi)) if lo == hi => pct(*lo, total),
+        (Some(lo), Some(hi)) => format!("{}–{}", pct(*lo, total), pct(*hi, total)),
+        _ => "—".to_string(),
+    }
+}
+
+/// Absolute error and bytes, per P, over the four reduction schedules.
+fn headline(result: &PoliciesResult) -> String {
+    let n = result.elements;
+    let bf16 = policies::POLICIES[0];
+    let mut md = String::from(
+        "Elements of Y that differ from the exact result, over the reduction schedules (sequential, ring, binomial-tree and, \
+for powers of two, halving-doubling), and the most bytes any rank sends in a ring AllReduce relative to `bf16`. Policies \
+are defined below.\n\n",
+    );
+    md.push_str("| P | `bf16` | `fp32-rs/bf16-ag` | `bf16-wire/fp32-add` | ideal | `bf16` exact-gather | ring bytes/rank: `fp32-rs/bf16-ag` | ring bytes/rank: `bf16-wire/fp32-add` |\n");
+    md.push_str("|--:|--:|--:|--:|--:|--:|--:|--:|\n");
+    for w in &result.worlds {
+        let wrong = |p: WirePolicy| {
+            pct_range(
+                w.runs
+                    .iter()
+                    .filter(|r| r.policy == p && r.algorithm != Algorithm::ExactGather)
+                    .map(|r| r.vs_exact.mismatched),
+                n,
+            )
+        };
+        let ring_bytes = |p: WirePolicy| w.run(p, Algorithm::Ring).map(|r| r.cost.max_bytes_sent_per_rank as f64);
+        let ratio = |p: WirePolicy| match (ring_bytes(p), ring_bytes(bf16)) {
+            (Some(a), Some(b)) if b > 0.0 => format!("{:.2}×", a / b),
+            _ => "—".to_string(),
+        };
+        md.push_str(&format!(
+            "| {} | {} | {} | {} | {} | {} | {} | {} |\n",
+            w.world,
+            wrong(bf16),
+            wrong(WirePolicy::FP32_RS_BF16_AG),
+            wrong(WirePolicy::BF16_WIRE_FP32_ADD),
+            pct(w.ideal_vs_exact.mismatched, n),
+            w.run(bf16, Algorithm::ExactGather)
+                .map_or("—".to_string(), |r| pct(r.vs_exact.mismatched, n)),
+            ratio(WirePolicy::FP32_RS_BF16_AG),
+            ratio(WirePolicy::BF16_WIRE_FP32_ADD),
+        ));
+    }
+    md.push('\n');
+    if let Some(w) = result.worlds.last() {
+        let range = |p: WirePolicy| {
+            pct_range(
+                w.runs
+                    .iter()
+                    .filter(|r| r.policy == p && r.algorithm != Algorithm::ExactGather)
+                    .map(|r| r.vs_exact.mismatched),
+                n,
+            )
+        };
+        let bytes = |p: WirePolicy| w.run(p, Algorithm::Ring).map_or(0, |r| r.cost.max_bytes_sent_per_rank);
+        md.push_str(&format!(
+            "At P = {}: {} of elements wrong under `bf16` become {} under `fp32-rs/bf16-ag`, for {:.2}× the bytes per rank \
+in a ring AllReduce; `bf16-wire/fp32-add` sends the same bytes as `bf16` and gets {} wrong.\n\n",
+            w.world,
+            range(bf16),
+            range(WirePolicy::FP32_RS_BF16_AG),
+            bytes(WirePolicy::FP32_RS_BF16_AG) as f64 / bytes(bf16).max(1) as f64,
+            range(WirePolicy::BF16_WIRE_FP32_ADD),
+        ));
+    }
+    md
+}
+
 fn percent(fraction: Option<f64>) -> String {
-    fraction.map_or("—".to_string(), |f| format!("{:.0}%", 100.0 * f))
+    fraction.map_or("—".to_string(), |f| format!("{:.1}%", 100.0 * f))
 }
 
 pub fn policies_to_markdown(result: &PoliciesResult, command: &str) -> String {
@@ -428,6 +542,8 @@ per term). The output is BF16. {} output elements per run. All arithmetic is exa
 modeled operation.\n\n",
         c.tokens, c.hidden, c.hidden, c.outputs, c.seed, n
     ));
+    md.push_str("## Headline\n\n");
+    md.push_str(&headline(result));
     md.push_str("**Policies.** These are modeled policies, not descriptions of any particular library.\n\n");
     md.push_str("- `bf16` — R1's BF16 wire: every FP32 partial is rounded to BF16 before the collective, and every combine is a BF16 \
 addition. 2 bytes per element in every phase.\n");
@@ -436,6 +552,23 @@ exact-gather's input gather) send FP32, 4 bytes per element; a finished value is
 (all-gather, broadcast) send BF16.\n");
     md.push_str("- `bf16-wire/fp32-add` — FP32 partials and FP32 additions, but every message is BF16: each hop rounds the \
 sender's FP32 partial to BF16 and the receiver adds it to its own FP32 partial. 2 bytes per element in every phase.\n\n");
+    md.push_str("**Where each policy applies.** Every policy applies to all five schedules: each round is a reduce phase \
+(its payload is combined or summed; `reduce_wire`) or a gather phase (its payload is a finished value that is only copied; \
+`gather_wire`). Only ring and halving-doubling have a reduce-scatter that can be used on its own.\n\n");
+    md.push_str("| schedule | reduce phase | gather phase | reduce-scatter only |\n|---|---|---|:-:|\n");
+    for a in Algorithm::ALL {
+        let (reduce, gather) = a.phases();
+        md.push_str(&format!(
+            "| {} | {reduce} | {gather} | {} |\n",
+            a.name(),
+            if policies::SPLIT_ALGORITHMS.contains(&a) {
+                "yes"
+            } else {
+                "no"
+            }
+        ));
+    }
+    md.push('\n');
     md.push_str(&format!(
         "**References.** **≠ exact** — elements differing from the exact dot product rounded once to BF16. \
 **≠ ideal** — elements differing from the exact sum of the P FP32 partials rounded once to BF16: the best any collective \
@@ -492,20 +625,16 @@ rank sends in reduce phases and in gather phases; **est. µs** — α–β estim
     }
     md.push('\n');
 
-    md.push_str("## How much of exact-gather's accuracy the mixed policies recover\n\n");
-    md.push_str("For each reduction schedule: **recovered** = (≠ exact under `bf16` − ≠ exact under the policy) ÷ \
-(≠ exact under `bf16` − ≠ exact for `bf16` exact-gather), the share of the gap between R1's BF16 wire and BF16 exact-gather \
-that the policy closes; the same ratio on relative RMS error is in parentheses. Above 100% means the policy is closer to \
-exact than BF16 exact-gather. That is possible because BF16 exact-gather still rounds each FP32 partial to BF16 before its \
-single rounding. — means there is no gap: with two devices every `bf16` schedule computes the same sum as `bf16` exact-gather.\n\n");
-    md.push_str("| P | algorithm | ≠ exact: `bf16` | ≠ exact: `bf16` exact-gather | ≠ exact: `fp32-rs/bf16-ag` | recovered | ≠ exact: `bf16-wire/fp32-add` | recovered |\n");
+    md.push_str("## How much of the gap to the ideal each mixed policy closes\n\n");
+    md.push_str("For each reduction schedule: **closed** = (err under `bf16` − err under the policy) ÷ (err under `bf16` \
+− err of the ideal), errors measured against exact, on mismatch count and (in parentheses) on relative RMS error. 100% means \
+the policy is as close to exact as the ideal for these partials; above 100% would mean it is closer by chance. The same ratio \
+with BF16 exact-gather as the target is in the JSON only (`vs_bf16_exact_gather`); it exceeds 100% because BF16 \
+exact-gather rounds each FP32 partial to BF16 before its one rounding.\n\n");
+    md.push_str("| P | algorithm | ≠ exact: `bf16` | ≠ exact: ideal | ≠ exact: `fp32-rs/bf16-ag` | closed | ≠ exact: `bf16-wire/fp32-add` | closed |\n");
     md.push_str("|--:|---|--:|--:|--:|--:|--:|--:|\n");
     for w in &result.worlds {
-        let algorithms: Vec<Algorithm> = Algorithm::ALL
-            .into_iter()
-            .filter(|a| w.recovery.iter().any(|r| r.algorithm == *a))
-            .collect();
-        for a in algorithms {
+        for a in Algorithm::ALL {
             let find = |p: WirePolicy| w.recovery.iter().find(|r| r.algorithm == a && r.policy == p);
             let (Some(rs), Some(hop)) = (find(WirePolicy::FP32_RS_BF16_AG), find(WirePolicy::BF16_WIRE_FP32_ADD))
             else {
@@ -515,12 +644,12 @@ single rounding. — means there is no gap: with two devices every `bf16` schedu
                 "| {} | {} | {} | {} | {} | {} ({}) | {} | {} ({}) |\n",
                 w.world,
                 a.name(),
-                pct(rs.baseline_mismatched, n),
-                pct(rs.exact_gather_mismatched, n),
-                pct(rs.policy_mismatched, n),
+                pct(rs.baseline.mismatched, n),
+                pct(rs.ideal.mismatched, n),
+                pct(rs.policy_result.mismatched, n),
                 percent(rs.mismatch_fraction),
                 percent(rs.rms_fraction),
-                pct(hop.policy_mismatched, n),
+                pct(hop.policy_result.mismatched, n),
                 percent(hop.mismatch_fraction),
                 percent(hop.rms_fraction),
             ));

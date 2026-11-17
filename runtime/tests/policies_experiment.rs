@@ -83,6 +83,27 @@ fn structural_invariants_hold() {
         }
         // Recovery rows exist for every reduction schedule and both mixed policies.
         assert_eq!(w.recovery.len(), 2 * (supported - 1));
+        for r in &w.recovery {
+            // There is always a gap to the ideal here, so both ratios are defined.
+            assert!(r.mismatch_fraction.is_some() && r.rms_fraction.is_some());
+            assert_eq!(r.ideal.mismatched, w.ideal_vs_exact.mismatched);
+        }
+        // Each policy's formats apply to every schedule's phases: fp32-rs/bf16-ag
+        // doubles the bytes of every reduce phase and leaves gather phases alone.
+        for r in w.runs.iter().filter(|r| r.policy == WirePolicy::FP32_RS_BF16_AG) {
+            let b = w.run(POLICIES[0], r.algorithm).unwrap();
+            assert_eq!(
+                r.cost.max_reduce_bytes_per_rank,
+                2 * b.cost.max_reduce_bytes_per_rank,
+                "{}",
+                r.algorithm
+            );
+            assert_eq!(
+                r.cost.max_gather_bytes_per_rank, b.cost.max_gather_bytes_per_rank,
+                "{}",
+                r.algorithm
+            );
+        }
     }
     assert!(result
         .worlds

@@ -26,7 +26,14 @@
 //!
 //! A conversion between two different formats is one correctly rounded
 //! conversion ([`ops::convert`]); between equal formats it copies the raw bits,
-//! so NaN payloads survive copies exactly as in R1. [`all_reduce`] uses a
+//! so NaN payloads survive copies exactly as in R1.
+//!
+//! A policy applies to every schedule, because every round is labelled as a
+//! reduce or a gather phase ([`Algorithm::phases`]): ring and halving-doubling
+//! reduce-scatter then all-gather; sequential and binomial-tree reduce to one
+//! rank then broadcast; exact-gather's all-gather of the inputs is a reduce
+//! phase (its payload is summed) and it has no gather phase. Only ring and
+//! halving-doubling can stop after the reduce phase ([`reduce_scatter`]). [`all_reduce`] uses a
 //! uniform policy (all four formats equal), which reproduces the R1 simulator
 //! bit for bit; `tests/regression.rs` checks this against a frozen copy.
 
@@ -72,6 +79,18 @@ impl Algorithm {
 
     pub fn parse(text: &str) -> Option<Algorithm> {
         Algorithm::ALL.into_iter().find(|a| a.name() == text.trim())
+    }
+
+    /// What this schedule's reduce phase and gather phase are (the phases a
+    /// [`WirePolicy`]'s `reduce_wire` and `gather_wire` apply to).
+    pub const fn phases(self) -> (&'static str, &'static str) {
+        match self {
+            Algorithm::Sequential => ("chain reduce to the last rank", "binomial broadcast"),
+            Algorithm::Ring => ("ring reduce-scatter", "ring all-gather"),
+            Algorithm::BinomialTree => ("binomial-tree reduce to rank 0", "binomial broadcast"),
+            Algorithm::HalvingDoubling => ("recursive-halving reduce-scatter", "recursive-doubling all-gather"),
+            Algorithm::ExactGather => ("all-gather of every input (summed exactly on arrival)", "none"),
+        }
     }
 
     pub const fn description(self) -> &'static str {

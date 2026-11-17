@@ -58,22 +58,30 @@ pub struct PolicyRun {
     pub output: Vec<u32>,
 }
 
-/// How much of the gap between R1's BF16 wire and BF16 exact-gather a mixed
-/// policy closes for one schedule: `(baseline - policy) / (baseline - exact_gather)`.
+/// How much of the gap between R1's BF16 wire and the ideal for these
+/// partials a mixed policy closes for one schedule:
+/// `(err_bf16 - err_policy) / (err_bf16 - err_ideal)`, on mismatch count and
+/// on relative RMS error, both against the exact dot product.
 #[derive(Clone, Debug)]
 pub struct Recovery {
     pub algorithm: Algorithm,
     pub policy: WirePolicy,
-    /// Elements ≠ exact for the schedule under R1's BF16 wire.
-    pub baseline_mismatched: usize,
-    /// Elements ≠ exact for the schedule under the policy.
-    pub policy_mismatched: usize,
-    /// Elements ≠ exact for exact-gather under R1's BF16 wire.
-    pub exact_gather_mismatched: usize,
-    /// Fraction of the mismatch gap closed (`None` when there is no gap).
+    /// The schedule under R1's BF16 wire.
+    pub baseline: Comparison,
+    /// The schedule under the policy.
+    pub policy_result: Comparison,
+    /// The ideal for these partials.
+    pub ideal: Comparison,
+    /// Exact-gather under R1's BF16 wire.
+    pub bf16_exact_gather: Comparison,
+    /// Fraction of the gap to the ideal closed (`None` when there is no gap).
     pub mismatch_fraction: Option<f64>,
-    /// The same fraction computed on relative RMS error.
     pub rms_fraction: Option<f64>,
+    /// The same ratio with BF16 exact-gather as the target instead of the
+    /// ideal. BF16 exact-gather still rounds each FP32 partial to BF16, so a
+    /// policy that keeps FP32 partials can beat it and this can exceed 1.
+    pub mismatch_fraction_vs_bf16_exact_gather: Option<f64>,
+    pub rms_fraction_vs_bf16_exact_gather: Option<f64>,
 }
 
 /// Cost of the reduce-scatter alone against the whole AllReduce.
@@ -198,30 +206,32 @@ pub fn run_prepared(config: &ExperimentConfig, prepared: &Prepared) -> Result<Po
             .expect("exact-gather supports every world")
             .vs_exact
             .clone();
+        let ideal = world_result.ideal_vs_exact.clone();
         let mut recovery = Vec::new();
         for algorithm in Algorithm::ALL
             .into_iter()
             .filter(|a| *a != Algorithm::ExactGather && a.supports(world))
         {
-            let baseline = &world_result.run(bf16, algorithm).expect("run exists").vs_exact;
+            let baseline = world_result.run(bf16, algorithm).expect("run exists").vs_exact.clone();
             for policy in &POLICIES[1..] {
-                let got = &world_result.run(*policy, algorithm).expect("run exists").vs_exact;
+                let got = world_result
+                    .run(*policy, algorithm)
+                    .expect("run exists")
+                    .vs_exact
+                    .clone();
+                let count = |c: &Comparison| c.mismatched as f64;
+                let rms = |c: &Comparison| c.relative_rms_error;
                 recovery.push(Recovery {
                     algorithm,
                     policy: *policy,
-                    baseline_mismatched: baseline.mismatched,
-                    policy_mismatched: got.mismatched,
-                    exact_gather_mismatched: target.mismatched,
-                    mismatch_fraction: fraction(
-                        baseline.mismatched as f64,
-                        got.mismatched as f64,
-                        target.mismatched as f64,
-                    ),
-                    rms_fraction: fraction(
-                        baseline.relative_rms_error,
-                        got.relative_rms_error,
-                        target.relative_rms_error,
-                    ),
+                    mismatch_fraction: fraction(count(&baseline), count(&got), count(&ideal)),
+                    rms_fraction: fraction(rms(&baseline), rms(&got), rms(&ideal)),
+                    mismatch_fraction_vs_bf16_exact_gather: fraction(count(&baseline), count(&got), count(&target)),
+                    rms_fraction_vs_bf16_exact_gather: fraction(rms(&baseline), rms(&got), rms(&target)),
+                    baseline: baseline.clone(),
+                    policy_result: got,
+                    ideal: ideal.clone(),
+                    bf16_exact_gather: target.clone(),
                 });
             }
         }
