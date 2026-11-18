@@ -217,4 +217,4 @@ distribution. Inputs are synthetic (Irwin–Hall approximate
 normals, chosen because they are bit-identical on every platform). The cost
 model ignores link contention, compute, overlap and topology; its constants
 are illustrative. Nothing here is a measurement of real hardware, an
-interconnect, or an Etched system.
+interconnect, or any particular vendor's system.

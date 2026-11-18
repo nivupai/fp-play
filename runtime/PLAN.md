@@ -51,6 +51,40 @@ A deterministic discrete-event simulator in Rust:
 Verification: property tests on allocator invariants, a reference scheduler
 written as a slow obvious loop, and recorded traces.
 
+Progress, the approved design answers and every design call made while
+building are tracked in [`R2_PROGRESS.md`](R2_PROGRESS.md) (decisions are
+copied below when each piece merges).
+
+### R2 decisions
+
+Approved before building (answers 1–9 and additions A–C):
+
+1. Model: 8B-class public dimensions (hidden 4096, 32 layers, 32 query and
+   8 KV heads, head dim 128, FFN 14336, BF16 weights and KV). Device
+   constants are illustrative, not a named device.
+2. Freed blocks holding a cached prefix stay reusable until evicted, LRU,
+   ties broken by block ID.
+3. Parallel sampling with n ∈ {1, 2, 4}, so copy-on-write does real work.
+4. Drain: finish admitted work and reject new arrivals after recovery.
+5. Reference scheduler in Rust only.
+6. No compute/communication overlap.
+7. The r2-serving stale test may take about 10 s.
+8. Preemption victim: lowest priority, then latest arrival.
+9. Vendor names in disclaimers replaced with generic wording
+   (`tp-allreduce.json` byte-identical).
+
+- A. Device memory is a per-scenario setting; the preemption scenario's
+  memory forces regular preemption and a test asserts it does.
+- B. P must divide the KV head count (8); other values are rejected.
+- C. The dry-run equality test covers every algorithm, the shard tree and
+  both wire policies.
+
+### R2 future work
+
+- After a rank failure, continue serving at P − 1 instead of draining. The
+  shard tree makes the P − 1 numerics bit-identical to P; it needs KV
+  re-sharding.
+
 ## R3 — End to end: does sharding change the tokens?
 
 A tiny Llama-style decoder (RMSNorm, RoPE, SwiGLU, grouped-query attention)
@@ -98,3 +132,5 @@ Nangate45 delays can feed one unit model, clearly labeled as an assumption.
   `rust-toolchain.toml`.
 - Python bindings (PyO3) once crates can be fetched; the crate has no
   dependencies until then.
+- Optional: an independent stdlib-only Python reference for the R2 serving
+  scheduler, with a CI trace comparison like the vector scripts.
