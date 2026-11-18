@@ -7,11 +7,11 @@ design calls made while building.
 
 ## Pieces
 
-| Piece                                                                                  | Branch               | State       |
-| -------------------------------------------------------------------------------------- | -------------------- | ----------- |
-| R2a: dry-run collectives, workload, KV cache, invariants, property tests, planted bugs | `runtime-r2-serving` | in progress |
-| R2b: step time, scheduler, engine, metrics, reference scheduler, traces, scenarios 1–4 | —                    | not started |
-| R2c: failure injection, G1–G5, scenario 5, docs                                        | —                    | not started |
+| Piece                                                                                  | Branch               | State                      |
+| -------------------------------------------------------------------------------------- | -------------------- | -------------------------- |
+| R2a: dry-run collectives, workload, KV cache, invariants, property tests, planted bugs | `runtime-r2-serving` | merged: PR #19 (`2c5acb9`) |
+| R2b: step time, scheduler, engine, metrics, reference scheduler, traces, scenarios 1–4 | —                    | not started                |
+| R2c: failure injection, G1–G5, scenario 5, docs                                        | —                    | not started                |
 
 ## Done
 
@@ -37,11 +37,22 @@ design calls made while building.
   hand-derived cases, 400 seeds × 400 random operations against a plain
   model, five planted bugs.
 
+- R2b so far: `serving::step_time` (roofline + dry-run AllReduce costs),
+  `serving::scheduler` (the written policy in its module docs),
+  `serving::engine` (event loop, per-step invariants 7–9 plus the KV
+  check), `serving::metrics`, `serving::reference` (slow independent
+  scheduler + cache). Tests: `tests/serving_engine.rs` (hand-derived
+  three-request trace; 300 random workloads, every invariant every step,
+  trace equal to the reference; planted bugs inside the engine) and
+  `tests/serving_step_time.rs` (hand-computed step times).
+
 ## Next
 
-R2a: open the PR, wait for CI, review, merge. Then R2b from the updated
-main: `step_time`, `scheduler`, `engine`, `metrics`, preemption,
-`reference`, trace tests, scenarios 1–4 in `results/r2-serving.*`.
+R2b: golden JSON-lines traces under `tests/traces/` (+ a `traces` CLI
+command to regenerate them), `serving_experiment` + report for scenarios
+1–4 in `results/r2-serving.{json,md}` via the documented `experiment`
+command, the stale test (target ≤ 10 s), scenario 2 must assert that
+preemption occurs, README/PLAN updates. Then PR, CI, review, merge.
 
 ## Open questions
 
@@ -80,6 +91,36 @@ None.
   blocks are private and not re-registered.
 - R2a-9. The prefix hit rate is adopted blocks ÷ eligible full prompt
   blocks, counted at admission.
+- R2b-1. Admission (phase 4) is skipped in any step that preempted, so a
+  victim is not readmitted at once and memory pressure pauses new work.
+- R2b-2. Decodes may preempt the requesting request itself when no victim
+  remains; a prefill chunk that cannot get blocks is skipped for that step
+  (not shrunk). A step with no work while requests run preempts the last
+  running request (a counted _stall_; none occur in the tests so far).
+- R2b-3. The watermark applies to admission and swap-in, not to the growth
+  of running sequences.
+- R2b-4. A request is rejected on arrival if its unshared worst case,
+  samples × ceil((prompt + output − 1) ÷ B) blocks, plus the watermark
+  exceeds the device pool, or its samples exceed the sequence limit.
+- R2b-5. KV appends for scheduled work happen while the step is built
+  (their tokens are known), so availability is exact at every decision.
+- R2b-6. Forked siblings commit their first token from the carrier's
+  prompt logits. After a recompute preemption the carrier rebuilds the
+  prompt, forks, and each sibling re-prefills its own committed outputs.
+- R2b-7. Priority sets the order and the victim; a waiting high-priority
+  request does not preempt running work.
+- R2b-8. Step time: the embedding table is not read (only indexed), the
+  output head runs only for sampled tokens, attention reads each sequence's
+  context and reads and writes its new tokens, and a 20 µs per-step
+  overhead (illustrative) is added.
+- R2b-9. TPOT is per sample (sequence), rounded down to whole ns;
+  percentiles are nearest rank on integer ns.
+- R2b-10. With checks on, the scheduler and token-stream invariants run
+  after every step; the KV-cache check (O(pool size)) runs after every k-th
+  step and after the last one. Tests use k = 1. A recorded scenario uses
+  k = 1 unless its pool is large and nearly empty, and the results state k.
+- R2b-11. The reference shares only the step-time model and the workload's
+  token functions with the engine.
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1
