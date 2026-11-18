@@ -32,6 +32,10 @@ USAGE:
       Print one AllReduce schedule round by round with its result and cost.
       Algorithms: sequential, ring, binomial-tree, halving-doubling, exact-gather.
       Policies: fp16, bf16, fp32 (uniform), fp32-rs/bf16-ag, bf16-wire/fp32-add.
+
+  fp-play-runtime traces [--out DIR]
+      Write the golden serving step traces (JSON lines) that
+      tests/serving_traces.rs pins, to DIR (default: tests/traces).
 ";
 
 fn main() -> ExitCode {
@@ -39,6 +43,7 @@ fn main() -> ExitCode {
     let result = match args.first().map(String::as_str) {
         Some("experiment") => experiment(&args[1..]),
         Some("schedule") => schedule(&args[1..]),
+        Some("traces") => traces(&args[1..]),
         Some("-h" | "--help") | None => {
             print!("{USAGE}");
             return ExitCode::SUCCESS;
@@ -189,6 +194,19 @@ fn experiment(args: &[String]) -> Result<(), String> {
         fs::write(&md_path, &markdown).map_err(|e| e.to_string())?;
         print!("{markdown}");
         eprintln!("wrote {} and {}", json_path.display(), md_path.display());
+    }
+    Ok(())
+}
+
+fn traces(args: &[String]) -> Result<(), String> {
+    let flags = Flags(args);
+    flags.check_known(&["--out"])?;
+    let out = PathBuf::from(flags.get("--out")?.unwrap_or("tests/traces"));
+    fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
+    for (name, contents) in fp_play_runtime::serving::traces::golden()? {
+        let path = out.join(name);
+        fs::write(&path, contents).map_err(|e| e.to_string())?;
+        eprintln!("wrote {}", path.display());
     }
     Ok(())
 }

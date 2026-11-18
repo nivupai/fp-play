@@ -23,4 +23,5 @@ pub mod model;
 pub mod reference;
 pub mod scheduler;
 pub mod step_time;
+pub mod traces;
 pub mod workload;
