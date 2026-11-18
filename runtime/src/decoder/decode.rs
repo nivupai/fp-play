@@ -54,7 +54,7 @@ impl KvStore for ContiguousKv {
 /// One sequence's greedy output: the generated tokens and, for each, the
 /// top-2 summary of the logits it was chosen from, plus an FNV-1a hash of
 /// every logit's bits in order.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Generation {
     pub tokens: Vec<u32>,
     pub top: Vec<Top2>,
@@ -107,6 +107,7 @@ pub fn generate_static(
                 pos,
                 token,
                 logits: pos + 1 == p.len(),
+                recompute: false,
             })
         })
         .collect();
@@ -130,6 +131,7 @@ pub fn generate_static(
                     pos: prompts[i].len() + step,
                     token: out[i].tokens[step],
                     logits: true,
+                    recompute: false,
                 })
                 .collect();
         }

@@ -45,12 +45,13 @@ impl DecoderConfig {
 
     /// A reduced model with the same structure, small enough for the
     /// stdlib-only Python reference (`scripts/gen_decoder_vectors.py`).
+    /// Four KV heads, so the reference can run P = 4.
     pub const REFERENCE: DecoderConfig = DecoderConfig {
         hidden: 32,
         layers: 2,
-        q_heads: 4,
-        kv_heads: 2,
-        head_dim: 8,
+        q_heads: 8,
+        kv_heads: 4,
+        head_dim: 4,
         ffn: 48,
         vocab: 64,
         rope_base: 10_000.0,

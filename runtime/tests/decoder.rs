@@ -1,11 +1,13 @@
 //! R3a: the decoder against the independent Python reference, pinned
 //! cross-platform hashes, conversions, and invariances at P = 1.
 
+use fp_play_runtime::collectives::Algorithm;
 use fp_play_runtime::collectives::WirePolicy;
 use fp_play_runtime::decoder::config::DecoderConfig;
 use fp_play_runtime::decoder::decode::{generate_static, prompts, Generation};
 use fp_play_runtime::decoder::forward::Model;
-use fp_play_runtime::decoder::parallel::Unsharded;
+use fp_play_runtime::decoder::forward::RowReduce;
+use fp_play_runtime::decoder::parallel::{Schedule, TensorParallel, Unsharded};
 use fp_play_runtime::decoder::weights::{f32_to_bf16, Weights};
 use fp_play_runtime::format::{ulp_distance, Format};
 use fp_play_runtime::ops;
@@ -67,6 +69,24 @@ fn bits(g: &Generation) -> Vec<Vec<u32>> {
         .collect()
 }
 
+fn reducer(run: &str) -> Box<dyn RowReduce> {
+    if run == "p1" {
+        return Box::new(Unsharded { policy: POLICIES[0] });
+    }
+    let policy = POLICIES
+        .into_iter()
+        .find(|p| run.ends_with(&format!("-{}", p.name())))
+        .expect("known policy");
+    let (schedule, world) = if let Some(rest) = run.strip_prefix("ring-p") {
+        (Schedule::Collective(Algorithm::Ring), rest[..1].parse().unwrap())
+    } else if let Some(rest) = run.strip_prefix("shard-tree-p") {
+        (Schedule::ShardTree { shards: 8 }, rest[..1].parse().unwrap())
+    } else {
+        panic!("unknown run {run}")
+    };
+    Box::new(TensorParallel::new(world, schedule, policy).unwrap())
+}
+
 #[test]
 fn reference_model_matches_the_python_vectors_bit_for_bit() {
     let v = vectors();
@@ -78,17 +98,24 @@ fn reference_model_matches_the_python_vectors_bit_for_bit() {
         "weights differ from the Python reference"
     );
     assert_eq!(prompts(0x5eed_0003, 4, 5, config.vocab), v.prompts);
-    let expected: Vec<_> = v.runs.iter().filter(|r| r.0 == "p1").collect();
-    assert_eq!(expected.len(), v.prompts.len());
-    // At P = 1 both policies round the binary32 sum once to BF16.
-    for policy in POLICIES {
+    let names: Vec<String> = v.runs.iter().filter(|r| r.1 == 0).map(|r| r.0.clone()).collect();
+    assert_eq!(names.len(), 7, "{names:?}");
+    for name in &names {
+        let expected: Vec<_> = v.runs.iter().filter(|r| &r.0 == name).collect();
+        assert_eq!(expected.len(), v.prompts.len());
         let mut model = Model::with_weights(config, weights.clone());
-        let got = generate_static(&mut model, &mut Unsharded { policy }, &v.prompts, v.steps, true);
+        let got = generate_static(&mut model, reducer(name).as_mut(), &v.prompts, v.steps, true);
         for (g, e) in got.iter().zip(&expected) {
-            assert_eq!(g.tokens, e.2, "seq {} tokens ({})", e.1, policy.name());
-            assert_eq!(bits(g), e.3, "seq {} logits ({})", e.1, policy.name());
+            assert_eq!(g.tokens, e.2, "{name} seq {} tokens", e.1);
+            assert_eq!(bits(g), e.3, "{name} seq {} logits", e.1);
         }
     }
+    // At P = 1 the two policies round the binary32 sum once to BF16 alike.
+    let p1 = |policy| {
+        let mut model = Model::with_weights(config, weights.clone());
+        generate_static(&mut model, &mut Unsharded { policy }, &v.prompts, v.steps, true)
+    };
+    assert_eq!(p1(POLICIES[0]), p1(POLICIES[1]));
 }
 
 #[test]

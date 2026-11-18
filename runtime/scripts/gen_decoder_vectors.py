@@ -31,9 +31,9 @@ MASK64 = (1 << 64) - 1
 CONFIG = dict(
     hidden=32,
     layers=2,
-    q_heads=4,
-    kv_heads=2,
-    head_dim=8,
+    q_heads=8,
+    kv_heads=4,
+    head_dim=4,
     ffn=48,
     vocab=64,
     rope_base=10000.0,
@@ -44,7 +44,8 @@ CONFIG = dict(
 PROMPT_SEED = 0x5EED_0003
 PROMPTS = 4
 PROMPT_LEN = 5
-STEPS = 6
+STEPS = 8
+SHARDS = 8  # shard-tree S for the reduced model
 
 
 # ---------------------------------------------------------------- rounding
@@ -310,13 +311,95 @@ def top2(logits):
 # ------------------------------------------------- reductions (row-parallel)
 
 
+def chunk_range(length, parts, i):
+    """Near-equal contiguous split; the first length % parts parts get one more."""
+    base, extra = divmod(length, parts)
+    start = i * base + min(i, extra)
+    return range(start, start + base + (1 if i < extra else 0))
+
+
+# Wire policies: (accumulator rounding, output rounding). Both tested
+# policies output BF16 and use a reduce wire equal to the accumulator, so
+# messages in reduce phases are lossless; a gather-phase message carries a
+# finished value already rounded to BF16, which the output rounding repeats
+# exactly.
+POLICIES = {
+    "bf16": (bf16, bf16),
+    "fp32-rs/bf16-ag": (f32, bf16),
+}
+
+
+def partial_sums(m, xs, ks):
+    """Flat token-major buffer: element t*rows + o is row o's sequential sum
+    over ks of token t's activations."""
+    return [dot_range(row, x, ks) for x in xs for row in m]
+
+
+def unflatten(flat, rows):
+    return [flat[i:i + rows] for i in range(0, len(flat), rows)]
+
+
 class Unsharded:
-    """P = 1: full sequential sum per output, rounded once to BF16 (both
-    tested policies output BF16; from binary32 through the BF16 or binary32
-    accumulator it is one rounding either way)."""
+    """P = 1: full sequential sum per output, rounded to the accumulator then
+    the output format (BF16 either way: one rounding)."""
+
+    def __init__(self, policy):
+        self.acc, self.out = POLICIES[policy]
 
     def project(self, m, xs):
-        return [[bf16(v) for v in matvec(m, x)] for x in xs]
+        ks = range(len(xs[0]))
+        flat = [self.out(self.acc(v)) for v in partial_sums(m, xs, ks)]
+        return unflatten(flat, len(m))
+
+
+class Ring:
+    """Ring AllReduce over n ranks. Rank r sums its contiguous slice of the
+    input dimension. The flat buffer is split into n near-equal chunks; in
+    reduce-scatter step s rank r sends chunk (r - s) mod n to rank r + 1,
+    which adds it to its own value in the accumulator format. So chunk c is
+    folded starting from rank c's partial: ((x_c + x_c+1) + x_c+2) + ...
+    The finished chunk is rounded to the output format and copied around
+    the ring."""
+
+    def __init__(self, policy, world):
+        self.acc, self.out = POLICIES[policy]
+        self.world = world
+
+    def project(self, m, xs):
+        n, cols = self.world, len(xs[0])
+        parts = [[self.acc(v) for v in partial_sums(m, xs, chunk_range(cols, n, r))] for r in range(n)]
+        length = len(parts[0])
+        flat = [None] * length
+        for c in range(n):
+            for e in chunk_range(length, n, c):
+                acc = parts[c][e]
+                for j in range(1, n):
+                    acc = self.acc(acc + parts[(c + j) % n][e])
+                flat[e] = self.out(acc)
+        return unflatten(flat, len(m))
+
+
+class ShardTree:
+    """The fixed shard tree over S shards of the input dimension, independent
+    of the number of ranks: each shard's partial is a sequential sum over its
+    slice; at level k node i absorbs node i + 2**k for every multiple i of
+    2**(k+1) with i + 2**k < S (one accumulator-format addition); node 0 is
+    the root, rounded once to the output format."""
+
+    def __init__(self, policy, shards):
+        self.acc, self.out = POLICIES[policy]
+        self.shards = shards
+
+    def project(self, m, xs):
+        s, cols = self.shards, len(xs[0])
+        nodes = [[self.acc(v) for v in partial_sums(m, xs, chunk_range(cols, s, i))] for i in range(s)]
+        half = 1
+        while half < s:
+            for left in range(0, s, 2 * half):
+                if left + half < s:
+                    nodes[left] = [self.acc(a + b) for a, b in zip(nodes[left], nodes[left + half])]
+            half *= 2
+        return unflatten([self.out(v) for v in nodes[0]], len(m))
 
 
 # ---------------------------------------------------------------- forward
@@ -407,11 +490,15 @@ def main():
     ps = prompts(PROMPT_SEED, PROMPTS, PROMPT_LEN, c["vocab"])
     out = sys.stdout
     out.write("# R3 decoder reference vectors from scripts/gen_decoder_vectors.py.\n")
-    out.write("# config REFERENCE; prompts from seed %#x; %d steps.\n" % (PROMPT_SEED, STEPS))
+    out.write("# config REFERENCE; prompts from seed %#x; %d steps; shard tree S = %d.\n" % (PROMPT_SEED, STEPS, SHARDS))
     out.write("weights %016x\n" % checksum(w))
     for i, p in enumerate(ps):
         out.write("prompt %d %s\n" % (i, " ".join(str(t) for t in p)))
-    runs = [("p1", Unsharded())]
+    runs = [("p1", Unsharded("bf16"))]
+    for policy in POLICIES:
+        for world in (2, 4):
+            runs.append(("ring-p%d-%s" % (world, policy), Ring(policy, world)))
+        runs.append(("shard-tree-p2-%s" % policy, ShardTree(policy, SHARDS)))
     for name, reduce in runs:
         gens = generate(c, w, ps, STEPS, reduce)
         for i, rows in enumerate(gens):
