@@ -73,10 +73,13 @@ design calls made while building.
   limit 1; no failure / abort / retry / drain; each failure run rerun and
   compared (G5). Asserted in `tests/serving_experiment.rs`.
 
+- Docs: runtime README (R2 section, results, evidence, limits), root
+  README, PLAN (R2 ✅, R2c decisions), CHANGELOG (R2 entry), case-study
+  addendum.
+
 ## Next
 
-R2c: docs (runtime README, root README, PLAN, CHANGELOG, case-study
-addendum), then PR, CI, review, squash-merge, and the final report.
+R2c: PR, CI, review, squash-merge, then the final report.
 
 ## Open questions
 

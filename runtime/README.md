@@ -9,9 +9,9 @@ why, and what it costs to make them stop changing.
 Milestone **R1** is an exact, message-level AllReduce simulator plus a
 tensor-parallel experiment. **R1.1** adds mixed wire policies, reduce-scatter /
 all-gather as separate collectives, a deterministic AllReduce over a fixed tree
-of shards, and a sweep across seeds. **R2**, a deterministic serving
-simulator (paged KV cache, continuous batching), is in progress — see
-[PLAN.md](PLAN.md) and [R2_PROGRESS.md](R2_PROGRESS.md).
+of shards, and a sweep across seeds. **R2** is a deterministic serving
+simulator (paged KV cache, continuous batching, preemption, rank failures);
+see [below](#r2-the-serving-simulator) and [PLAN.md](PLAN.md).
 For a two-page summary of the results, read the
 [runtime case study](../docs/RUNTIME_CASE_STUDY.md).
 
@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 99 tests, including the recorded-artifact checks
+cargo test --release                              # 106 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -173,13 +173,12 @@ seeds.
   that changed led by only 1–4 BF16 ulps, against a median of 16 ulps over
   all 96 tokens, so these are near-ties.
 
-## R2 (in progress): the serving simulator
+## R2: the serving simulator
 
 A deterministic discrete-event simulator of one tensor-parallel serving
 group: paged KV cache, continuous batching with chunked prefill, forked
-samples, recompute or swap preemption, and step times that include the
-real AllReduce schedules. R2a (the KV-cache library) and R2b (scheduler,
-engine, recorded scenarios) are done; failure injection (R2c) is next.
+samples, recompute or swap preemption, fail-stop rank failures with abort,
+retry or drain, and step times that include the real AllReduce schedules.
 
 | Module                | Role                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -189,7 +188,7 @@ engine, recorded scenarios) are done; failure injection (R2c) is next.
 | `serving::kv`         | Block pool (LIFO free list, refcounts), block tables, prefix cache with LRU retention, fork and copy-on-write, host swap pool, invariant checks   |
 | `serving::step_time`  | Roofline compute plus two AllReduces per layer, costed from the schedule each collective records in a dry run                                     |
 | `serving::scheduler`  | The written policy: token budget, decodes first, chunked prefill, FCFS admission within priority, victim = lowest priority then latest arrival    |
-| `serving::engine`     | Event loop with per-step scheduler, token-stream and KV-cache invariant checks                                                                    |
+| `serving::engine`     | Event loop with per-step scheduler, token-stream and KV-cache invariant checks; fault plans and guarantees G1–G4                                  |
 | `serving::reference`  | A slow independent scheduler and cache (test oracle)                                                                                              |
 | `serving::experiment` | The recorded scenarios in [`results/r2-serving.md`](results/r2-serving.md)                                                                        |
 
@@ -210,6 +209,11 @@ requests per run):
   TTFT p50 is 24.32 ms against ring's 12.69 ms. In this model the tree sends
   the whole buffer at every level, so its message size grows with the
   step's token count.
+- **Failures** (P = 4, 20 req/s, one rank failure in step 1500, 0.5 s
+  detection and 5 s recovery): abort failed the 6 requests in flight; retry
+  finished all 200 and recomputed 3,832 tokens; drain finished 88 and
+  rejected 112. Every failure run reran byte-identically, and G1–G4 held in
+  every run.
 
 Evidence: `tests/dry_run.rs` (dry-run rounds equal executed rounds for every
 algorithm, policy and P ≤ 16, and the shard tree for every P ≤ S);
@@ -218,12 +222,17 @@ checked against a plain model after every operation, five planted bugs);
 `tests/serving_engine.rs` (a hand-derived three-request trace, 300 random
 workloads with every invariant after every step and a trace equal to the
 reference scheduler's, seven planted bugs caught inside the engine);
-`tests/serving_traces.rs` (golden JSON-lines traces);
+`tests/serving_traces.rs` (golden JSON-lines traces, two with failures);
+`tests/serving_faults.rs` (hand-derived retry, abort and drain cases, 300
+random fault plans whose traces equal the reference's and rerun
+identically, a planted double commit on retry);
 `tests/serving_step_time.rs` (hand-computed step times);
 `tests/serving_workload.rs` (a pinned workload fingerprint that CI checks on
-Linux); `tests/serving_experiment.rs` (the recorded results are current, and
-the memory-pressure scenario preempts in both modes). Design decisions are
-listed in [R2_PROGRESS.md](R2_PROGRESS.md).
+Linux); `tests/serving_experiment.rs` (the recorded results are current, the
+memory-pressure scenario preempts in both modes, and each failure policy
+behaves as specified). Every planted bug and the check that caught it, and
+every design decision, are listed in [R2_PROGRESS.md](R2_PROGRESS.md).
+`cargo run --release -- traces` regenerates `tests/traces/`.
 
 ## Evidence
 
@@ -270,4 +279,9 @@ distribution. Inputs are synthetic (Irwin–Hall approximate
 normals, chosen because they are bit-identical on every platform). The cost
 model ignores link contention, compute, overlap and topology; its constants
 are illustrative. Nothing here is a measurement of real hardware, an
-interconnect, or any particular vendor's system.
+interconnect, or any particular vendor's system. The R2 serving simulator
+uses synthetic tokens (no model numerics), a roofline with illustrative
+constants, no compute/communication overlap, one tensor-parallel group,
+uncontended links and fail-stop failures with constant detection and
+recovery times; P must divide the 8 KV heads (no KV-head replication), and
+it has no speculative decoding, LoRA or quantized KV.

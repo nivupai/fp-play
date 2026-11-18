@@ -30,7 +30,7 @@ shard tree, and non-contiguous shard ownership.
 - **Sensitivity**: sweep seeds, hidden size and P up to 64; report spread,
   not one run.
 
-## R2 — Serving runtime (idea #3)
+## R2 — Serving runtime (idea #3) ✅
 
 A deterministic discrete-event simulator in Rust:
 
@@ -108,6 +108,15 @@ Made while building (details and rationale in
   functions; golden traces have their own `traces` command; scenario
   settings are listed in `results/r2-serving.md`; the chain-key hash is a
   multiply–rotate loop with hits verified against stored tokens.
+- R2c: a failed step is charged its share of compute and communication up
+  to the failing collective plus detection and recovery, and commits
+  nothing; faults are given by step index; retry limit per request; abort
+  and retry leave swapped and waiting requests alone; drain retries running
+  requests, then rejects never-admitted requests and later arrivals; G1 is
+  checked right after a failure, G2 every step, G3 and G4 at the end, G5 by
+  rerunning; interrupted steps count as `fault_ns`, not compute or
+  communication; scenario 5 runs at 20 req/s with the failure in step 1500
+  (10 req/s left only 2 requests in flight).
 
 ### R2 future work
 
