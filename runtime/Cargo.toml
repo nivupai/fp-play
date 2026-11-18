@@ -11,6 +11,12 @@ publish = false
 # code in this crate, and builds work offline.
 [dependencies]
 
+[features]
+# Compiles in the deliberate bugs that the planted-bug tests switch on. Off by
+# default; the `experiment` and `traces` commands refuse to run when it is on,
+# so no recorded artifact can come from a build with planted bugs.
+planted-bugs = []
+
 [profile.release]
 debug = false
 lto = "thin"

@@ -328,7 +328,7 @@ pub struct SchedulerCounters {
 }
 
 /// Deliberate scheduler bugs that tests plant to show the checks catch
-/// them. Never set outside tests.
+/// them. Settable only in a build with the `planted-bugs` feature.
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SchedulerMutation {
@@ -346,6 +346,7 @@ pub struct Scheduler {
     pub kv: KvCache,
     pub requests: Vec<RequestState>,
     pub counters: SchedulerCounters,
+    #[cfg(feature = "planted-bugs")]
     #[doc(hidden)]
     pub mutation: Option<SchedulerMutation>,
     /// After a failure under the drain policy: admit nothing new.
@@ -359,9 +360,22 @@ impl Scheduler {
             kv,
             requests: requests.iter().cloned().map(RequestState::new).collect(),
             counters: SchedulerCounters::default(),
+            #[cfg(feature = "planted-bugs")]
             mutation: None,
             draining: false,
         }
+    }
+
+    #[cfg(feature = "planted-bugs")]
+    fn planted(&self, m: SchedulerMutation) -> bool {
+        self.mutation == Some(m)
+    }
+
+    /// Without the `planted-bugs` feature no bug can be active.
+    #[cfg(not(feature = "planted-bugs"))]
+    #[inline(always)]
+    fn planted(&self, _: SchedulerMutation) -> bool {
+        false
     }
 
     /// Most device blocks a request could ever need (no sharing assumed).
@@ -409,7 +423,7 @@ impl Scheduler {
                 out.failed.push(self.requests[r].request.id);
                 continue;
             }
-            let double = self.mutation == Some(SchedulerMutation::DoubleCommitOnRetry);
+            let double = self.planted(SchedulerMutation::DoubleCommitOnRetry);
             let state = &mut self.requests[r];
             state.retries += 1;
             state.phase = Phase::Waiting;
@@ -526,7 +540,7 @@ impl Scheduler {
     fn victim(&self, plan: &StepPlan, except: usize) -> Option<usize> {
         let busy = |r: usize| plan.work.iter().any(|w| w.seq.request == self.requests[r].request.id);
         let mut order = self.in_order(Phase::Running);
-        if self.mutation != Some(SchedulerMutation::VictimFirst) {
+        if !self.planted(SchedulerMutation::VictimFirst) {
             order.reverse();
         }
         order.into_iter().find(|&r| r != except && !busy(r))
@@ -608,7 +622,7 @@ impl Scheduler {
                         break 'requests;
                     }
                     let mut chunk = work.min(budget);
-                    if self.mutation == Some(SchedulerMutation::BudgetOverrun) && work > budget {
+                    if self.planted(SchedulerMutation::BudgetOverrun) && work > budget {
                         chunk += 1;
                     }
                     let seq = self.requests[r].seq(s);

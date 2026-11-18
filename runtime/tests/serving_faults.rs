@@ -1,10 +1,10 @@
 //! R2c: rank failures, the three policies, and guarantees G1–G5.
 
 use fp_play_runtime::rng::SplitMix64;
-use fp_play_runtime::serving::engine::{run, EngineConfig, EngineError, Fault, FaultConfig, Planted};
+use fp_play_runtime::serving::engine::{run, EngineConfig, EngineError, Fault, FaultConfig};
 use fp_play_runtime::serving::kv::{KvConfig, SeqId};
 use fp_play_runtime::serving::reference;
-use fp_play_runtime::serving::scheduler::{FaultPolicy, Phase, PreemptionMode, SchedulerConfig, SchedulerMutation};
+use fp_play_runtime::serving::scheduler::{FaultPolicy, Phase, PreemptionMode, SchedulerConfig};
 use fp_play_runtime::serving::step_time::LinearTimer;
 use fp_play_runtime::serving::traces::{three_requests_failing, to_jsonl, LINEAR};
 use fp_play_runtime::serving::workload::{LengthDist, Request, WorkloadConfig};
@@ -177,7 +177,6 @@ fn random_case(seed: u64) -> (Vec<Request>, EngineConfig, LinearTimer) {
             layers: 4,
         },
         kv_check_interval: 1,
-        planted: None,
     };
     let timer = LinearTimer {
         base_ns: 1_000 + seed % 7,
@@ -217,12 +216,16 @@ fn random_failures_keep_g1_to_g5_and_match_the_reference() {
     assert!(totals.iter().all(|&t| t > 50), "{totals:?}");
 }
 
+/// Compiled only with `--features planted-bugs`.
+#[cfg(feature = "planted-bugs")]
 #[test]
 fn double_commit_on_retry_is_caught() {
+    use fp_play_runtime::serving::engine::{run_planted, Planted};
+    use fp_play_runtime::serving::scheduler::SchedulerMutation;
     for seed in 0..300 {
-        let (requests, mut config, timer) = random_case(seed);
-        config.planted = Some(Planted::Scheduler(SchedulerMutation::DoubleCommitOnRetry));
-        if let Err(EngineError::Invariant { what, step }) = run(&requests, &config, &timer) {
+        let (requests, config, timer) = random_case(seed);
+        let planted = Planted::Scheduler(SchedulerMutation::DoubleCommitOnRetry);
+        if let Err(EngineError::Invariant { what, step }) = run_planted(&requests, &config, &timer, planted) {
             eprintln!("DoubleCommitOnRetry: caught at seed {seed}, step {step}: {what}");
             assert!(what.starts_with("token stream:"), "{what}");
             return;

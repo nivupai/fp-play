@@ -11,7 +11,8 @@ design calls made while building.
 | -------------------------------------------------------------------------------------- | ---------------------- | -------------------------- |
 | R2a: dry-run collectives, workload, KV cache, invariants, property tests, planted bugs | `runtime-r2-serving`   | merged: PR #19 (`2c5acb9`) |
 | R2b: step time, scheduler, engine, metrics, reference scheduler, traces, scenarios 1–4 | `runtime-r2b-engine`   | merged: PR #20 (`0d81c01`) |
-| R2c: failure injection, G1–G5, scenario 5, docs                                        | `runtime-r2c-failures` | in progress                |
+| R2c: failure injection, G1–G5, scenario 5, docs                                        | `runtime-r2c-failures` | merged: PR #21 (`4bf9ac9`) |
+| Cleanup: compile-time planted bugs, scenario-4 and swap-sensitivity docs, case study   | `runtime-r2-cleanup`   | in progress                |
 
 ## Done
 
@@ -77,9 +78,26 @@ design calls made while building.
   README, PLAN (R2 ✅, R2c decisions), CHANGELOG (R2 entry), case-study
   addendum.
 
+- Cleanup: planted bugs moved behind the compile-time `planted-bugs` Cargo
+  feature (they had been a hidden runtime field and setter). Default builds
+  have no field, setter or flag that can enable one; `PLANTED_BUGS` is
+  checked at compile time in `tests/planted_build.rs`, and a
+  `planted-bugs` build's `experiment` and `traces` commands refuse to run
+  (tested by running the real binary). CI runs clippy and the planted-bug
+  tests with the feature in a separate step.
+
+- Cleanup: scenario 4 already covered all three collectives under both
+  policies; `r2-serving.md` now has a deterministic-pairing table (shard
+  tree + fp32-rs/bf16-ag against ring under bf16 and fp32-rs). Swap
+  sensitivity rows: swap at 100, 400 and 1600 GB/s, and both modes with one
+  sample per request. Finding: no swap/recompute crossover in 25–1600 GB/s
+  with the 1/2/4 sample mix, while with one sample swap is ahead at 25 GB/s.
+  The runtime README states each scenario's KV-check interval; the case
+  study has an R2 section.
+
 ## Next
 
-R2c: PR, CI, review, squash-merge, then the final report.
+Cleanup PR: PR, CI, merge. Then the R3 plan (stop for approval).
 
 ## Open questions
 
@@ -104,9 +122,10 @@ None.
 - R2a-4. A request's prompt is its shared prefix (if any) followed by its own
   tokens, so `prompt_len` includes the prefix. Tokens are 32-bit SplitMix64
   hashes, not a vocabulary index.
-- R2a-5. Planted bugs are a hidden `kv::Mutation` switch on the cache
-  (`#[doc(hidden)]`, set only by tests), so the catching tests run on every
-  CI build instead of once by hand.
+- R2a-5. Planted bugs were a hidden runtime switch (`#[doc(hidden)]`
+  field and setter). Superseded in the cleanup PR: they are compiled in
+  only with the `planted-bugs` Cargo feature, and CI runs their tests in a
+  separate `--features planted-bugs` step.
 - R2a-6. KV invariants live in `KvCache::check` rather than a separate
   `invariants` module; scheduler, token-stream and event invariants (plan
   items 7–9) join in R2b with the engine.
@@ -185,6 +204,12 @@ None.
 - R2c-7. Each run's JSON gains `failed`, `fault_steps`, `fault_ns`,
   `fault_policy`, `faults_fired` and `rerun_identical`; scenarios 1–4
   values are unchanged.
+- C-1. The swap-sensitivity scenario keeps every pressure setting and
+  changes only the swap bandwidth (100, 400, 1600 GB/s), or only the samples
+  per request (1 for both modes). The bandwidth sweep found no crossover,
+  so the docs say that instead of naming one.
+- C-2. The deterministic pairing is compared with ring under both wire
+  policies at P = 4 and 8 (the scenario-4 grid).
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1

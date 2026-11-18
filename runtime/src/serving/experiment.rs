@@ -2,7 +2,8 @@
 //!
 //! 1. **Load sweep**: arrival rate × tensor-parallel size P.
 //! 2. **Preemption under memory pressure**: recompute versus swap, with a
-//!    device memory small enough that preemption is frequent.
+//!    device memory small enough that preemption is frequent, plus swap at
+//!    faster host links and both modes with one sample per request.
 //! 3. **Prefix sharing**: shared system prompts with the prefix cache on and off.
 //! 4. **Collective choice**: ring, halving-doubling and the shard tree, under
 //!    a BF16 wire and FP32 reduce-scatter / BF16 all-gather.
@@ -48,6 +49,8 @@ pub struct ServingConfig {
     pub pressure_swap_blocks: usize,
     /// `(weight, class)` priorities in the pressure scenario.
     pub pressure_priorities: Vec<(u32, u8)>,
+    /// Further host-link bandwidths (bytes/s) for swap in the pressure scenario.
+    pub swap_bandwidths: Vec<f64>,
     pub prefix_memory_bytes: u64,
     pub prefix_groups: u32,
     pub prefix_len: u32,
@@ -88,6 +91,7 @@ impl Default for ServingConfig {
             pressure_memory_bytes: 21_000_000_000,
             pressure_swap_blocks: 1024,
             pressure_priorities: vec![(4, 0), (1, 1)],
+            swap_bandwidths: vec![100e9, 400e9, 1.6e12],
             prefix_memory_bytes: 30_000_000_000,
             prefix_groups: 4,
             prefix_len: 512,
@@ -134,6 +138,10 @@ pub struct ScenarioRun {
     /// The KV-cache invariants were checked after every k-th step and the
     /// last; the scheduler and token-stream invariants after every step.
     pub kv_check_interval: u64,
+    /// Host-link bandwidth used for swapping, bytes/s.
+    pub host_bytes_per_s: f64,
+    /// `(weight, n)` samples per request.
+    pub samples: Vec<(u32, u32)>,
     /// The failure policy, if this run has a failure plan.
     pub fault_policy: Option<FaultPolicy>,
     /// (failed, retried, rejected) request counts at each failure that fired.
@@ -148,6 +156,8 @@ pub struct ServingResult {
     pub config: ServingConfig,
     pub load: Vec<ScenarioRun>,
     pub pressure: Vec<ScenarioRun>,
+    /// Swap at faster host links, then recompute and swap with one sample per request.
+    pub swap_sensitivity: Vec<ScenarioRun>,
     pub prefix: Vec<ScenarioRun>,
     pub collectives: Vec<ScenarioRun>,
     pub failures: Vec<ScenarioRun>,
@@ -167,12 +177,15 @@ pub struct RunSpec {
     pub policy: WirePolicy,
     pub kv_check_interval: u64,
     pub faults: FaultConfig,
+    /// Host-link bandwidth for swapping, bytes/s (default: the device's).
+    pub host_bytes_per_s: Option<f64>,
 }
 
 /// Run one scenario point; also returns the full run for tests.
 pub fn run_spec(config: &ServingConfig, spec: &RunSpec) -> Result<(ScenarioRun, RunResult), String> {
     let device = DeviceConfig {
         memory_bytes: spec.memory_bytes,
+        host_bytes_per_s: spec.host_bytes_per_s.unwrap_or(config.device.host_bytes_per_s),
         ..config.device
     };
     let capacity = kv_capacity_blocks(&config.model, &device, spec.world, BLOCK_SIZE).map_err(|e| e.to_string())?;
@@ -201,7 +214,6 @@ pub fn run_spec(config: &ServingConfig, spec: &RunSpec) -> Result<(ScenarioRun, 
         },
         faults: spec.faults.clone(),
         kv_check_interval: spec.kv_check_interval,
-        planted: None,
     };
     let requests = spec.workload.generate().map_err(|e| e.to_string())?;
     let result = run(&requests, &engine, &timer).map_err(|e| format!("{}: {e}", spec.label))?;
@@ -237,6 +249,8 @@ pub fn run_spec(config: &ServingConfig, spec: &RunSpec) -> Result<(ScenarioRun, 
             collective: spec.collective,
             policy: spec.policy,
             kv_check_interval: spec.kv_check_interval,
+            host_bytes_per_s: device.host_bytes_per_s,
+            samples: spec.workload.samples.clone(),
             fault_policy: has_faults.then_some(spec.faults.policy),
             fault_outcomes,
             rerun_identical,
@@ -260,6 +274,7 @@ impl ServingConfig {
             policy: WirePolicy::uniform(Format::Bf16),
             kv_check_interval: 1,
             faults: FaultConfig::none(),
+            host_bytes_per_s: None,
         }
     }
 
@@ -320,6 +335,23 @@ impl ServingConfig {
                 s
             })
             .collect()
+    }
+
+    pub fn swap_sensitivity_specs(&self) -> Vec<RunSpec> {
+        let base = self.pressure_specs();
+        let mut out = Vec::new();
+        for &bw in &self.swap_bandwidths {
+            let mut s = base[1].clone();
+            s.label = format!("pressure swap host {} GB/s", bw / 1e9);
+            s.host_bytes_per_s = Some(bw);
+            out.push(s);
+        }
+        for mut s in base {
+            s.label = format!("{} one sample", s.label);
+            s.workload.samples = vec![(1, 1)];
+            out.push(s);
+        }
+        out
     }
 
     pub fn prefix_specs(&self) -> Vec<RunSpec> {
@@ -391,6 +423,7 @@ pub fn run_all(config: &ServingConfig) -> Result<ServingResult, String> {
     let groups = [
         config.load_specs(),
         config.pressure_specs(),
+        config.swap_sensitivity_specs(),
         config.prefix_specs(),
         config.collective_specs(),
         config.failure_specs(),
@@ -403,8 +436,9 @@ pub fn run_all(config: &ServingConfig) -> Result<ServingResult, String> {
         config: config.clone(),
         load: take(lens[0]),
         pressure: take(lens[1]),
-        prefix: take(lens[2]),
-        collectives: take(lens[3]),
-        failures: take(lens[4]),
+        swap_sensitivity: take(lens[2]),
+        prefix: take(lens[3]),
+        collectives: take(lens[4]),
+        failures: take(lens[5]),
     })
 }

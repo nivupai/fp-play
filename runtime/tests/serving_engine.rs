@@ -6,11 +6,11 @@
 //!   decision, under both preemption modes, with and without prefix caching.
 
 use fp_play_runtime::rng::SplitMix64;
-use fp_play_runtime::serving::engine::{run, EngineConfig, EngineError, FaultConfig, Planted, StepRecord};
-use fp_play_runtime::serving::kv::{KvConfig, Mutation, SeqId};
+use fp_play_runtime::serving::engine::{run, EngineConfig, FaultConfig, StepRecord};
+use fp_play_runtime::serving::kv::{KvConfig, SeqId};
 use fp_play_runtime::serving::metrics::{metrics, nearest_rank};
 use fp_play_runtime::serving::reference;
-use fp_play_runtime::serving::scheduler::{Phase, PreemptionMode, SchedulerConfig, SchedulerMutation, Work};
+use fp_play_runtime::serving::scheduler::{Phase, PreemptionMode, SchedulerConfig, Work};
 use fp_play_runtime::serving::step_time::LinearTimer;
 use fp_play_runtime::serving::workload::{LengthDist, Request, WorkloadConfig};
 
@@ -73,7 +73,6 @@ fn hand_derived_three_request_trace() {
         },
         faults: FaultConfig::none(),
         kv_check_interval: 1,
-        planted: None,
     };
     let result = run(&requests, &config, &TIMER).unwrap();
     let s = &result.steps;
@@ -169,7 +168,6 @@ fn random_case(seed: u64) -> (Vec<Request>, EngineConfig) {
         },
         faults: FaultConfig::none(),
         kv_check_interval: 1,
-        planted: None,
     };
     (workload.generate().unwrap(), config)
 }
@@ -236,64 +234,69 @@ fn step_records_are_well_formed() {
 }
 
 // ---------------------------------------------------------------------------
-// Planted bugs
+// Planted bugs (compiled only with `--features planted-bugs`)
 // ---------------------------------------------------------------------------
 
-/// Which check first caught a planted bug on the random cases.
-#[derive(Debug, PartialEq, Eq)]
-enum Caught {
-    /// An engine invariant; the message starts with this prefix.
-    Invariant(String),
-    /// Every invariant held, but the trace differs from the reference.
-    Reference,
-}
+#[cfg(feature = "planted-bugs")]
+mod planted {
+    use super::*;
+    use fp_play_runtime::serving::engine::{run_planted, EngineError, Planted};
+    use fp_play_runtime::serving::kv::Mutation;
+    use fp_play_runtime::serving::scheduler::SchedulerMutation;
 
-fn first_catch(planted: Planted) -> Option<(u64, Caught)> {
-    for seed in 0..300 {
-        let (requests, mut config) = random_case(seed);
-        config.planted = Some(planted);
-        let timer = timer_for(seed);
-        match run(&requests, &config, &timer) {
-            Err(EngineError::Invariant { what, .. }) => return Some((seed, Caught::Invariant(what))),
-            Err(e) => panic!("seed {seed}: {e}"),
-            Ok(result) => {
-                let mut clean = config;
-                clean.planted = None;
-                if result.steps != reference::run(&requests, clean.scheduler, clean.kv, &clean.faults, &timer) {
-                    return Some((seed, Caught::Reference));
+    /// Which check first caught a planted bug on the random cases.
+    #[derive(Debug, PartialEq, Eq)]
+    enum Caught {
+        /// An engine invariant; the message starts with this prefix.
+        Invariant(String),
+        /// Every invariant held, but the trace differs from the reference.
+        Reference,
+    }
+
+    fn first_catch(planted: Planted) -> Option<(u64, Caught)> {
+        for seed in 0..300 {
+            let (requests, config) = random_case(seed);
+            let timer = timer_for(seed);
+            match run_planted(&requests, &config, &timer, planted) {
+                Err(EngineError::Invariant { what, .. }) => return Some((seed, Caught::Invariant(what))),
+                Err(e) => panic!("seed {seed}: {e}"),
+                Ok(result) => {
+                    if result.steps != reference::run(&requests, config.scheduler, config.kv, &config.faults, &timer) {
+                        return Some((seed, Caught::Reference));
+                    }
                 }
             }
         }
+        None
     }
-    None
-}
 
-#[test]
-fn every_planted_bug_is_caught_inside_the_engine() {
-    let expect = |s: &str| Caught::Invariant(s.to_string());
-    let cases = [
-        (Planted::Kv(Mutation::LeakOnFree), expect("kv: Refcount")),
-        (Planted::Kv(Mutation::SkipCow), expect("kv: Content")),
-        (Planted::Kv(Mutation::SwapOutKeepsSharedRef), expect("kv: Refcount")),
-        (Planted::Kv(Mutation::EarlyBlockFull), expect("kv: Shape")),
-        (Planted::Kv(Mutation::StalePrefixKey), expect("kv: PrefixCache")),
-        (
-            Planted::Scheduler(SchedulerMutation::BudgetOverrun),
-            expect("scheduler:"),
-        ),
-        (Planted::Scheduler(SchedulerMutation::VictimFirst), Caught::Reference),
-    ];
-    for (planted, want) in cases {
-        let (seed, caught) = first_catch(planted).unwrap_or_else(|| panic!("{planted:?} was not caught"));
-        eprintln!("{planted:?}: caught at seed {seed} by {caught:?}");
-        match (&caught, &want) {
-            (Caught::Invariant(got), Caught::Invariant(w)) => {
-                assert!(got.starts_with(w.as_str()), "{planted:?}: {got}");
-                if w == "scheduler:" {
-                    assert!(got.contains("over the budget"), "{got}");
+    #[test]
+    fn every_planted_bug_is_caught_inside_the_engine() {
+        let expect = |s: &str| Caught::Invariant(s.to_string());
+        let cases = [
+            (Planted::Kv(Mutation::LeakOnFree), expect("kv: Refcount")),
+            (Planted::Kv(Mutation::SkipCow), expect("kv: Content")),
+            (Planted::Kv(Mutation::SwapOutKeepsSharedRef), expect("kv: Refcount")),
+            (Planted::Kv(Mutation::EarlyBlockFull), expect("kv: Shape")),
+            (Planted::Kv(Mutation::StalePrefixKey), expect("kv: PrefixCache")),
+            (
+                Planted::Scheduler(SchedulerMutation::BudgetOverrun),
+                expect("scheduler:"),
+            ),
+            (Planted::Scheduler(SchedulerMutation::VictimFirst), Caught::Reference),
+        ];
+        for (planted, want) in cases {
+            let (seed, caught) = first_catch(planted).unwrap_or_else(|| panic!("{planted:?} was not caught"));
+            eprintln!("{planted:?}: caught at seed {seed} by {caught:?}");
+            match (&caught, &want) {
+                (Caught::Invariant(got), Caught::Invariant(w)) => {
+                    assert!(got.starts_with(w.as_str()), "{planted:?}: {got}");
+                    if w == "scheduler:" {
+                        assert!(got.contains("over the budget"), "{got}");
+                    }
                 }
+                _ => assert_eq!(caught, want, "{planted:?}"),
             }
-            _ => assert_eq!(caught, want, "{planted:?}"),
         }
     }
 }

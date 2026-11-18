@@ -12,6 +12,11 @@
 //! * [`report`] / [`json`] — deterministic artifacts
 //! * [`serving`] — R2: the deterministic serving simulator
 
+/// Whether this build compiles in the deliberate bugs used by the
+/// planted-bug tests (the `planted-bugs` Cargo feature). The `experiment`
+/// and `traces` commands refuse to run when it is true.
+pub const PLANTED_BUGS: bool = cfg!(feature = "planted-bugs");
+
 pub mod collectives;
 pub mod cost;
 pub mod exact;

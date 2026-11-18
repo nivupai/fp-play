@@ -38,6 +38,22 @@ P = 1, 10 req/s, device memory 21.00 GB → 449 KV blocks (7184 tokens); 1024 ho
 | recompute | 131 | 0 | 61427 | 0.00 | 593.52 / 3263.96 | 6.91 / 14.06 | 1610.65 / 4769.42 | 2518 |
 | swap | 84 | 0 | 0 | 23.04 | 1280.26 / 5789.22 | 6.45 / 24.77 | 2275.53 / 7061.50 | 2212 |
 
+### Sensitivity to the host link and to forked samples
+
+Swap's cost depends on the host-link bandwidth (swap traffic ÷ bandwidth is charged to the step); recompute does not use the host link. Same scenario, varying the swap bandwidth, then both modes with one sample per request.
+
+| Samples | Mode | Host link (GB/s) | Preemptions | TTFT p50 / p99 | E2E p50 / p99 | Output tok/s |
+|---|---|---:|---:|---:|---:|---:|
+| 1, 2 or 4 (weights 2 : 1 : 1) | recompute | – | 131 | 593.52 / 3263.96 | 1610.65 / 4769.42 | 2518 |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 25 | 84 | 1280.26 / 5789.22 | 2275.53 / 7061.50 | 2212 |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 100 | 89 | 1039.61 / 4937.70 | 2013.81 / 5984.00 | 2322 |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 400 | 87 | 1000.54 / 4261.64 | 1946.73 / 5532.05 | 2433 |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 1600 | 82 | 996.49 / 4278.49 | 1942.30 / 5423.93 | 2389 |
+| 1 per request | recompute | – | 33 | 56.40 / 939.20 | 1028.74 / 2039.30 | 1393 |
+| 1 per request | swap | 25 | 23 | 45.66 / 870.85 | 1008.37 / 1980.69 | 1405 |
+
+With the recorded mix of 1, 2 and 4 samples, swap's E2E p50 stays above recompute's at every tested host-link bandwidth (25–1600 GB/s): there is no crossover in this range. With one sample per request, swap's E2E p50 is 1008.37 ms against recompute's 1028.74 ms at 25 GB/s. Changing only the samples per request reverses the order. That is consistent with a swapped sample getting private copies of the blocks it shared with its siblings, so swapping back in needs more blocks than the request held; this mechanism was not isolated further.
+
 ## 3. Prefix sharing
 
 P = 1, 10 req/s, device memory 30.00 GB → 4741 KV blocks; 4 shared system prompts of 512 tokens, used by 80.0% of requests; KV check every 1 step(s).
@@ -65,6 +81,15 @@ P = 1, 10 req/s, device memory 30.00 GB → 4741 KV blocks; 4 shared system prom
 | 8 | fp32-rs/bf16-ag | ring | 74.3% | 2.66 / 3.21 | +0.0% | 15.77 / 28.64 |
 | 8 | fp32-rs/bf16-ag | halving-doubling | 57.6% | 1.58 / 2.13 | -40.8% | 13.10 / 25.52 |
 | 8 | fp32-rs/bf16-ag | shard-tree (S = 64) | 66.9% | 1.98 / 3.78 | -25.5% | 34.39 / 88.78 |
+
+### The deterministic pairing
+
+R1.1 pairs the shard tree (output bits independent of P) with `fp32-rs/bf16-ag`. Its latency against ring with each wire policy, at the same P (p50; change in parentheses):
+
+| P | Shard tree + fp32-rs/bf16-ag: TPOT / TTFT | Ring + bf16: TPOT / TTFT | Ring + fp32-rs/bf16-ag: TPOT / TTFT |
+|---:|---:|---:|---:|
+| 4 | 2.23 / 26.86 | 2.21 / 12.61 (tree +1.2% / +112.9%) | 2.26 / 15.23 (tree -1.2% / +76.4%) |
+| 8 | 1.98 / 34.39 | 2.60 / 12.69 (tree -23.7% / +171.0%) | 2.66 / 15.77 (tree -25.5% / +118.1%) |
 
 ## 5. Failures
 
