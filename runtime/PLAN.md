@@ -139,6 +139,9 @@ Headline experiments:
 Uses random weights by default; a small real checkpoint is optional (it needs
 network access to download).
 
+Progress, the approved answers and the design calls made while building are
+tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md).
+
 ## R4 — Per-layer precision policies (idea #5)
 
 Choose a storage format and accumulation width per layer (FP32 / BF16 /
