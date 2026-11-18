@@ -20,4 +20,5 @@ pub mod ops;
 pub mod policies;
 pub mod report;
 pub mod rng;
+pub mod shard_tree;
 pub mod tensor_parallel;

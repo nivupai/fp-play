@@ -33,3 +33,7 @@ jobs:
         run: |
           python3 -I scripts/gen_sum_vectors.py > /tmp/exact-sums.txt
           cmp /tmp/exact-sums.txt tests/vectors/exact-sums.txt
+      - name: Independent Python shard-tree vectors are current
+        run: |
+          python3 -I scripts/gen_tree_vectors.py > /tmp/tree-sums.txt
+          cmp /tmp/tree-sums.txt tests/vectors/tree-sums.txt
