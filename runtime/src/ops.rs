@@ -1,7 +1,13 @@
-//! Correctly rounded operations built on [`ExactSum`].
+//! Correctly rounded operations.
 //!
-//! Each function computes its mathematical result exactly and rounds once.
-//! No host floating-point arithmetic is used to model a format's arithmetic.
+//! Every function returns the correctly rounded result (round to nearest,
+//! ties to even, canonical NaN). Most compute the exact result with
+//! [`ExactSum`] and round once. Binary32 and BF16 [`add`] and the
+//! binary32 ↔ BF16 [`convert`] use the host's IEEE 754 binary32 basic
+//! operations instead (a native fast path); `tests/ops_fast_path.rs` tests
+//! them equal to the exact path ([`add_exact`], [`convert_exact`]) on
+//! subnormals, ties, cancellation, overflow and NaNs as well as random
+//! inputs, and checks the exact path against the host independently.
 
 use crate::exact::ExactSum;
 use crate::format::{decode, decode_f64, Dyadic, Format, Value};

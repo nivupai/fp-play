@@ -416,7 +416,7 @@ pub fn to_markdown(r: &DecodeResult, command: &str) -> String {
     }
     let (agree, total) = scales_agree(r);
     md.push_str(&format!(
-        "\nAt logit scale {}, {agree} of {total} runs chose exactly the tokens they chose at scale {}. ",
+        "\nA positive logit scale preserves the argmax, so it cannot affect greedy tokens. Measured as neutral: at logit scale {}, {agree} of {total} runs chose exactly the tokens they chose at scale {}. A power-of-two scale also multiplies every logit exactly, so absolute margins grow by the scale (table above) while margins in ulps of the top logit are unchanged; margins below are in those ulps.\n\n",
         c.scales
             .iter()
             .skip(1)
@@ -425,7 +425,9 @@ pub fn to_markdown(r: &DecodeResult, command: &str) -> String {
             .join(", "),
         scale_name(s0)
     ));
-    md.push_str("A positive logit scale preserves the order of the logits, and a power of two multiplies them exactly, so absolute margins grow by the scale while margins in ulps, and every greedy token, stay the same. A wider logit spread made this way does not make decoding more robust: the perturbation grows with the logits. Divergence is therefore given against the margin in ulps below.\n\n");
+    let mut medians: Vec<(WirePolicy, f64)> = Vec::new();
+    let mut flip_total = 0;
+    let mut consistent = true;
     for &policy in &c.policies {
         let runs = runs_of(r, policy, s0);
         let tokens: Vec<&AtRisk> = runs.iter().flat_map(|g| g.at_risk.iter()).collect();
@@ -452,36 +454,50 @@ pub fn to_markdown(r: &DecodeResult, command: &str) -> String {
                 opt(percentile(&x.perturbations, 50.0), 2),
             ));
         }
-        let flips: Vec<f64> = sorted(tokens.iter().filter(|t| t.flipped).map(|t| t.margin_ulps).collect());
-        if let Some(&max) = flips.last() {
-            let below = tokens.iter().filter(|t| t.margin_ulps <= max).count();
-            md.push_str(&format!(
-                "\nEvery flip ({} in all) happened at a token whose baseline margin was at most {:.0} ulps; {:.1}% of at-risk tokens had a margin that small.",
-                flips.len(),
-                max,
-                100.0 * below as f64 / tokens.len() as f64
-            ));
-        } else {
-            md.push_str("\nNo token flipped.");
-        }
-        // A flip needs the top-2 gap to move by more than the margin, and the
-        // gap moves by at most twice the largest logit change.
+        // Within reach: the gap between two logits moves by at most twice
+        // the largest logit change, so only these tokens could flip.
         let reachable: Vec<&&AtRisk> = tokens
             .iter()
             .filter(|t| t.margin_ulps <= 2.0 * t.perturbation_ulps)
             .collect();
-        let consistent = tokens
+        let flips = tokens.iter().filter(|t| t.flipped).count();
+        flip_total += flips;
+        let within = tokens
             .iter()
             .filter(|t| t.flipped)
             .all(|t| t.margin_ulps <= 2.0 * t.perturbation_ulps);
+        consistent &= within;
+        let all_perturbations = sorted(tokens.iter().map(|t| t.perturbation_ulps).collect());
+        let median = percentile(&all_perturbations, 50.0).unwrap_or(0.0);
+        medians.push((policy, median));
         md.push_str(&format!(
-            " A flip requires the margin to be at most twice the run's largest logit change at that token: {} for every flip. {} at-risk tokens met that condition ({:.1}%), and {} of them flipped.\n\n",
-            if consistent { "this holds" } else { "this does NOT hold" },
+            "\n{} of {} at-risk tokens ({:.1}%) had a baseline margin within reach of the run's logit perturbation (at most twice its largest logit change); {} flips occurred{}. The median perturbation was {:.0} ulps.\n\n",
             reachable.len(),
+            tokens.len(),
             100.0 * reachable.len() as f64 / tokens.len().max(1) as f64,
-            reachable.iter().filter(|t| t.flipped).count()
+            flips,
+            if within { ", all among them" } else { ", not all among them" },
+            median
         ));
     }
+    if let Some(&(p0, m0)) = medians.first() {
+        for &(p, m) in &medians[1..] {
+            if m > 0.0 {
+                md.push_str(&format!(
+                    "The median perturbation under {} is {:.0} ulps against {:.0} under {}, {:.1}× smaller, and far fewer tokens are within reach.\n\n",
+                    p.name(),
+                    m,
+                    m0,
+                    p0.name(),
+                    m0 / m
+                ));
+            }
+        }
+    }
+    md.push_str(&format!(
+        "Consistency check (holds by construction): the gap between two logits can move by at most twice the largest logit change, so a flip implies margin ≤ 2 × that change. It {} for all {flip_total} flips; this validates the bookkeeping, not a property of the model.\n\n",
+        if consistent { "holds" } else { "does NOT hold" }
+    ));
 
     // 3. Batch invariance.
     md.push_str(&format!(
@@ -530,7 +546,7 @@ pub fn to_markdown(r: &DecodeResult, command: &str) -> String {
 
     md.push_str("\n## What this does and does not show\n\n");
     md.push_str("- It shows, with every rounding executed, where a tensor-parallel decoder's tokens can change: with P and the schedule through the row-parallel AllReduces, and with batch composition only through a schedule whose reduction order depends on an element's place in the step buffer.\n");
-    md.push_str("- The weights are random. Margins in a trained model are distributed differently, so the divergence rates here do not transfer; the margin tables are the transferable part. Greedy decoding with these weights often repeats a token for many steps.\n");
+    md.push_str("- The weights are random. Margins in a trained model are distributed differently, so the divergence rates here do not transfer to trained models. Greedy decoding with these weights often repeats a token for many steps.\n");
     md.push_str("- The model is tiny (2 layers, hidden 256) and the prompts are synthetic.\n");
     md.push_str("- Local kernels are sequential and batch-invariant by construction. Real GPU kernels choose tilings and split-K reductions by batch shape, which can break batch invariance locally as well; that is not modeled.\n");
     md.push_str("- Greedy decoding only, fixed output lengths, no sampling. `exp`, `sin` and `cos` are deterministic but not correctly rounded.\n");

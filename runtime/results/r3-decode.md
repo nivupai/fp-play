@@ -69,7 +69,7 @@ Baseline margins over every generated token (32 × 48), absolute and in ulps of 
 | bf16 | 8 | 0.2999 / 2.0619 / 7.0494 | 154592 / 1008707 / 2591034 |
 | fp32-rs/bf16-ag | 8 | 0.2999 / 2.0619 / 7.0494 | 154592 / 1008707 / 2591034 |
 
-At logit scale 8, 38 of 38 runs chose exactly the tokens they chose at scale 1. A positive logit scale preserves the order of the logits, and a power of two multiplies them exactly, so absolute margins grow by the scale while margins in ulps, and every greedy token, stay the same. A wider logit spread made this way does not make decoding more robust: the perturbation grows with the logits. Divergence is therefore given against the margin in ulps below.
+A positive logit scale preserves the argmax, so it cannot affect greedy tokens. Measured as neutral: at logit scale 8, 38 of 38 runs chose exactly the tokens they chose at scale 1. A power-of-two scale also multiplies every logit exactly, so absolute margins grow by the scale (table above) while margins in ulps of the top logit are unchanged; margins below are in those ulps.
 
 **bf16**, every run in section 1 pooled (19 runs, 22682 at-risk tokens):
 
@@ -83,7 +83,7 @@ At logit scale 8, 38 of 38 runs chose exactly the tokens they chose at scale 1. 
 | 1048576–4194304 | 10939 | 0 | 0.0% | 88412.78 |
 | ≥ 4194304 | 128 | 0 | 0.0% | 82565.25 |
 
-Every flip (257 in all) happened at a token whose baseline margin was at most 105747 ulps; 7.3% of at-risk tokens had a margin that small. A flip requires the margin to be at most twice the run's largest logit change at that token: this holds for every flip. 3270 at-risk tokens met that condition (14.4%), and 257 of them flipped.
+3270 of 22682 at-risk tokens (14.4%) had a baseline margin within reach of the run's logit perturbation (at most twice its largest logit change); 257 flips occurred, all among them. The median perturbation was 97340 ulps.
 
 **fp32-rs/bf16-ag**, every run in section 1 pooled (19 runs, 28545 at-risk tokens):
 
@@ -97,7 +97,11 @@ Every flip (257 in all) happened at a token whose baseline margin was at most 10
 | 1048576–4194304 | 13853 | 0 | 0.0% | 7873.56 |
 | ≥ 4194304 | 152 | 0 | 0.0% | 6635.94 |
 
-Every flip (24 in all) happened at a token whose baseline margin was at most 3408 ulps; 0.3% of at-risk tokens had a margin that small. A flip requires the margin to be at most twice the run's largest logit change at that token: this holds for every flip. 280 at-risk tokens met that condition (1.0%), and 24 of them flipped.
+280 of 28545 at-risk tokens (1.0%) had a baseline margin within reach of the run's logit perturbation (at most twice its largest logit change); 24 flips occurred, all among them. The median perturbation was 9228 ulps.
+
+The median perturbation under fp32-rs/bf16-ag is 9228 ulps against 97340 under bf16, 10.5× smaller, and far fewer tokens are within reach.
+
+Consistency check (holds by construction): the gap between two logits can move by at most twice the largest logit change, so a flip implies margin ≤ 2 × that change. It holds for all 281 flips; this validates the bookkeeping, not a property of the model.
 
 ## 3. Batch invariance (P = 4, and a P = 1 control)
 
@@ -141,7 +145,7 @@ Latency is not recomputed here. R2 measured the deterministic pairing (shard tre
 ## What this does and does not show
 
 - It shows, with every rounding executed, where a tensor-parallel decoder's tokens can change: with P and the schedule through the row-parallel AllReduces, and with batch composition only through a schedule whose reduction order depends on an element's place in the step buffer.
-- The weights are random. Margins in a trained model are distributed differently, so the divergence rates here do not transfer; the margin tables are the transferable part. Greedy decoding with these weights often repeats a token for many steps.
+- The weights are random. Margins in a trained model are distributed differently, so the divergence rates here do not transfer to trained models. Greedy decoding with these weights often repeats a token for many steps.
 - The model is tiny (2 layers, hidden 256) and the prompts are synthetic.
 - Local kernels are sequential and batch-invariant by construction. Real GPU kernels choose tilings and split-K reductions by batch shape, which can break batch invariance locally as well; that is not modeled.
 - Greedy decoding only, fixed output lengths, no sampling. `exp`, `sin` and `cos` are deterministic but not correctly rounded.

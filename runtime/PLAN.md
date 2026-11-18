@@ -155,14 +155,17 @@ tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md). Recorded in
   against the exact path); the model runs at step completion and K/V live
   in a paged tensor store replaying the cache's block copies; column-parallel
   work computed once; the prediction corrected before measuring (only the
-  ring, not halving-doubling, can depend on batch composition); the logit
-  scale is applied after the head and is provably neutral for greedy
-  decoding, reported as a finding.
+  ring, not halving-doubling, can depend on batch composition); a positive
+  logit scale preserves the argmax, so it cannot affect greedy tokens;
+  measured as neutral.
 
 ### R3 future work
 
-- A peakedness knob that changes margins relative to the perturbation (or a
-  small trained checkpoint), since a logit scale cannot.
+- Realistic, confident margins: train a tiny model deterministically in
+  the repo on a synthetic task (copy or count), with fixed-order binary32
+  training steps so the weights are bit-identical on every platform, then
+  rerun r3-decode on it. A logit scale cannot do this: a positive scale
+  preserves the argmax.
 - Batch-shape-dependent local kernels (tiling, split-K) to model GPU-style
   local batch variance.
 
