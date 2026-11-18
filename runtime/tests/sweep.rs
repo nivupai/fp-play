@@ -81,7 +81,7 @@ fn the_grid_covers_every_applicable_configuration() {
             .top1_changes
             .iter()
             .filter(|t| t.hidden == r.hidden && t.world == r.world && t.policy == r.policy && t.schedule == r.schedule)
-            .map(|t| t.tokens as f64)
+            .map(|t| t.tokens.len() as f64)
             .collect();
         assert_eq!(listed.iter().copied().fold(0.0, f64::max), r.top1_changes.max);
         assert_eq!(listed.is_empty(), r.top1_changes.max == 0.0);
@@ -151,4 +151,60 @@ fn recorded_artifact_is_current() {
         markdown == recorded_md,
         "results/r1.1-sweep.md is stale; re-run the documented command"
     );
+}
+
+#[test]
+fn top1_lead_counts_representable_values_to_the_runner_up() {
+    use fp_play_runtime::format::Format;
+    use fp_play_runtime::tensor_parallel::{argmax, changed_top1, top1_lead_ulps};
+    let bf16 = Format::Bf16;
+    // BF16 1.0 = 0x3f80; 0x3f83 is three ulps above it.
+    assert_eq!(top1_lead_ulps(bf16, &[0x3f80, 0x3f83, 0x3f00]), Some(3));
+    assert_eq!(argmax(bf16, &[0x3f80, 0x3f83, 0x3f00]), 1);
+    // An exact tie: lead 0, and the lowest index wins.
+    assert_eq!(top1_lead_ulps(bf16, &[0x3f83, 0x3f00, 0x3f83]), Some(0));
+    assert_eq!(argmax(bf16, &[0x3f83, 0x3f00, 0x3f83]), 0);
+    // All negative: -1.0 (0xbf80) leads -1.0 - 1 ulp (0xbf81) by one.
+    assert_eq!(top1_lead_ulps(bf16, &[0xbf81, 0xbf80]), Some(1));
+    // Across zero: +1 smallest subnormal vs -1 smallest subnormal is two ulps apart.
+    assert_eq!(top1_lead_ulps(bf16, &[0x8001, 0x0001]), Some(2));
+    assert_eq!(top1_lead_ulps(bf16, &[0x3f80]), None);
+    // Rows are tokens: only token 1's argmax moves.
+    assert_eq!(
+        changed_top1(
+            bf16,
+            2,
+            &[0x3f80, 0x3f00, 0x3f00, 0x3f80],
+            &[0x3f80, 0x3f00, 0x3f80, 0x3f00]
+        ),
+        vec![1]
+    );
+}
+
+#[test]
+fn recorded_leads_are_consistent_with_the_top1_list() {
+    let config = small();
+    let result = run(&config).unwrap();
+    let per_format = config.tokens * config.seeds.len() * config.hiddens.len();
+    for summary in &result.lead_summary {
+        assert_eq!(summary.tokens, per_format);
+        let leads: Vec<f64> = result
+            .reference_leads
+            .iter()
+            .filter(|p| p.format == summary.format)
+            .flat_map(|p| p.leads.iter().map(|&l| l as f64))
+            .collect();
+        assert_eq!(stats(&leads), summary.leads);
+    }
+    for t in &result.top1_changes {
+        assert!(!t.tokens.is_empty());
+        let problem = result
+            .reference_leads
+            .iter()
+            .find(|p| p.seed == t.seed && p.hidden == t.hidden && p.format == t.policy.output)
+            .unwrap();
+        for l in &t.tokens {
+            assert_eq!(problem.leads[l.token], l.lead_ulps);
+        }
+    }
 }

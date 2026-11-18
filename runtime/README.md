@@ -167,7 +167,10 @@ seeds.
 - **Top-1**: 35 of 3,768 runs changed the top-1 output of one token (never
   more). All of them are under `bf16` (25) or `bf16-wire/fp32-add` (10).
   None are under `fp32` or `fp32-rs/bf16-ag`, and none involve the shard
-  tree. 22 come from one seed (`0xf991ae`). The sweep page lists every one.
+  tree. 22 come from one seed (`0xf991ae`). The sweep page lists every one,
+  with the unsharded kernel's top-1 lead over its runner-up: the 6 tokens
+  that changed led by only 1–4 BF16 ulps, against a median of 16 ulps over
+  all 96 tokens, so these are near-ties.
 
 ## Evidence
 

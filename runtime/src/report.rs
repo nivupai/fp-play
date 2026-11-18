@@ -1135,11 +1135,70 @@ pub fn sweep_to_json(result: &SweepResult, command: &str) -> Json {
                             ("world", Json::uint(t.world)),
                             ("policy", Json::str(t.policy.name())),
                             ("schedule", Json::str(t.schedule.name())),
-                            ("tokens_changed", Json::uint(t.tokens)),
+                            ("tokens_changed", Json::uint(t.tokens.len())),
+                            (
+                                "tokens",
+                                Json::Arr(
+                                    t.tokens
+                                        .iter()
+                                        .map(|l| {
+                                            Json::obj(vec![
+                                                ("token", Json::uint(l.token)),
+                                                ("reference_top1_lead_ulps", Json::Int(l.lead_ulps as i64)),
+                                            ])
+                                        })
+                                        .collect(),
+                                ),
+                            ),
                         ])
                     })
                     .collect(),
             ),
+        ),
+        (
+            "reference_top1_leads",
+            Json::obj(vec![
+                (
+                    "definition",
+                    Json::str("for each token of the unsharded FP32 kernel rounded to the output format: ulps of that format between its top-1 output and the largest other output (0 = exact tie); argmax ties resolve to the lowest index"),
+                ),
+                (
+                    "summary",
+                    Json::Arr(
+                        result
+                            .lead_summary
+                            .iter()
+                            .map(|l| {
+                                Json::obj(vec![
+                                    ("format", Json::str(l.format.name())),
+                                    ("tokens", Json::uint(l.tokens)),
+                                    ("leads_ulps", stats_json(&l.leads)),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
+                (
+                    "problems",
+                    Json::Arr(
+                        result
+                            .reference_leads
+                            .iter()
+                            .map(|p| {
+                                Json::obj(vec![
+                                    ("seed", Json::Int(p.seed as i64)),
+                                    ("hidden", Json::uint(p.hidden)),
+                                    ("format", Json::str(p.format.name())),
+                                    (
+                                        "leads_ulps",
+                                        Json::Arr(p.leads.iter().map(|&l| Json::Int(l as i64)).collect()),
+                                    ),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
+            ]),
         ),
         (
             "rows",
@@ -1286,8 +1345,53 @@ halving-doubling) as the range of their medians, with the worst single seed and 
                 c.seeds.iter().map(|s| format!("`{s:#x}`")).collect()
             ),
         ));
-        md.push_str("| seed | hidden | P | policy | schedule | tokens changed |\n|---|--:|--:|---|---|--:|\n");
+        // How close the changed tokens were to a tie, against every token.
+        for summary in &result.lead_summary {
+            let format = summary.format;
+            let mut distinct: Vec<(u64, usize, usize, u64)> = result
+                .top1_changes
+                .iter()
+                .filter(|t| t.policy.output == format)
+                .flat_map(|t| t.tokens.iter().map(move |l| (t.seed, t.hidden, l.token, l.lead_ulps)))
+                .collect();
+            distinct.sort_unstable();
+            distinct.dedup();
+            if distinct.is_empty() {
+                continue;
+            }
+            let lo = distinct.iter().map(|d| d.3).min().unwrap_or(0);
+            let hi = distinct.iter().map(|d| d.3).max().unwrap_or(0);
+            let within = result
+                .reference_leads
+                .iter()
+                .filter(|p| p.format == format)
+                .flat_map(|p| p.leads.iter())
+                .filter(|&&l| l <= hi)
+                .count();
+            md.push_str(&format!(
+                "**How close to a tie.** The top-1 output of the unsharded kernel (in {}) leads its runner-up by \
+{}–{} {} ulps (median {}) across all {} tokens. The {} distinct tokens whose top-1 changed (all under policies with {} output) \
+led by only {lo}–{hi} ulps; {within} of the {} tokens lead by {hi} ulps or less.\n\n",
+                format.name().to_uppercase(),
+                summary.leads.min,
+                summary.leads.max,
+                format.name().to_uppercase(),
+                summary.leads.median,
+                summary.tokens,
+                distinct.len(),
+                format.name().to_uppercase(),
+                summary.tokens,
+            ));
+        }
+        md.push_str(
+            "| seed | hidden | P | policy | schedule | token (top-1 lead, ulps) |\n|---|--:|--:|---|---|---|\n",
+        );
         for t in &result.top1_changes {
+            let tokens: Vec<String> = t
+                .tokens
+                .iter()
+                .map(|l| format!("{} ({})", l.token, l.lead_ulps))
+                .collect();
             md.push_str(&format!(
                 "| `{:#x}` | {} | {} | `{}` | {} | {} |\n",
                 t.seed,
@@ -1295,7 +1399,7 @@ halving-doubling) as the range of their medians, with the worst single seed and 
                 t.world,
                 t.policy.name(),
                 t.schedule.name(),
-                t.tokens
+                tokens.join(", ")
             ));
         }
         md.push('\n');

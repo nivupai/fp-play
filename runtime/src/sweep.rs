@@ -13,7 +13,7 @@ use crate::format::{ulp_distance, Format};
 use crate::ops::convert;
 use crate::shard_tree::{self, DEFAULT_SHARDS};
 use crate::tensor_parallel::{
-    argmax_changes, compare, generate, prepare, split_partials, ExperimentConfig, LOCAL_ACCUMULATOR,
+    changed_top1, compare, generate, prepare, split_partials, top1_lead_ulps, ExperimentConfig, LOCAL_ACCUMULATOR,
 };
 
 /// The wire policies swept, in report order.
@@ -120,6 +120,8 @@ struct RunMetrics {
     max_ulp: f64,
     vs_ring_fraction: f64,
     top1_changes: f64,
+    /// The tokens whose top-1 changed, with the unsharded kernel's lead.
+    changed: Vec<TokenLead>,
 }
 
 #[derive(Clone, Debug)]
@@ -139,6 +141,14 @@ pub struct SweepRow {
     pub top1_changes: Stats,
 }
 
+/// A token whose top-1 output changed, and how far the unsharded kernel's
+/// top-1 output led its runner-up, in ulps of the output format.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TokenLead {
+    pub token: usize,
+    pub lead_ulps: u64,
+}
+
 /// One run whose top-1 output changed for at least one token.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Top1Change {
@@ -148,7 +158,24 @@ pub struct Top1Change {
     pub policy: WirePolicy,
     pub schedule: Schedule,
     /// Tokens whose top-1 output differs from the unsharded kernel.
+    pub tokens: Vec<TokenLead>,
+}
+
+/// The unsharded kernel's top-1 lead for every token of one problem, in ulps of `format`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProblemLeads {
+    pub seed: u64,
+    pub hidden: usize,
+    pub format: Format,
+    pub leads: Vec<u64>,
+}
+
+/// The distribution of top-1 leads over every token of every problem, for one output format.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LeadSummary {
+    pub format: Format,
     pub tokens: usize,
+    pub leads: Stats,
 }
 
 #[derive(Clone, Debug)]
@@ -158,6 +185,10 @@ pub struct SweepResult {
     pub rows: Vec<SweepRow>,
     /// Every run that changed a top-1 output, ordered by hidden, P, policy, schedule and seed.
     pub top1_changes: Vec<Top1Change>,
+    /// Top-1 leads of the unsharded kernel, per problem and output format (in job order).
+    pub reference_leads: Vec<ProblemLeads>,
+    /// Their distribution per output format.
+    pub lead_summary: Vec<LeadSummary>,
     /// Shard-tree outputs compared across every swept P, per (seed, hidden, policy).
     pub shard_tree_invariance_checks: usize,
     /// All of those comparisons found identical bits.
@@ -190,8 +221,27 @@ impl SweepConfig {
     }
 }
 
-/// One (seed, hidden) problem's runs, shard-tree invariance checks, and whether all passed.
-type JobResult = Result<(Vec<RunMetrics>, usize, bool), String>;
+/// What one (seed, hidden) problem contributes.
+struct JobOutput {
+    runs: Vec<RunMetrics>,
+    /// Shard-tree comparisons across world sizes, and whether all found identical bits.
+    checks: usize,
+    invariant: bool,
+    leads: Vec<ProblemLeads>,
+}
+
+type JobResult = Result<JobOutput, String>;
+
+/// Output formats of the swept policies, in first-use order.
+fn output_formats() -> Vec<Format> {
+    let mut formats = Vec::new();
+    for p in POLICIES {
+        if !formats.contains(&p.output) {
+            formats.push(p.output);
+        }
+    }
+    formats
+}
 
 /// Every run of one (seed, hidden) problem, and the shard-tree invariance checks.
 fn job(config: &SweepConfig, seed: u64, hidden: usize) -> JobResult {
@@ -206,14 +256,33 @@ fn job(config: &SweepConfig, seed: u64, hidden: usize) -> JobResult {
     };
     let mut runs = Vec::new();
     let (mut checks, mut invariant) = (0, true);
+    let single_in = |format: Format| -> Vec<u32> {
+        prepared
+            .single_fp32
+            .iter()
+            .map(|&v| convert(LOCAL_ACCUMULATOR, format, v))
+            .collect()
+    };
+    let lead_of = |format: Format, single: &[u32], token: usize| -> u64 {
+        top1_lead_ulps(format, &single[token * config.outputs..(token + 1) * config.outputs])
+            .expect("at least two outputs and finite values")
+    };
+    let leads: Vec<ProblemLeads> = output_formats()
+        .into_iter()
+        .map(|format| {
+            let single = single_in(format);
+            ProblemLeads {
+                seed,
+                hidden,
+                format,
+                leads: (0..config.tokens).map(|m| lead_of(format, &single, m)).collect(),
+            }
+        })
+        .collect();
     for policy in POLICIES {
         let out = policy.output;
         let exact = prepared.exact_in(out);
-        let single: Vec<u32> = prepared
-            .single_fp32
-            .iter()
-            .map(|&v| convert(LOCAL_ACCUMULATOR, out, v))
-            .collect();
+        let single = single_in(out);
         let shard_inputs = to_acc(&shard_partials, policy.accumulator);
         let mut shard_reference: Option<Vec<u32>> = None;
         for (world, partials) in &prepared.partials {
@@ -258,6 +327,13 @@ fn job(config: &SweepConfig, seed: u64, hidden: usize) -> JobResult {
                     .map(|(&a, &b)| ulp_distance(out, a, b).expect("outputs are finite"))
                     .max()
                     .unwrap_or(0);
+                let changed: Vec<TokenLead> = changed_top1(out, config.outputs, &output, &single)
+                    .into_iter()
+                    .map(|token| TokenLead {
+                        token,
+                        lead_ulps: lead_of(out, &single, token),
+                    })
+                    .collect();
                 runs.push(RunMetrics {
                     seed,
                     hidden,
@@ -268,12 +344,18 @@ fn job(config: &SweepConfig, seed: u64, hidden: usize) -> JobResult {
                     relative_rms_error: vs_exact.relative_rms_error,
                     max_ulp: max_ulp as f64,
                     vs_ring_fraction: differs_from_ring as f64 / exact.len() as f64,
-                    top1_changes: argmax_changes(out, config.outputs, &output, &single) as f64,
+                    top1_changes: changed.len() as f64,
+                    changed,
                 });
             }
         }
     }
-    Ok((runs, checks, invariant))
+    Ok(JobOutput {
+        runs,
+        checks,
+        invariant,
+        leads,
+    })
 }
 
 pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
@@ -286,7 +368,7 @@ pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
     // Jobs run in parallel; results are collected in job order, so the output
     // does not depend on scheduling.
     let threads = thread::available_parallelism().map_or(1, |n| n.get()).min(jobs.len());
-    let mut results: Vec<Option<JobResult>> = vec![None; jobs.len()];
+    let mut results: Vec<Option<JobResult>> = (0..jobs.len()).map(|_| None).collect();
     thread::scope(|scope| {
         let jobs = &jobs;
         let handles: Vec<_> = (0..threads)
@@ -307,12 +389,29 @@ pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
     });
     let mut all = Vec::new();
     let (mut checks, mut invariant) = (0, true);
+    let mut reference_leads = Vec::new();
     for r in results {
-        let (runs, c, ok) = r.expect("every job ran")?;
-        all.extend(runs);
-        checks += c;
-        invariant &= ok;
+        let job = r.expect("every job ran")?;
+        all.extend(job.runs);
+        checks += job.checks;
+        invariant &= job.invariant;
+        reference_leads.extend(job.leads);
     }
+    let lead_summary = output_formats()
+        .into_iter()
+        .map(|format| {
+            let leads: Vec<f64> = reference_leads
+                .iter()
+                .filter(|p| p.format == format)
+                .flat_map(|p| p.leads.iter().map(|&l| l as f64))
+                .collect();
+            LeadSummary {
+                format,
+                tokens: leads.len(),
+                leads: stats(&leads),
+            }
+        })
+        .collect();
     let mut rows = Vec::new();
     for &hidden in &config.hiddens {
         for &world in &config.world_sizes {
@@ -354,14 +453,14 @@ pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
                     && m.policy == row.policy
                     && m.schedule == row.schedule
             }) {
-                if m.top1_changes > 0.0 {
+                if !m.changed.is_empty() {
                     top1_changes.push(Top1Change {
                         seed,
                         hidden: m.hidden,
                         world: m.world,
                         policy: m.policy,
                         schedule: m.schedule,
-                        tokens: m.top1_changes as usize,
+                        tokens: m.changed.clone(),
                     });
                 }
             }
@@ -372,6 +471,8 @@ pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
         elements: config.tokens * config.outputs,
         rows,
         top1_changes,
+        reference_leads,
+        lead_summary,
         shard_tree_invariance_checks: checks,
         shard_tree_p_invariant: invariant,
     })
