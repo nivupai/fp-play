@@ -86,11 +86,18 @@ design calls made while building.
   (tested by running the real binary). CI runs clippy and the planted-bug
   tests with the feature in a separate step.
 
+- Cleanup: scenario 4 already covered all three collectives under both
+  policies; `r2-serving.md` now has a deterministic-pairing table (shard
+  tree + fp32-rs/bf16-ag against ring under bf16 and fp32-rs). Swap
+  sensitivity rows: swap at 100, 400 and 1600 GB/s, and both modes with one
+  sample per request. Finding: no swap/recompute crossover in 25–1600 GB/s
+  with the 1/2/4 sample mix, while with one sample swap is ahead at 25 GB/s.
+  The runtime README states each scenario's KV-check interval; the case
+  study has an R2 section.
+
 ## Next
 
-Cleanup PR: scenario-4 deterministic-pairing summary, swap sensitivity to
-host-link bandwidth, README KV-check intervals, case-study R2 section;
-then PR, CI, merge; then the R3 plan (stop for approval).
+Cleanup PR: PR, CI, merge. Then the R3 plan (stop for approval).
 
 ## Open questions
 
@@ -197,6 +204,12 @@ None.
 - R2c-7. Each run's JSON gains `failed`, `fault_steps`, `fault_ns`,
   `fault_policy`, `faults_fired` and `rerun_identical`; scenarios 1–4
   values are unchanged.
+- C-1. The swap-sensitivity scenario keeps every pressure setting and
+  changes only the swap bandwidth (100, 400, 1600 GB/s), or only the samples
+  per request (1 for both modes). The bandwidth sweep found no crossover,
+  so the docs say that instead of naming one.
+- C-2. The deterministic pairing is compared with ring under both wire
+  policies at P = 4 and 8 (the scenario-4 grid).
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1

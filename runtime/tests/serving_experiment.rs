@@ -44,7 +44,14 @@ fn memory_pressure_scenario_preempts_in_both_modes() {
 #[test]
 fn every_recorded_run_completes() {
     let r = result();
-    for run in r.load.iter().chain(&r.pressure).chain(&r.prefix).chain(&r.collectives) {
+    for run in r
+        .load
+        .iter()
+        .chain(&r.pressure)
+        .chain(&r.swap_sensitivity)
+        .chain(&r.prefix)
+        .chain(&r.collectives)
+    {
         let m = &run.metrics;
         assert_eq!(m.finished, m.requests, "{}", run.label);
         assert_eq!(m.rejected, 0, "{}", run.label);
@@ -53,6 +60,34 @@ fn every_recorded_run_completes() {
     }
     // The prefix cache only hits when it is on.
     assert!(r.prefix[0].metrics.prefix_hit_blocks == 0 && r.prefix[1].metrics.prefix_hit_blocks > 0);
+}
+
+#[test]
+fn swap_sensitivity_varies_only_what_it_says() {
+    use fp_play_runtime::serving::scheduler::PreemptionMode;
+    let r = result();
+    let base = &r.pressure[1];
+    let faster: Vec<_> = r
+        .swap_sensitivity
+        .iter()
+        .filter(|s| s.samples == base.samples)
+        .collect();
+    assert!(!faster.is_empty());
+    for s in &faster {
+        assert_eq!(s.preemption, PreemptionMode::Swap);
+        assert!(s.host_bytes_per_s > base.host_bytes_per_s);
+        assert_eq!(
+            (s.memory_bytes, s.world, s.rate_per_s),
+            (base.memory_bytes, base.world, base.rate_per_s)
+        );
+    }
+    let single: Vec<_> = r
+        .swap_sensitivity
+        .iter()
+        .filter(|s| s.samples == vec![(1, 1)])
+        .collect();
+    assert_eq!(single.len(), 2);
+    assert!(single.iter().all(|s| s.host_bytes_per_s == base.host_bytes_per_s));
 }
 
 #[test]

@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 106 tests, including the recorded-artifact checks
+cargo test --release                              # 105 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -200,7 +200,12 @@ requests per run):
   step time.
 - **Memory pressure** (449 KV blocks): recompute preempted 131 times and
   recomputed 61,427 tokens (TTFT p50 593.52 ms); swap preempted 84 times
-  and moved 23.04 GB over the host link (TTFT p50 1280.26 ms).
+  and moved 23.04 GB over the host link (TTFT p50 1280.26 ms). Swap's cost
+  depends on the host-link bandwidth, 25 GB/s here: at 1600 GB/s its TTFT
+  p50 is 996.49 ms, and its E2E p50 stays above recompute's at every tested
+  bandwidth (25–1600 GB/s), so there is no crossover in that range. With
+  one sample per request instead of the 1/2/4 mix, swap is ahead at 25 GB/s
+  (E2E p50 1008.37 ms against recompute's 1028.74 ms).
 - **Prefix sharing:** with 4 shared 512-token system prompts, the cache hit
   42.9% of eligible blocks; TTFT p50 fell from 53.47 ms to 28.46 ms and peak
   KV blocks from 1809 to 1027.
@@ -209,11 +214,25 @@ requests per run):
   TTFT p50 is 24.32 ms against ring's 12.69 ms. In this model the tree sends
   the whole buffer at every level, so its message size grows with the
   step's token count.
+- **The deterministic pairing** (shard tree + `fp32-rs/bf16-ag`, whose output
+  bits do not depend on P) against ring + `bf16`, p50: at P = 4, TPOT 2.23
+  against 2.21 ms (+1.2%) and TTFT 26.86 against 12.61 ms (+112.9%); at
+  P = 8, TPOT 1.98 against 2.60 ms (−23.7%) and TTFT 34.39 against 12.69 ms
+  (+171.0%). Scenario 4 reports ring, halving-doubling and the shard tree
+  under both `bf16` and `fp32-rs/bf16-ag`.
 - **Failures** (P = 4, 20 req/s, one rank failure in step 1500, 0.5 s
   detection and 5 s recovery): abort failed the 6 requests in flight; retry
   finished all 200 and recomputed 3,832 tokens; drain finished 88 and
   rejected 112. Every failure run reran byte-identically, and G1–G4 held in
   every run.
+
+Invariant checking in the recorded runs: the scheduler and token-stream
+invariants run after every step in every scenario. The KV-cache invariants
+(which walk the whole block pool) run after every step in the
+memory-pressure, swap-sensitivity and prefix-sharing scenarios, and every
+256 steps (plus after every failure and after the last step) in the 80 GB
+load, collective and failure scenarios, whose pools hold up to 282,260
+blocks. Every test runs every check after every step.
 
 Evidence: `tests/dry_run.rs` (dry-run rounds equal executed rounds for every
 algorithm, policy and P ≤ 16, and the shard tree for every P ≤ S);
@@ -226,6 +245,11 @@ reference scheduler's, seven planted bugs caught inside the engine);
 `tests/serving_faults.rs` (hand-derived retry, abort and drain cases, 300
 random fault plans whose traces equal the reference's and rerun
 identically, a planted double commit on retry);
+`tests/planted_build.rs` (planted bugs exist only with the `planted-bugs`
+Cargo feature, and such a build refuses to write results or traces). The
+planted-bug tests run with
+`cargo test --release --features planted-bugs --test planted_build --test serving_kv --test serving_engine --test serving_faults`;
+CI runs them as a separate step.
 `tests/serving_step_time.rs` (hand-computed step times);
 `tests/serving_workload.rs` (a pinned workload fingerprint that CI checks on
 Linux); `tests/serving_experiment.rs` (the recorded results are current, the

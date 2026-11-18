@@ -79,31 +79,43 @@ exact-gather's 7 rounds and 112 KiB.
   These are near-ties. The "vocabulary" is 256 outputs, not a real one.
   ([sweep](../runtime/results/r1.1-sweep.md))
 
-## Addendum: R2, a serving simulator
+## R2: what determinism costs when serving
 
 R2 puts these collectives inside a deterministic serving loop: a paged KV
 cache with prefix sharing and copy-on-write, continuous batching, recompute
 or swap preemption, and fail-stop rank failures. Step time is an
-illustrative roofline plus the AllReduce schedules simulated above. All
-numbers are from [r2-serving](../runtime/results/r2-serving.md) (200
-requests per run, an 8B-class model on an illustrative device).
+illustrative roofline plus the AllReduce schedules simulated above, with no
+compute/communication overlap. Every number is from
+[r2-serving](../runtime/results/r2-serving.md) (200 requests per run, an
+8B-class model on an illustrative device).
 
+- **The deterministic pairing has a prefill price.** The shard tree with
+  `fp32-rs/bf16-ag` (output bits independent of P) against ring with `bf16`:
+  at P = 4, TPOT p50 is 2.23 against 2.21 ms (+1.2%) but TTFT p50 is 26.86
+  against 12.61 ms (+112.9%); at P = 8, TPOT p50 is 1.98 against 2.60 ms
+  (−23.7%) and TTFT p50 is 34.39 against 12.69 ms (+171.0%). In this model
+  the tree sends the whole buffer at every level, so its cost grows with the
+  tokens in a step: decode steps are small, prefill steps are not.
 - **The collective shows up in latency.** At 10 req/s, TPOT p50 is 2.33 ms
   at P = 4 but 2.73 ms at P = 8, where ring AllReduces take 73.7% of step
-  time. At P = 8, halving-doubling cuts TPOT p50 by 41.2% against ring; the
-  shard tree cuts it by 31.4% but raises TTFT p50 from 12.69 ms to 24.32 ms.
-  In this model the tree sends the whole buffer at every level, so large
-  prefill steps cost it the most.
-- **Memory pressure and failures.** With 449 KV
-  blocks, recompute preempted 131 times and swap 84 times. After one rank
-  failure at P = 4, retry finished all 200 requests and recomputed 3,832
-  tokens; abort failed the 6 in flight; drain rejected 112.
+  time. At P = 8 with `bf16`, halving-doubling cuts TPOT p50 by 41.2%
+  against ring.
+- **Swap versus recompute depends on more than the link.** With 449 KV
+  blocks, recompute preempted 131 times (TTFT p50 593.52 ms) and swap 84
+  times over a 25 GB/s host link (TTFT p50 1280.26 ms). Raising the link to
+  1600 GB/s brings swap's TTFT p50 to 996.49 ms, but its E2E p50 stays above
+  recompute's at every tested bandwidth. With one sample per request instead
+  of the 1/2/4 mix, swap is ahead at 25 GB/s (E2E p50 1008.37 against
+  1028.74 ms).
+- **Failures.** After one rank failure at P = 4, retry finished all 200
+  requests and recomputed 3,832 tokens; abort failed the 6 in flight; drain
+  rejected 112. Every failure run reran byte-identically.
 - **How it is verified.** A slow reference scheduler must produce the same
   step trace as the engine on 600 random workloads, 300 of them with
   failures. In those tests every step is checked for leaked blocks,
-  refcounts, KV contents and duplicated tokens. Eight planted bugs are each
-  caught by a named check, and one of them (a wrong preemption victim) only
-  by the reference.
+  refcounts, KV contents and duplicated tokens. Eight planted bugs, compiled
+  in only by a test-only Cargo feature, are each caught by a named check;
+  one of them (a wrong preemption victim) only by the reference.
 
 ## What is next
 

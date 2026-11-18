@@ -14,6 +14,8 @@
   - Eight planted bugs (plus one manual mutation), each caught by a named check. They are listed in `runtime/R2_PROGRESS.md`.
 - New recorded artifact `runtime/results/r2-serving.{json,md}`, written by the documented `experiment` command and stale-checked. It covers a load sweep, preemption under memory pressure, prefix sharing, collective choice and failures. Every earlier recorded JSON file is byte-identical.
 - A named company in the R1 disclaimers is replaced with generic wording. The only text change is in `tp-allreduce.md`.
+- Planted bugs are compile-time only: they exist only with the non-default `planted-bugs` Cargo feature, and such a build refuses to write results or traces. CI runs the planted-bug tests in a separate `--features planted-bugs` step.
+- `r2-serving` adds swap sensitivity rows (host link 25–1600 GB/s, and one sample per request) and a table of the deterministic pairing (shard tree + `fp32-rs/bf16-ag`) against ring under both wire policies. The runtime README states the KV-check interval of each scenario, and the runtime case study gains an R2 section.
 
 ## Unreleased — runtime milestone R1.1
 

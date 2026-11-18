@@ -93,6 +93,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -162,6 +168,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -231,6 +243,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -300,6 +318,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -369,6 +393,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -438,6 +468,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -507,6 +543,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -576,6 +618,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -645,6 +693,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -714,6 +768,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -783,6 +843,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -852,6 +918,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -923,6 +995,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -992,6 +1070,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1049,6 +1133,379 @@
         }
       }
     ],
+    "swap_sensitivity": [
+      {
+        "label": "pressure swap host 100 GB/s",
+        "world": 1,
+        "rate_per_s": 10.0,
+        "device_memory_bytes": 21000000000,
+        "kv_capacity_blocks": 449,
+        "kv_capacity_tokens": 7184,
+        "swap_blocks": 1024,
+        "preemption": "swap",
+        "prefix_caching": false,
+        "collective": "ring",
+        "wire_policy": "bf16",
+        "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 100000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
+        "fault_policy": null,
+        "faults_fired": [],
+        "rerun_identical": null,
+        "metrics": {
+          "requests": 200,
+          "finished": 200,
+          "rejected": 0,
+          "failed": 0,
+          "fault_steps": 0,
+          "fault_ns": 0,
+          "output_tokens": 54560,
+          "ttft_ns": {
+            "n": 200,
+            "p50": 1039609982,
+            "p99": 4937696512,
+            "max": 5002228554
+          },
+          "tpot_ns": {
+            "n": 412,
+            "p50": 6267495,
+            "p99": 12682435,
+            "max": 15316273
+          },
+          "e2e_ns": {
+            "n": 200,
+            "p50": 2013808788,
+            "p99": 5983995388,
+            "max": 6468805916
+          },
+          "span_ns": 23494400072,
+          "output_tokens_per_s": 2322.255509091426,
+          "requests_per_s": 8.512666822182647,
+          "steps": 3810,
+          "mean_step_tokens": 42.84409448818898,
+          "max_step_tokens": 512,
+          "compute_ns": 23192655563.98082,
+          "comm_ns": 0.0,
+          "copy_ns": 225544503.2959998,
+          "overhead_ns": 76200000.0,
+          "comm_share": 0.0,
+          "preemptions_recompute": 0,
+          "preemptions_swap": 89,
+          "swap_full_fallbacks": 0,
+          "stalls": 0,
+          "recomputed_tokens": 0,
+          "swapped_blocks": 10742,
+          "swap_bytes_all_devices": 22527606784,
+          "cow_copies": 192,
+          "prefix_evictions": 0,
+          "prefix_eligible_blocks": 0,
+          "prefix_hit_blocks": 0,
+          "prefix_hit_rate": null,
+          "kv_utilization_mean": 0.8333830528525314,
+          "kv_peak_blocks": 449
+        }
+      },
+      {
+        "label": "pressure swap host 400 GB/s",
+        "world": 1,
+        "rate_per_s": 10.0,
+        "device_memory_bytes": 21000000000,
+        "kv_capacity_blocks": 449,
+        "kv_capacity_tokens": 7184,
+        "swap_blocks": 1024,
+        "preemption": "swap",
+        "prefix_caching": false,
+        "collective": "ring",
+        "wire_policy": "bf16",
+        "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 400000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
+        "fault_policy": null,
+        "faults_fired": [],
+        "rerun_identical": null,
+        "metrics": {
+          "requests": 200,
+          "finished": 200,
+          "rejected": 0,
+          "failed": 0,
+          "fault_steps": 0,
+          "fault_ns": 0,
+          "output_tokens": 54560,
+          "ttft_ns": {
+            "n": 200,
+            "p50": 1000535627,
+            "p99": 4261639957,
+            "max": 4277980049
+          },
+          "tpot_ns": {
+            "n": 412,
+            "p50": 6206983,
+            "p99": 12528583,
+            "max": 15506640
+          },
+          "e2e_ns": {
+            "n": 200,
+            "p50": 1946732345,
+            "p99": 5532046999,
+            "max": 5661556972
+          },
+          "span_ns": 22425024044,
+          "output_tokens_per_s": 2432.9962765234127,
+          "requests_per_s": 8.91860805177204,
+          "steps": 3635,
+          "mean_step_tokens": 44.90674002751032,
+          "max_step_tokens": 512,
+          "compute_ns": 22304063691.270817,
+          "comm_ns": 0.0,
+          "copy_ns": 48260360.874666676,
+          "overhead_ns": 72700000.0,
+          "comm_share": 0.0,
+          "preemptions_recompute": 0,
+          "preemptions_swap": 87,
+          "swap_full_fallbacks": 0,
+          "stalls": 0,
+          "recomputed_tokens": 0,
+          "swapped_blocks": 9154,
+          "swap_bytes_all_devices": 19197329408,
+          "cow_copies": 191,
+          "prefix_evictions": 0,
+          "prefix_eligible_blocks": 0,
+          "prefix_hit_blocks": 0,
+          "prefix_hit_rate": null,
+          "kv_utilization_mean": 0.839828487264062,
+          "kv_peak_blocks": 449
+        }
+      },
+      {
+        "label": "pressure swap host 1600 GB/s",
+        "world": 1,
+        "rate_per_s": 10.0,
+        "device_memory_bytes": 21000000000,
+        "kv_capacity_blocks": 449,
+        "kv_capacity_tokens": 7184,
+        "swap_blocks": 1024,
+        "preemption": "swap",
+        "prefix_caching": false,
+        "collective": "ring",
+        "wire_policy": "bf16",
+        "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 1600000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
+        "fault_policy": null,
+        "faults_fired": [],
+        "rerun_identical": null,
+        "metrics": {
+          "requests": 200,
+          "finished": 200,
+          "rejected": 0,
+          "failed": 0,
+          "fault_steps": 0,
+          "fault_ns": 0,
+          "output_tokens": 54560,
+          "ttft_ns": {
+            "n": 200,
+            "p50": 996488444,
+            "p99": 4278493426,
+            "max": 4410613247
+          },
+          "tpot_ns": {
+            "n": 412,
+            "p50": 6179726,
+            "p99": 12488158,
+            "max": 14944838
+          },
+          "e2e_ns": {
+            "n": 200,
+            "p50": 1942302746,
+            "p99": 5423929064,
+            "max": 5864705417
+          },
+          "span_ns": 22837516955,
+          "output_tokens_per_s": 2389.0513188236405,
+          "requests_per_s": 8.757519497154107,
+          "steps": 3723,
+          "mean_step_tokens": 43.84528605962933,
+          "max_step_tokens": 512,
+          "compute_ns": 22750016875.61556,
+          "comm_ns": 0.0,
+          "copy_ns": 13040091.13599998,
+          "overhead_ns": 74460000.0,
+          "comm_share": 0.0,
+          "preemptions_recompute": 0,
+          "preemptions_swap": 82,
+          "swap_full_fallbacks": 0,
+          "stalls": 0,
+          "recomputed_tokens": 0,
+          "swapped_blocks": 9744,
+          "swap_bytes_all_devices": 20434649088,
+          "cow_copies": 192,
+          "prefix_evictions": 0,
+          "prefix_eligible_blocks": 0,
+          "prefix_hit_blocks": 0,
+          "prefix_hit_rate": null,
+          "kv_utilization_mean": 0.8306712176718007,
+          "kv_peak_blocks": 449
+        }
+      },
+      {
+        "label": "pressure recompute one sample",
+        "world": 1,
+        "rate_per_s": 10.0,
+        "device_memory_bytes": 21000000000,
+        "kv_capacity_blocks": 449,
+        "kv_capacity_tokens": 7184,
+        "swap_blocks": 1024,
+        "preemption": "recompute",
+        "prefix_caching": false,
+        "collective": "ring",
+        "wire_policy": "bf16",
+        "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [1, 1]
+        ],
+        "fault_policy": null,
+        "faults_fired": [],
+        "rerun_identical": null,
+        "metrics": {
+          "requests": 200,
+          "finished": 200,
+          "rejected": 0,
+          "failed": 0,
+          "fault_steps": 0,
+          "fault_ns": 0,
+          "output_tokens": 26620,
+          "ttft_ns": {
+            "n": 200,
+            "p50": 56395511,
+            "p99": 939202058,
+            "max": 964545868
+          },
+          "tpot_ns": {
+            "n": 200,
+            "p50": 6214665,
+            "p99": 8214067,
+            "max": 9588116
+          },
+          "e2e_ns": {
+            "n": 200,
+            "p50": 1028743553,
+            "p99": 2039295958,
+            "max": 2323817069
+          },
+          "span_ns": 19103897699,
+          "output_tokens_per_s": 1393.4329224027113,
+          "requests_per_s": 10.469067786646967,
+          "steps": 3071,
+          "mean_step_tokens": 48.966134809508304,
+          "max_step_tokens": 512,
+          "compute_ns": 19042477694.10217,
+          "comm_ns": 0.0,
+          "copy_ns": 0.0,
+          "overhead_ns": 61420000.0,
+          "comm_share": 0.0,
+          "preemptions_recompute": 33,
+          "preemptions_swap": 0,
+          "swap_full_fallbacks": 0,
+          "stalls": 0,
+          "recomputed_tokens": 14867,
+          "swapped_blocks": 0,
+          "swap_bytes_all_devices": 0,
+          "cow_copies": 0,
+          "prefix_evictions": 0,
+          "prefix_eligible_blocks": 0,
+          "prefix_hit_blocks": 0,
+          "prefix_hit_rate": null,
+          "kv_utilization_mean": 0.7866458386406462,
+          "kv_peak_blocks": 449
+        }
+      },
+      {
+        "label": "pressure swap one sample",
+        "world": 1,
+        "rate_per_s": 10.0,
+        "device_memory_bytes": 21000000000,
+        "kv_capacity_blocks": 449,
+        "kv_capacity_tokens": 7184,
+        "swap_blocks": 1024,
+        "preemption": "swap",
+        "prefix_caching": false,
+        "collective": "ring",
+        "wire_policy": "bf16",
+        "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [1, 1]
+        ],
+        "fault_policy": null,
+        "faults_fired": [],
+        "rerun_identical": null,
+        "metrics": {
+          "requests": 200,
+          "finished": 200,
+          "rejected": 0,
+          "failed": 0,
+          "fault_steps": 0,
+          "fault_ns": 0,
+          "output_tokens": 26620,
+          "ttft_ns": {
+            "n": 200,
+            "p50": 45659476,
+            "p99": 870851853,
+            "max": 936289609
+          },
+          "tpot_ns": {
+            "n": 200,
+            "p50": 6135996,
+            "p99": 8147565,
+            "max": 18565399
+          },
+          "e2e_ns": {
+            "n": 200,
+            "p50": 1008374210,
+            "p99": 1980692539,
+            "max": 2220937229
+          },
+          "span_ns": 18945125566,
+          "output_tokens_per_s": 1405.110771489093,
+          "requests_per_s": 10.556805195259903,
+          "steps": 3091,
+          "mean_step_tokens": 43.839534131349076,
+          "max_step_tokens": 512,
+          "compute_ns": 18755295383.93429,
+          "comm_ns": 0.0,
+          "copy_ns": 128010158.07999998,
+          "overhead_ns": 61820000.0,
+          "comm_share": 0.0,
+          "preemptions_recompute": 0,
+          "preemptions_swap": 23,
+          "swap_full_fallbacks": 0,
+          "stalls": 0,
+          "recomputed_tokens": 0,
+          "swapped_blocks": 1526,
+          "swap_bytes_all_devices": 3200253952,
+          "cow_copies": 0,
+          "prefix_evictions": 0,
+          "prefix_eligible_blocks": 0,
+          "prefix_hit_blocks": 0,
+          "prefix_hit_rate": null,
+          "kv_utilization_mean": 0.7781625856420985,
+          "kv_peak_blocks": 449
+        }
+      }
+    ],
     "prefix_sharing": [
       {
         "label": "prefix caching off",
@@ -1063,6 +1520,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1132,6 +1595,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 1,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1203,6 +1672,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1272,6 +1747,12 @@
         "collective": "halving-doubling",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1341,6 +1822,12 @@
         "collective": "shard-tree (S = 64)",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1410,6 +1897,12 @@
         "collective": "ring",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1479,6 +1972,12 @@
         "collective": "halving-doubling",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1548,6 +2047,12 @@
         "collective": "shard-tree (S = 64)",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1617,6 +2122,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1686,6 +2197,12 @@
         "collective": "halving-doubling",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1755,6 +2272,12 @@
         "collective": "shard-tree (S = 64)",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1824,6 +2347,12 @@
         "collective": "ring",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1893,6 +2422,12 @@
         "collective": "halving-doubling",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -1962,6 +2497,12 @@
         "collective": "shard-tree (S = 64)",
         "wire_policy": "fp32-rs/bf16-ag",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -2033,6 +2574,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": null,
         "faults_fired": [],
         "rerun_identical": null,
@@ -2102,6 +2649,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": "abort",
         "faults_fired": [
           {
@@ -2177,6 +2730,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": "retry",
         "faults_fired": [
           {
@@ -2252,6 +2811,12 @@
         "collective": "ring",
         "wire_policy": "bf16",
         "kv_check_interval_steps": 256,
+        "host_link_bytes_per_s": 25000000000.0,
+        "samples_weight_n": [
+          [2, 1],
+          [1, 2],
+          [1, 4]
+        ],
         "fault_policy": "drain",
         "faults_fired": [
           {
