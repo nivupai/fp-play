@@ -314,3 +314,21 @@ fn independent_python_tree_vectors() {
     }
     assert_eq!(cases, 6000);
 }
+
+#[test]
+fn with_one_shard_per_rank_the_tree_is_the_binomial_tree() {
+    // At P = S each rank owns one shard, and the shard tree pairs i with i + 2^k
+    // exactly as binomial-tree reduce does, so the two independent
+    // implementations must agree bit for bit.
+    use fp_play_runtime::collectives::{all_reduce_with, Algorithm};
+    let mut rng = SplitMix64::new(77);
+    for s in [2, 3, 5, 8, 16, 48, 64] {
+        for policy in policies() {
+            let inputs = shard_inputs(policy, s, 23, &mut rng);
+            let tree = all_reduce(policy, s, &inputs).unwrap();
+            let binomial = all_reduce_with(Algorithm::BinomialTree, policy, &inputs).unwrap();
+            assert_eq!(tree.outcome.results, binomial.results, "{} S=P={s}", policy.name());
+            assert_eq!(tree.outcome.roundings, binomial.roundings, "{} S=P={s}", policy.name());
+        }
+    }
+}

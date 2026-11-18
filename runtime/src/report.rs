@@ -5,6 +5,7 @@ use crate::cost::CostEstimate;
 use crate::json::Json;
 use crate::policies::{self, PoliciesResult};
 use crate::shard_experiment::{self, ShardResult, WorldCost};
+use crate::sweep::{self, Schedule, Stats, SweepResult, SweepRow};
 use crate::tensor_parallel::{Comparison, ExperimentResult, INPUT_FORMAT, LOCAL_ACCUMULATOR};
 
 pub const ARTIFACT_SCHEMA: &str = "fp-play-runtime/tp-allreduce/v1";
@@ -1016,6 +1017,238 @@ serialization never added a round here; the serializer is exercised on conflicti
         "- Whole buffers move at every cross-device node; a chunked, pipelined tree (which would trade rounds for \
 bytes) is not modeled. Inputs are synthetic and the cost model ignores contention, compute and overlap. No hardware or \
 interconnect measurement is claimed.\n",
+    );
+    md
+}
+
+// ---------------------------------------------------------------------------
+// R1.1: sensitivity sweep (results/r1.1-sweep.*)
+// ---------------------------------------------------------------------------
+
+pub const SWEEP_SCHEMA: &str = "fp-play-runtime/r1.1-sweep/v1";
+
+fn stats_json(s: &Stats) -> Json {
+    Json::obj(vec![
+        ("min", Json::Num(s.min)),
+        ("median", Json::Num(s.median)),
+        ("max", Json::Num(s.max)),
+    ])
+}
+
+/// A fraction as a percentage, with two decimals below 1%.
+fn fraction_pct(f: f64) -> String {
+    let p = 100.0 * f;
+    if p > 0.0 && p < 1.0 {
+        format!("{p:.2}%")
+    } else {
+        format!("{p:.1}%")
+    }
+}
+
+/// `median (min–max)` of a fraction.
+fn spread_pct(s: &Stats) -> String {
+    format!(
+        "{} ({}–{})",
+        fraction_pct(s.median),
+        fraction_pct(s.min),
+        fraction_pct(s.max)
+    )
+}
+
+pub fn sweep_to_json(result: &SweepResult, command: &str) -> Json {
+    let c = &result.config;
+    Json::obj(vec![
+        ("schema", Json::str(SWEEP_SCHEMA)),
+        (
+            "tool",
+            Json::str(format!("fp-play-runtime {}", env!("CARGO_PKG_VERSION"))),
+        ),
+        ("command", Json::str(command)),
+        (
+            "config",
+            Json::obj(vec![
+                ("tokens", Json::uint(c.tokens)),
+                ("outputs", Json::uint(c.outputs)),
+                ("hidden_sizes", Json::Arr(c.hiddens.iter().map(|&h| Json::uint(h)).collect())),
+                ("world_sizes", Json::Arr(c.world_sizes.iter().map(|&w| Json::uint(w)).collect())),
+                ("seeds", Json::Arr(c.seeds.iter().map(|&s| Json::Int(s as i64)).collect())),
+                ("shards", Json::uint(c.shards)),
+                ("input_format", Json::str(INPUT_FORMAT.name())),
+                ("local_accumulator", Json::str(LOCAL_ACCUMULATOR.name())),
+                ("policies", Json::Arr(sweep::POLICIES.iter().map(policy_json).collect())),
+                (
+                    "statistics",
+                    Json::str("min / median / max over seeds; the median of an even count is the mean of the two middle values"),
+                ),
+                (
+                    "metrics",
+                    Json::str("mismatched_fraction and max_ulp against the exact result rounded once to the policy's output format; vs_ring_fraction against ring under the same policy; top1_changes against the unsharded FP32 kernel rounded to the output format, out of `tokens`"),
+                ),
+                ("rounding", Json::str("round-to-nearest, ties-to-even")),
+            ]),
+        ),
+        ("elements_per_run", Json::uint(result.elements)),
+        (
+            "shard_tree_invariance",
+            Json::obj(vec![
+                ("comparisons_across_world_sizes", Json::uint(result.shard_tree_invariance_checks)),
+                ("all_identical", Json::Bool(result.shard_tree_p_invariant)),
+            ]),
+        ),
+        (
+            "rows",
+            Json::Arr(
+                result
+                    .rows
+                    .iter()
+                    .map(|r| {
+                        Json::obj(vec![
+                            ("hidden", Json::uint(r.hidden)),
+                            ("world", Json::uint(r.world)),
+                            ("policy", Json::str(r.policy.name())),
+                            ("schedule", Json::str(r.schedule.name())),
+                            ("runs", Json::uint(r.runs)),
+                            ("mismatched_fraction", stats_json(&r.mismatched_fraction)),
+                            ("relative_rms_error", stats_json(&r.relative_rms_error)),
+                            ("max_ulp", stats_json(&r.max_ulp)),
+                            ("vs_ring_fraction", stats_json(&r.vs_ring_fraction)),
+                            ("top1_changes", stats_json(&r.top1_changes)),
+                        ])
+                    })
+                    .collect(),
+            ),
+        ),
+    ])
+}
+
+pub fn sweep_to_markdown(result: &SweepResult, command: &str) -> String {
+    let c = &result.config;
+    let mut md = String::new();
+    md.push_str("# R1.1: the spread across seeds\n\n");
+    md.push_str(&format!(
+        "Generated by `{command}` (fp-play-runtime {}). Re-running the command reproduces this file byte for byte.\n\n",
+        env!("CARGO_PKG_VERSION")
+    ));
+    let seeds: Vec<String> = c.seeds.iter().map(|s| format!("`{s:#x}`")).collect();
+    let hiddens: Vec<String> = c.hiddens.iter().map(|h| h.to_string()).collect();
+    let worlds: Vec<String> = c.world_sizes.iter().map(|w| w.to_string()).collect();
+    md.push_str(&format!(
+        "**Setup.** The R1 problem at reduced size: {} tokens × {} outputs = {} elements per run, hidden ∈ {{{}}}, \
+P ∈ {{{}}}, {} seeds ({}). BF16 inputs, FP32 local partials. Policies: `fp32` (FP32 throughout, FP32 output), `bf16`, \
+`fp32-rs/bf16-ag` and `bf16-wire/fp32-add` (BF16 output; see [r1.1-policies.md](r1.1-policies.md)). Schedules: the five \
+collectives (halving-doubling only for powers of two) and the shard tree with S = {} (not for `bf16-wire/fp32-add`, see \
+[r1.1-shard-tree.md](r1.1-shard-tree.md)). Every cell is **median (min–max) over the seeds**; the median of an even \
+count is the mean of the two middle values.\n\n",
+        c.tokens,
+        c.outputs,
+        result.elements,
+        hiddens.join(", "),
+        worlds.join(", "),
+        c.seeds.len(),
+        seeds.join(", "),
+        c.shards
+    ));
+
+    md.push_str("## Headline\n\n");
+    md.push_str(&format!(
+        "- Shard tree: output bits identical across every swept P in **{} of {}** comparisons (each seed, hidden size and \
+policy, every P against the first).\n",
+        if result.shard_tree_p_invariant {
+            result.shard_tree_invariance_checks
+        } else {
+            0
+        },
+        result.shard_tree_invariance_checks
+    ));
+    let top1_max = result.rows.iter().map(|r| r.top1_changes.max).fold(0.0, f64::max);
+    md.push_str(&format!(
+        "- Top-1 changes against the unsharded kernel: at most {top1_max} of {} tokens in any run.\n",
+        c.tokens
+    ));
+    let reduction = |s: Schedule| !matches!(s, Schedule::Collective(Algorithm::ExactGather) | Schedule::ShardTree);
+    for &world in [8usize, 64].iter().filter(|w| c.world_sizes.contains(w)) {
+        md.push_str(&format!(
+            "\nElements ≠ exact at **P = {world}**: the reduction schedules (sequential, ring, binomial-tree, \
+halving-doubling) as the range of their medians, with the worst single seed and schedule in brackets.\n\n"
+        ));
+        md.push_str("| policy | hidden | reduction schedules | exact-gather | shard-tree |\n|---|--:|--:|--:|--:|\n");
+        for policy in sweep::POLICIES {
+            for &hidden in &c.hiddens {
+                let rows: Vec<&SweepRow> = result
+                    .rows
+                    .iter()
+                    .filter(|r| r.world == world && r.hidden == hidden && r.policy == policy)
+                    .collect();
+                let red: Vec<&&SweepRow> = rows.iter().filter(|r| reduction(r.schedule)).collect();
+                let lo = red
+                    .iter()
+                    .map(|r| r.mismatched_fraction.median)
+                    .fold(f64::INFINITY, f64::min);
+                let hi = red.iter().map(|r| r.mismatched_fraction.median).fold(0.0, f64::max);
+                let worst = red.iter().map(|r| r.mismatched_fraction.max).fold(0.0, f64::max);
+                let cell = |s: Schedule| {
+                    rows.iter()
+                        .find(|r| r.schedule == s)
+                        .map_or("—".to_string(), |r| spread_pct(&r.mismatched_fraction))
+                };
+                md.push_str(&format!(
+                    "| `{}` | {} | {}–{} [{}] | {} | {} |\n",
+                    policy.name(),
+                    hidden,
+                    fraction_pct(lo),
+                    fraction_pct(hi),
+                    fraction_pct(worst),
+                    cell(Schedule::Collective(Algorithm::ExactGather)),
+                    cell(Schedule::ShardTree),
+                ));
+            }
+        }
+    }
+    md.push('\n');
+
+    md.push_str("## Elements ≠ exact, every configuration\n\n");
+    md.push_str("Relative RMS error, max ulp and disagreement with ring are in the JSON with the same statistics.\n\n");
+    for &hidden in &c.hiddens {
+        md.push_str(&format!("### hidden = {hidden}\n\n"));
+        let names: Vec<&str> = Schedule::ALL.iter().map(|s| s.name()).collect();
+        md.push_str(&format!("| P | policy | {} |\n", names.join(" | ")));
+        md.push_str(&format!("|--:|---|{}\n", "--:|".repeat(names.len())));
+        for &world in &c.world_sizes {
+            for policy in sweep::POLICIES {
+                let cells: Vec<String> = Schedule::ALL
+                    .iter()
+                    .map(|&s| {
+                        result
+                            .rows
+                            .iter()
+                            .find(|r| r.hidden == hidden && r.world == world && r.policy == policy && r.schedule == s)
+                            .map_or("—".to_string(), |r| spread_pct(&r.mismatched_fraction))
+                    })
+                    .collect();
+                md.push_str(&format!("| {world} | `{}` | {} |\n", policy.name(), cells.join(" | ")));
+            }
+        }
+        md.push('\n');
+    }
+
+    md.push_str("## What this does and does not show\n\n");
+    md.push_str(
+        "- The spread is across input seeds for one synthetic distribution (Irwin–Hall normal, weights scaled by \
+1/√hidden). Other distributions, real activations or outliers may behave differently.\n",
+    );
+    md.push_str(&format!(
+        "- Runs are reduced to {} elements to keep the sweep a normal test; one element is {} of a run, so small \
+percentages are a few elements.\n",
+        result.elements,
+        fraction_pct(1.0 / result.elements as f64)
+    ));
+    md.push_str(
+        "- The shard tree's invariance is across P for a fixed S, and its local kernel computes S/P partials per \
+device, a different summation order from the other schedules' per-device kernel.\n",
+    );
+    md.push_str(
+        "- Top-1 changes are over only a few tokens and 256 outputs, not a vocabulary; whether bit differences \
+change greedy decoding is an R3 experiment. No hardware or interconnect measurement is claimed.\n",
     );
     md
 }

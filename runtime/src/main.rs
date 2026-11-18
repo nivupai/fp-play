@@ -11,6 +11,7 @@ use fp_play_runtime::report;
 use fp_play_runtime::rng::SplitMix64;
 use fp_play_runtime::shard_experiment;
 use fp_play_runtime::shard_tree::DEFAULT_SHARDS;
+use fp_play_runtime::sweep::{self, SweepConfig};
 use fp_play_runtime::tensor_parallel::{prepare, run_prepared, ExperimentConfig};
 
 const USAGE: &str = "\
@@ -22,8 +23,9 @@ USAGE:
                              [--latency-us X] [--bandwidth-gbps X] [--shards S]
                              [--out DIR]
       Run the tensor-parallel experiments; write tp-allreduce.{json,md}
-      (R1), r1.1-policies.{json,md} and r1.1-shard-tree.{json,md} (R1.1,
-      S logical shards, default 64) to DIR (default: results).
+      (R1), and r1.1-policies, r1.1-shard-tree (S logical shards, default
+      64) and r1.1-sweep (.json and .md each, R1.1) to DIR (default: results).
+      The sweep uses its own fixed grid of seeds, sizes and world sizes.
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
@@ -153,6 +155,10 @@ fn experiment(args: &[String]) -> Result<(), String> {
     let result = run_prepared(&config, &prepared)?;
     let policies = policies::run_prepared(&config, &prepared)?;
     let shards = shard_experiment::run_prepared(&config, &prepared, flags.parse("--shards", DEFAULT_SHARDS)?)?;
+    let sweep = sweep::run(&SweepConfig {
+        shards: flags.parse("--shards", DEFAULT_SHARDS)?,
+        ..SweepConfig::default()
+    })?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -169,6 +175,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r1.1-shard-tree",
             report::shard_tree_to_json(&shards, &command).to_pretty(),
             report::shard_tree_to_markdown(&shards, &command),
+        ),
+        (
+            "r1.1-sweep",
+            report::sweep_to_json(&sweep, &command).to_pretty(),
+            report::sweep_to_markdown(&sweep, &command),
         ),
     ];
     for (name, json, markdown) in artifacts {
