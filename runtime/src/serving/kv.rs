@@ -197,13 +197,16 @@ pub enum Mutation {
 
 const ROOT_KEY: u64 = 0x9b1d_c0de_0000_0001;
 
-/// Chain key of a full block from its parent's key and its tokens.
+/// Chain key of a full block from its parent's key and its tokens: a
+/// multiply–rotate hash over the tokens, then the SplitMix64 finalizer.
+/// A hit is always verified against the stored parent key and tokens, so a
+/// collision can only cause a miss.
 pub fn chain_key(parent: u64, tokens: &[u32]) -> u64 {
-    let mut h = SplitMix64::new(parent ^ 0x6b65_7973).next_u64();
+    let mut h = parent ^ 0x6b65_7973_6b65_7973;
     for &t in tokens {
-        h = SplitMix64::new(h ^ u64::from(t)).next_u64();
+        h = (h ^ u64::from(t)).wrapping_mul(0x9e37_79b9_7f4a_7c15).rotate_left(29);
     }
-    h
+    SplitMix64::new(h).next_u64()
 }
 
 pub struct KvCache {

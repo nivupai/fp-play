@@ -17,10 +17,12 @@
 
 pub mod detmath;
 pub mod engine;
+pub mod experiment;
 pub mod kv;
 pub mod metrics;
 pub mod model;
 pub mod reference;
+pub mod report;
 pub mod scheduler;
 pub mod step_time;
 pub mod traces;

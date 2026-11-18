@@ -26,6 +26,8 @@ USAGE:
       (R1), and r1.1-policies, r1.1-shard-tree (S logical shards, default
       64) and r1.1-sweep (.json and .md each, R1.1) to DIR (default: results).
       The sweep uses its own fixed grid of seeds, sizes and world sizes.
+      Also writes r2-serving (R2: the serving scenarios, their own fixed
+      configuration; the flags above do not apply to it).
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
@@ -164,6 +166,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
         shards: flags.parse("--shards", DEFAULT_SHARDS)?,
         ..SweepConfig::default()
     })?;
+    let serving = fp_play_runtime::serving::experiment::run_all(&Default::default())?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -185,6 +188,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r1.1-sweep",
             report::sweep_to_json(&sweep, &command).to_pretty(),
             report::sweep_to_markdown(&sweep, &command),
+        ),
+        (
+            "r2-serving",
+            fp_play_runtime::serving::report::to_json(&serving, &command).to_pretty(),
+            fp_play_runtime::serving::report::to_markdown(&serving, &command),
         ),
     ];
     for (name, json, markdown) in artifacts {

@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 83 tests, including the recorded-artifact checks
+cargo test --release                              # 99 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -175,25 +175,55 @@ seeds.
 
 ## R2 (in progress): the serving simulator
 
-The first piece, R2a, is a tested paged-KV-cache library with no scheduler
-yet:
+A deterministic discrete-event simulator of one tensor-parallel serving
+group: paged KV cache, continuous batching with chunked prefill, forked
+samples, recompute or swap preemption, and step times that include the
+real AllReduce schedules. R2a (the KV-cache library) and R2b (scheduler,
+engine, recorded scenarios) are done; failure injection (R2c) is next.
 
-| Module                                                        | Role                                                                                                                                              |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `serving::model`                                              | 8B-class dimensions (not a specific released model), illustrative device constants, KV capacity per device; P must divide the 8 KV heads          |
-| `serving::detmath`                                            | `ln` from IEEE basic operations only, so Poisson arrivals match on every platform                                                                 |
-| `serving::workload`                                           | Poisson arrivals, prompt and output length tables, shared system prompts, n ∈ {1, 2, 4} samples, priority classes, deterministic synthetic tokens |
-| `serving::kv`                                                 | Block pool (LIFO free list, refcounts), block tables, prefix cache with LRU retention, fork and copy-on-write, host swap pool, invariant checks   |
-| `collectives::schedule_rounds`, `shard_tree::schedule_rounds` | Dry-run schedules: the rounds of a collective without moving data, for step-time costing                                                          |
+| Module                | Role                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `serving::model`      | 8B-class dimensions (not a specific released model), illustrative device constants, KV capacity per device; P must divide the 8 KV heads          |
+| `serving::detmath`    | `ln` from IEEE basic operations only, so Poisson arrivals match on every platform                                                                 |
+| `serving::workload`   | Poisson arrivals, prompt and output length tables, shared system prompts, n ∈ {1, 2, 4} samples, priority classes, deterministic synthetic tokens |
+| `serving::kv`         | Block pool (LIFO free list, refcounts), block tables, prefix cache with LRU retention, fork and copy-on-write, host swap pool, invariant checks   |
+| `serving::step_time`  | Roofline compute plus two AllReduces per layer, costed from the schedule each collective records in a dry run                                     |
+| `serving::scheduler`  | The written policy: token budget, decodes first, chunked prefill, FCFS admission within priority, victim = lowest priority then latest arrival    |
+| `serving::engine`     | Event loop with per-step scheduler, token-stream and KV-cache invariant checks                                                                    |
+| `serving::reference`  | A slow independent scheduler and cache (test oracle)                                                                                              |
+| `serving::experiment` | The recorded scenarios in [`results/r2-serving.md`](results/r2-serving.md)                                                                        |
 
-With the default device (80 GB, 4 GB reserve) and 16-token blocks, the KV
-capacity is 28,583 blocks (457,328 tokens) at P = 1. Evidence:
-`tests/dry_run.rs` (dry-run rounds equal executed rounds for every algorithm,
-policy and P ≤ 16, and the shard tree for every P ≤ S), `tests/serving_kv.rs`
-(hand-derived cases, 400 random operation sequences checked against a plain
-model after every operation, and five planted bugs each caught by a named
-invariant) and `tests/serving_workload.rs` (a pinned workload fingerprint that
-CI checks on Linux, and `ln` against the host).
+Selected results from `results/r2-serving.md` (illustrative model, 200
+requests per run):
+
+- **Load:** at 10 req/s, TPOT p50 is 6.45 ms at P = 1, 3.29 ms at P = 2,
+  2.33 ms at P = 4 and 2.73 ms at P = 8, where ring AllReduces take 73.7% of
+  step time.
+- **Memory pressure** (449 KV blocks): recompute preempted 131 times and
+  recomputed 61,427 tokens (TTFT p50 593.52 ms); swap preempted 84 times
+  and moved 23.04 GB over the host link (TTFT p50 1280.26 ms).
+- **Prefix sharing:** with 4 shared 512-token system prompts, the cache hit
+  42.9% of eligible blocks; TTFT p50 fell from 53.47 ms to 28.46 ms and peak
+  KV blocks from 1809 to 1027.
+- **Collectives** at P = 8 with a BF16 wire: halving-doubling lowers TPOT p50
+  by 41.2% against ring and the shard tree by 31.4%, but the shard tree's
+  TTFT p50 is 24.32 ms against ring's 12.69 ms. In this model the tree sends
+  the whole buffer at every level, so its message size grows with the
+  step's token count.
+
+Evidence: `tests/dry_run.rs` (dry-run rounds equal executed rounds for every
+algorithm, policy and P ≤ 16, and the shard tree for every P ≤ S);
+`tests/serving_kv.rs` (hand-derived cases, 400 random operation sequences
+checked against a plain model after every operation, five planted bugs);
+`tests/serving_engine.rs` (a hand-derived three-request trace, 300 random
+workloads with every invariant after every step and a trace equal to the
+reference scheduler's, seven planted bugs caught inside the engine);
+`tests/serving_traces.rs` (golden JSON-lines traces);
+`tests/serving_step_time.rs` (hand-computed step times);
+`tests/serving_workload.rs` (a pinned workload fingerprint that CI checks on
+Linux); `tests/serving_experiment.rs` (the recorded results are current, and
+the memory-pressure scenario preempts in both modes). Design decisions are
+listed in [R2_PROGRESS.md](R2_PROGRESS.md).
 
 ## Evidence
 
