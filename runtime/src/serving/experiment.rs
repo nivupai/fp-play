@@ -18,7 +18,7 @@ use crate::cost::LinkModel;
 use crate::format::Format;
 use crate::shard_tree::DEFAULT_SHARDS;
 
-use super::engine::{run, EngineConfig, RunResult};
+use super::engine::{run, EngineConfig, FaultConfig, RunResult};
 use super::kv::KvConfig;
 use super::metrics::{metrics, Metrics};
 use super::model::{kv_capacity_blocks, DeviceConfig, ModelConfig};
@@ -171,6 +171,7 @@ pub fn run_spec(config: &ServingConfig, spec: &RunSpec) -> Result<(ScenarioRun, 
             swap_blocks: spec.swap_blocks,
             prefix_caching: spec.prefix_caching,
         },
+        faults: FaultConfig::none(),
         kv_check_interval: spec.kv_check_interval,
         planted: None,
     };

@@ -113,8 +113,48 @@ pub enum Phase {
     Running,
     Swapped,
     Finished,
-    /// Could never fit in the KV cache; rejected on arrival.
+    /// Rejected: it could never fit in the KV cache, or it arrived (or had
+    /// never been admitted) while draining after a failure.
     Rejected,
+    /// Ended by a rank failure (abort, or too many retries).
+    Failed,
+}
+
+impl Phase {
+    pub fn is_terminal(self) -> bool {
+        matches!(self, Phase::Finished | Phase::Rejected | Phase::Failed)
+    }
+}
+
+/// What happens to in-flight requests when a rank fails.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FaultPolicy {
+    /// Requests running on the device fail; waiting and swapped ones continue.
+    Abort,
+    /// Requests running on the device go back to waiting with their committed
+    /// tokens and recompute their KV; past the retry limit they fail.
+    Retry,
+    /// As retry, and from then on no new work is admitted: requests that were
+    /// never admitted, and later arrivals, are rejected.
+    Drain,
+}
+
+impl FaultPolicy {
+    pub fn name(self) -> &'static str {
+        match self {
+            FaultPolicy::Abort => "abort",
+            FaultPolicy::Retry => "retry",
+            FaultPolicy::Drain => "drain",
+        }
+    }
+}
+
+/// The effect of one failure on the requests.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct FaultOutcome {
+    pub failed: Vec<u32>,
+    pub retried: Vec<u32>,
+    pub rejected: Vec<u32>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -136,6 +176,13 @@ pub struct RequestState {
     pub forked: bool,
     pub first_token_ns: Option<u64>,
     pub finish_ns: Option<u64>,
+    /// When the request finished, failed or was rejected.
+    pub ended_ns: Option<u64>,
+    /// Terminal transitions so far (exactly one at the end of a run: G4).
+    pub endings: u32,
+    /// Ever admitted (drain keeps these and rejects the others).
+    pub admitted: bool,
+    pub retries: u32,
     pub preemptions: u32,
 }
 
@@ -156,6 +203,10 @@ impl RequestState {
             samples,
             first_token_ns: None,
             finish_ns: None,
+            ended_ns: None,
+            endings: 0,
+            admitted: false,
+            retries: 0,
             preemptions: 0,
         }
     }
@@ -285,6 +336,9 @@ pub enum SchedulerMutation {
     VictimFirst,
     /// Give a prefill chunk one token more than the remaining budget.
     BudgetOverrun,
+    /// On retry after a failure, roll each unfinished sample back by one
+    /// committed token, so that token is committed a second time.
+    DoubleCommitOnRetry,
 }
 
 pub struct Scheduler {
@@ -294,6 +348,8 @@ pub struct Scheduler {
     pub counters: SchedulerCounters,
     #[doc(hidden)]
     pub mutation: Option<SchedulerMutation>,
+    /// After a failure under the drain policy: admit nothing new.
+    pub draining: bool,
 }
 
 impl Scheduler {
@@ -304,6 +360,7 @@ impl Scheduler {
             requests: requests.iter().cloned().map(RequestState::new).collect(),
             counters: SchedulerCounters::default(),
             mutation: None,
+            draining: false,
         }
     }
 
@@ -314,19 +371,66 @@ impl Scheduler {
         (tokens.div_ceil(b) * u64::from(request.samples)) as usize
     }
 
-    /// A request arrives: it waits, or is rejected if it could never fit.
-    pub fn arrive(&mut self, index: usize) {
+    /// Move a request to a terminal phase (counted, for G4).
+    fn end(&mut self, r: usize, phase: Phase, now: u64) {
+        debug_assert!(phase.is_terminal());
+        let state = &mut self.requests[r];
+        state.phase = phase;
+        state.ended_ns = Some(now);
+        state.endings += 1;
+        if phase == Phase::Rejected {
+            self.counters.rejected += 1;
+        }
+    }
+
+    /// A request arrives: it waits, or is rejected if it could never fit or
+    /// the group is draining.
+    pub fn arrive(&mut self, index: usize, now: u64) {
         let fits = self.max_blocks(&self.requests[index].request) + self.config.watermark_blocks
             <= self.kv.config().device_blocks
             && self.requests[index].request.samples as usize <= self.config.max_seqs;
-        let r = &mut self.requests[index];
-        debug_assert_eq!(r.phase, Phase::Pending);
-        if fits {
-            r.phase = Phase::Waiting;
+        debug_assert_eq!(self.requests[index].phase, Phase::Pending);
+        if fits && !self.draining {
+            self.requests[index].phase = Phase::Waiting;
         } else {
-            r.phase = Phase::Rejected;
-            self.counters.rejected += 1;
+            self.end(index, Phase::Rejected, now);
         }
+    }
+
+    /// A rank failed: every device block is lost (the swap pool survives),
+    /// and requests that were running are handled by `policy`.
+    pub fn on_fault(&mut self, policy: FaultPolicy, retry_limit: u32, now: u64) -> FaultOutcome {
+        let mut out = FaultOutcome::default();
+        self.kv.reset_device();
+        for r in self.in_order(Phase::Running) {
+            let retry = policy != FaultPolicy::Abort && self.requests[r].retries < retry_limit;
+            if !retry {
+                self.end(r, Phase::Failed, now);
+                out.failed.push(self.requests[r].request.id);
+                continue;
+            }
+            let double = self.mutation == Some(SchedulerMutation::DoubleCommitOnRetry);
+            let state = &mut self.requests[r];
+            state.retries += 1;
+            state.phase = Phase::Waiting;
+            state.forked = state.unfinished_count() <= 1;
+            for sample in state.samples.iter_mut().filter(|s| !s.finished) {
+                if double && sample.committed > 0 {
+                    sample.committed -= 1;
+                }
+            }
+            out.retried.push(state.request.id);
+        }
+        if policy == FaultPolicy::Drain {
+            self.draining = true;
+            for r in self.in_order(Phase::Waiting) {
+                if !self.requests[r].admitted {
+                    self.end(r, Phase::Rejected, now);
+                    out.rejected.push(self.requests[r].request.id);
+                }
+            }
+        }
+        out
     }
 
     fn in_order(&self, phase: Phase) -> Vec<usize> {
@@ -551,6 +655,7 @@ impl Scheduler {
                 let peak = &mut self.requests[r].samples[carrier].peak_kv;
                 *peak = (*peak).max(adopted as u64);
                 self.requests[r].phase = Phase::Running;
+                self.requests[r].admitted = true;
                 plan.admitted.push(self.requests[r].request.id);
                 self.append_work(&mut plan, r, carrier, chunk);
                 budget -= chunk;
@@ -649,8 +754,8 @@ impl Scheduler {
                 }
             }
             if self.requests[r].unfinished_count() == 0 {
-                self.requests[r].phase = Phase::Finished;
                 self.requests[r].finish_ns = Some(now);
+                self.end(r, Phase::Finished, now);
                 out.finished.push(self.requests[r].request.id);
             }
         }

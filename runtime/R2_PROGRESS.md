@@ -7,11 +7,11 @@ design calls made while building.
 
 ## Pieces
 
-| Piece                                                                                  | Branch               | State                      |
-| -------------------------------------------------------------------------------------- | -------------------- | -------------------------- |
-| R2a: dry-run collectives, workload, KV cache, invariants, property tests, planted bugs | `runtime-r2-serving` | merged: PR #19 (`2c5acb9`) |
-| R2b: step time, scheduler, engine, metrics, reference scheduler, traces, scenarios 1–4 | —                    | not started                |
-| R2c: failure injection, G1–G5, scenario 5, docs                                        | —                    | not started                |
+| Piece                                                                                  | Branch                 | State                      |
+| -------------------------------------------------------------------------------------- | ---------------------- | -------------------------- |
+| R2a: dry-run collectives, workload, KV cache, invariants, property tests, planted bugs | `runtime-r2-serving`   | merged: PR #19 (`2c5acb9`) |
+| R2b: step time, scheduler, engine, metrics, reference scheduler, traces, scenarios 1–4 | `runtime-r2b-engine`   | merged: PR #20 (`0d81c01`) |
+| R2c: failure injection, G1–G5, scenario 5, docs                                        | `runtime-r2c-failures` | in progress                |
 
 ## Done
 
@@ -60,11 +60,19 @@ design calls made while building.
   memory-pressure scenario preempts in both modes. All earlier recorded JSON
   byte-identical.
 
+- R2c so far: fault plan (step, layer, AllReduce), fail-stop timing,
+  abort/retry/drain in `Scheduler::on_fault`, G1–G4 checked in the engine,
+  the same handling in the reference; `tests/serving_faults.rs`
+  (hand-derived retry, abort and drain cases; 300 random fault plans equal
+  to the reference with G5 by rerun; the double-commit planted bug); fault
+  records in the JSON-lines traces (existing golden traces changed only by
+  `"fault":null`), two new golden fault traces.
+
 ## Next
 
-R2b: PR, CI, review, squash-merge. Then R2c from the updated main: fault
-plan, abort/retry/drain, G1–G5, the double-commit planted bug, scenario 5,
-README/PLAN/CHANGELOG, case-study addendum.
+R2c: scenario 5 in `results/r2-serving.*` (no failure, abort, retry,
+drain; G5 by rerun), docs (README, PLAN, CHANGELOG, case-study addendum),
+then PR, CI, review, squash-merge, and the final report.
 
 ## Open questions
 
@@ -145,6 +153,24 @@ None.
 - R2b-14. The chain-key hash became a multiply–rotate loop with a
   SplitMix64 finalizer (it was SplitMix per token), to keep per-step
   prefix-cache checks cheap; hits stay verified against stored tokens.
+- R2c-1. A failed step is charged its overhead and copies plus the share
+  (2·layer + which + 1) ÷ (2·layers) of its compute and communication,
+  then detection and recovery; it commits nothing. Faults are given by
+  step index and fire only if that step occurs.
+- R2c-2. Retry limit: a request may be retried `retry_limit` times; the
+  next failure while it runs fails it. Abort fails running requests at
+  once. Swapped and waiting requests are untouched by abort and retry.
+- R2c-3. Drain = retry for running requests, then reject every waiting
+  request that was never admitted and every later arrival. Preempted
+  requests (admitted before) are kept.
+- R2c-4. G1 is checked right after the failure (no device block in use,
+  full KV check including the swap pool); G2 by the token-stream invariant
+  at every step; G3 at the end (each retried sample ends with at least its
+  committed tokens at the failure, unless the request later failed); G4 at
+  the end (every request terminal, exactly one ending); G5 by rerunning.
+  The KV check after a failure runs regardless of the check interval.
+- R2c-5. Interrupted steps are excluded from the compute and communication
+  sums and reported as `fault_ns`.
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1

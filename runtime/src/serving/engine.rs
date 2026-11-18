@@ -20,6 +20,31 @@
 //! * **token stream:** each sample commits output indices 0, 1, 2, … with no
 //!   gap or repeat, never more than its output length;
 //! * **events:** the clock never moves backwards.
+//!
+//! # Failures
+//!
+//! A [`FaultConfig`] lists fail-stop rank failures, each at (step index,
+//! layer, which of the layer's two AllReduces). That step stops at that
+//! collective: it is charged its fixed overhead and copies plus the share of
+//! its compute and communication up to and including that collective
+//! (`(2·layer + which + 1) ÷ (2·layers)`), then the detection timeout and the
+//! recovery time, rounded once to whole nanoseconds. **The step commits
+//! nothing.** Losing a rank loses every device KV block (each holds a shard
+//! on every rank); the host swap pool survives. Requests that were running
+//! are handled by the [`FaultPolicy`]. With checks on, these guarantees are
+//! verified (a violation ends the run with an error):
+//!
+//! * **G1, no leaked blocks:** right after the failure no device block is in
+//!   use, and every KV-cache invariant (including the swap pool) holds.
+//! * **G2, no duplicated tokens:** the token-stream invariant above, after
+//!   every step including recovery.
+//! * **G3, nothing lost under retry:** every retried sample ends with at
+//!   least the tokens it had committed when the failure happened.
+//! * **G4, exactly one ending:** at the end every request has finished,
+//!   failed or been rejected, exactly once.
+//!
+//! G5, determinism, is checked by running twice (tests and the recorded
+//! failure scenario compare the traces).
 
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
@@ -27,15 +52,72 @@ use std::fmt;
 
 use super::kv::{KvCache, KvConfig, KvStats, Mutation, SeqId};
 use super::scheduler::{
-    Phase, RequestState, Scheduler, SchedulerConfig, SchedulerCounters, SchedulerMutation, StepOutcome, StepPlan,
+    FaultOutcome, FaultPolicy, Phase, RequestState, Scheduler, SchedulerConfig, SchedulerCounters, SchedulerMutation,
+    StepOutcome, StepPlan,
 };
 use super::step_time::{StepTime, StepTimer};
 use super::workload::Request;
 
+/// A fail-stop rank failure during step `step`, in layer `layer`
+/// (0-based) at its first (`allreduce = 0`, after attention) or second
+/// (`1`, after the MLP) AllReduce.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Fault {
+    pub step: u64,
+    pub layer: u32,
+    pub allreduce: u8,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FaultConfig {
+    /// Failures, by step index (each step at most once).
+    pub plan: Vec<Fault>,
+    pub policy: FaultPolicy,
+    pub detection_ns: u64,
+    pub recovery_ns: u64,
+    /// Retries allowed per request before it fails.
+    pub retry_limit: u32,
+    /// Layers in the model (to place the failing collective).
+    pub layers: u32,
+}
+
+impl FaultConfig {
+    pub fn none() -> FaultConfig {
+        FaultConfig {
+            plan: Vec::new(),
+            policy: FaultPolicy::Retry,
+            detection_ns: 0,
+            recovery_ns: 0,
+            retry_limit: 0,
+            layers: 1,
+        }
+    }
+
+    fn at(&self, step: u64) -> Option<Fault> {
+        self.plan.iter().copied().find(|f| f.step == step)
+    }
+
+    /// Wall time of a step that fails at `fault`: see the module documentation.
+    pub fn failed_step_ns(&self, time: &StepTime, fault: Fault) -> u64 {
+        let done = f64::from(2 * fault.layer + u32::from(fault.allreduce) + 1) / f64::from(2 * self.layers);
+        let elapsed = time.overhead_ns + time.copy_ns + done * (time.compute_ns + time.comm_ns);
+        (elapsed + self.detection_ns as f64 + self.recovery_ns as f64).round() as u64
+    }
+}
+
+/// What a failure did, recorded on the failed step.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FaultRecord {
+    pub layer: u32,
+    pub allreduce: u8,
+    pub outcome: FaultOutcome,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EngineConfig {
     pub scheduler: SchedulerConfig,
     pub kv: KvConfig,
+    pub faults: FaultConfig,
     /// 0: no invariant checks. k ≥ 1: the scheduler and token-stream
     /// invariants after every step, the KV-cache invariants after every k-th
     /// step and after the last one.
@@ -63,6 +145,8 @@ pub struct StepRecord {
     pub time: StepTime,
     /// Device blocks referenced at the end of the step.
     pub used_blocks: usize,
+    /// Set if a rank failed during this step (which then committed nothing).
+    pub fault: Option<FaultRecord>,
 }
 
 #[derive(Clone, Debug)]
@@ -220,6 +304,14 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
     if let Some(Planted::Scheduler(m)) = config.planted {
         s.mutation = Some(m);
     }
+    let faults = &config.faults;
+    if faults.plan.iter().any(|f| f.layer >= faults.layers || f.allreduce > 1) {
+        return Err(EngineError::Config(
+            "a fault names a layer or AllReduce that does not exist".into(),
+        ));
+    }
+    // Committed tokens of each retried sample at its failure (G3).
+    let mut retried_floor: BTreeMap<SeqId, u32> = BTreeMap::new();
     let checking = config.kv_check_interval > 0;
     let interval = config.kv_check_interval.max(1);
     let streams = if checking { token_streams(requests) } else { Vec::new() };
@@ -248,7 +340,50 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
         }
         for event in batch {
             match event {
-                Event::Arrival(i) => s.arrive(i),
+                Event::Arrival(i) => s.arrive(i, now),
+                Event::StepEnd if faults.at(index).is_some() => {
+                    let fault = faults.at(index).expect("checked");
+                    let (plan, start, time) = current.take().expect("a step is running");
+                    // Committed tokens before the failure, for G3.
+                    let before: Vec<Vec<u32>> = s
+                        .requests
+                        .iter()
+                        .map(|r| r.samples.iter().map(|x| x.committed).collect())
+                        .collect();
+                    let outcome = s.on_fault(faults.policy, faults.retry_limit, now);
+                    for &id in &outcome.retried {
+                        let r = &s.requests[id as usize];
+                        for (i, &committed) in before[id as usize].iter().enumerate() {
+                            retried_floor.entry(r.seq(i)).or_insert(committed);
+                        }
+                    }
+                    if checking {
+                        if s.kv.used_blocks() != 0 {
+                            return Err(EngineError::Invariant {
+                                step: index,
+                                what: format!(
+                                    "G1: {} device blocks still in use after the failure",
+                                    s.kv.used_blocks()
+                                ),
+                            });
+                        }
+                        check(&s, None, &next_commit, Some(&streams), index)?;
+                    }
+                    steps.push(StepRecord {
+                        index,
+                        start_ns: start,
+                        end_ns: now,
+                        plan,
+                        outcome: StepOutcome::default(),
+                        time,
+                        used_blocks: s.kv.used_blocks(),
+                        fault: Some(FaultRecord {
+                            layer: fault.layer,
+                            allreduce: fault.allreduce,
+                            outcome,
+                        }),
+                    });
+                }
                 Event::StepEnd => {
                     let (plan, start, time) = current.take().expect("a step is running");
                     let outcome = s.complete_step(&plan, now).map_err(|e| EngineError::Invariant {
@@ -268,6 +403,7 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
                         outcome,
                         time,
                         used_blocks: s.kv.used_blocks(),
+                        fault: None,
                     });
                 }
             }
@@ -286,10 +422,14 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
             }
             if !plan.work.is_empty() {
                 let time = timer.time(&s.step_work(&plan));
-                if time.total_ns == 0 {
+                let duration = match faults.at(steps.len() as u64) {
+                    Some(fault) => faults.failed_step_ns(&time, fault),
+                    None => time.total_ns,
+                };
+                if duration == 0 {
                     return Err(EngineError::Config("a step must take time".into()));
                 }
-                events.push(Reverse((now + time.total_ns, seqno, Event::StepEnd)));
+                events.push(Reverse((now + duration, seqno, Event::StepEnd)));
                 seqno += 1;
                 current = Some((plan, now, time));
             } else if !plan.preempted.is_empty() || !plan.swapped_in.is_empty() {
@@ -308,6 +448,26 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
             step: steps.len() as u64,
             what: "events ran out with requests unfinished".into(),
         });
+    }
+    if checking {
+        let fail = |what: String| {
+            Err(EngineError::Invariant {
+                step: steps.len() as u64,
+                what,
+            })
+        };
+        for (&seq, &floor) in &retried_floor {
+            let r = &s.requests[seq.request as usize];
+            if r.phase != Phase::Failed && r.samples[seq.sample as usize].committed < floor {
+                return fail(format!("G3: {seq} lost committed tokens across a retry"));
+            }
+        }
+        if let Some(r) = s.requests.iter().find(|r| !r.phase.is_terminal() || r.endings != 1) {
+            return fail(format!(
+                "G4: request {} ended {} times ({:?})",
+                r.request.id, r.endings, r.phase
+            ));
+        }
     }
     Ok(RunResult {
         capacity_blocks: config.kv.device_blocks,

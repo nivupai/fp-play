@@ -12,10 +12,10 @@ use crate::cost::LinkModel;
 use crate::format::Format;
 use crate::json::Json;
 
-use super::engine::{run, EngineConfig, StepRecord};
+use super::engine::{run, EngineConfig, Fault, FaultConfig, StepRecord};
 use super::kv::{KvConfig, SeqId};
 use super::model::{kv_capacity_blocks, DeviceConfig, ModelConfig};
-use super::scheduler::{PreemptionMode, SchedulerConfig};
+use super::scheduler::{FaultPolicy, PreemptionMode, SchedulerConfig};
 use super::step_time::{Collective, LinearTimer, StepModel, StepTimer};
 use super::workload::{LengthDist, Request, WorkloadConfig};
 
@@ -79,6 +79,19 @@ pub fn to_jsonl(steps: &[StepRecord]) -> String {
             ),
             ("finished", ids(&s.outcome.finished)),
             ("used_blocks", Json::uint(s.used_blocks)),
+            (
+                "fault",
+                match &s.fault {
+                    None => Json::Null,
+                    Some(f) => Json::obj(vec![
+                        ("layer", Json::Int(i64::from(f.layer))),
+                        ("allreduce", Json::Int(i64::from(f.allreduce))),
+                        ("failed", ids(&f.outcome.failed)),
+                        ("retried", ids(&f.outcome.retried)),
+                        ("rejected", ids(&f.outcome.rejected)),
+                    ]),
+                },
+            ),
         ]);
         out.push_str(&line.to_compact());
         out.push('\n');
@@ -113,6 +126,7 @@ pub fn three_requests() -> (Vec<Request>, EngineConfig) {
                 swap_blocks: 0,
                 prefix_caching: false,
             },
+            faults: FaultConfig::none(),
             kv_check_interval: 1,
             planted: None,
         },
@@ -151,6 +165,7 @@ fn pressure(preemption: PreemptionMode) -> (Vec<Request>, EngineConfig) {
             swap_blocks: 12,
             prefix_caching: true,
         },
+        faults: FaultConfig::none(),
         kv_check_interval: 1,
         planted: None,
     };
@@ -182,6 +197,7 @@ fn roofline() -> (Vec<Request>, EngineConfig, StepModel) {
             swap_blocks: 0,
             prefix_caching: false,
         },
+        faults: FaultConfig::none(),
         kv_check_interval: 1,
         planted: None,
     };
@@ -199,6 +215,25 @@ fn roofline() -> (Vec<Request>, EngineConfig, StepModel) {
     (workload.generate().expect("valid workload"), config, timer)
 }
 
+/// The three-request case with a rank failure in step 2 (layer 0's second
+/// AllReduce of a 2-layer model; 1000 ns detection, 2000 ns recovery).
+pub fn three_requests_failing(policy: FaultPolicy) -> (Vec<Request>, EngineConfig) {
+    let (requests, mut config) = three_requests();
+    config.faults = FaultConfig {
+        plan: vec![Fault {
+            step: 2,
+            layer: 0,
+            allreduce: 1,
+        }],
+        policy,
+        detection_ns: 1000,
+        recovery_ns: 2000,
+        retry_limit: 1,
+        layers: 2,
+    };
+    (requests, config)
+}
+
 /// Every golden trace: (file name, contents).
 pub fn golden() -> Result<Vec<(&'static str, String)>, String> {
     let trace = |requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer| {
@@ -210,10 +245,33 @@ pub fn golden() -> Result<Vec<(&'static str, String)>, String> {
     let (b, bc) = pressure(PreemptionMode::Recompute);
     let (c, cc) = pressure(PreemptionMode::Swap);
     let (d, dc, dt) = roofline();
+    let (e, ec) = three_requests_failing(FaultPolicy::Retry);
+    let (f, mut fc) = pressure(PreemptionMode::Swap);
+    fc.faults = FaultConfig {
+        plan: vec![
+            Fault {
+                step: 6,
+                layer: 3,
+                allreduce: 0,
+            },
+            Fault {
+                step: 15,
+                layer: 1,
+                allreduce: 1,
+            },
+        ],
+        policy: FaultPolicy::Drain,
+        detection_ns: 500,
+        recovery_ns: 1500,
+        retry_limit: 1,
+        layers: 4,
+    };
     Ok(vec![
         ("three-requests.jsonl", trace(&a, &ac, &LINEAR)?),
         ("pressure-recompute.jsonl", trace(&b, &bc, &LINEAR)?),
         ("pressure-swap.jsonl", trace(&c, &cc, &LINEAR)?),
         ("roofline-p2-ring.jsonl", trace(&d, &dc, &dt)?),
+        ("three-requests-fault-retry.jsonl", trace(&e, &ec, &LINEAR)?),
+        ("pressure-swap-faults-drain.jsonl", trace(&f, &fc, &LINEAR)?),
     ])
 }
