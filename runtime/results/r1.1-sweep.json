@@ -57,7 +57,13 @@
       "world": 2,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -65,7 +71,13 @@
       "world": 2,
       "policy": "bf16",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -73,7 +85,13 @@
       "world": 2,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -81,7 +99,13 @@
       "world": 2,
       "policy": "bf16",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -89,7 +113,13 @@
       "world": 2,
       "policy": "bf16",
       "schedule": "exact-gather",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -97,7 +127,13 @@
       "world": 2,
       "policy": "bf16-wire/fp32-add",
       "schedule": "exact-gather",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -105,7 +141,13 @@
       "world": 3,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -113,7 +155,13 @@
       "world": 3,
       "policy": "bf16",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -121,7 +169,13 @@
       "world": 3,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355755,
@@ -129,7 +183,13 @@
       "world": 3,
       "policy": "bf16-wire/fp32-add",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -137,7 +197,13 @@
       "world": 3,
       "policy": "bf16-wire/fp32-add",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -145,7 +211,13 @@
       "world": 4,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -153,7 +225,13 @@
       "world": 4,
       "policy": "bf16",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355755,
@@ -161,7 +239,13 @@
       "world": 8,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -169,7 +253,13 @@
       "world": 8,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -177,7 +267,13 @@
       "world": 16,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -185,7 +281,13 @@
       "world": 16,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -193,7 +295,13 @@
       "world": 16,
       "policy": "bf16",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -201,7 +309,13 @@
       "world": 16,
       "policy": "bf16-wire/fp32-add",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -209,7 +323,13 @@
       "world": 16,
       "policy": "bf16-wire/fp32-add",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355751,
@@ -217,7 +337,13 @@
       "world": 32,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 1
+        }
+      ]
     },
     {
       "seed": 16355753,
@@ -225,7 +351,13 @@
       "world": 32,
       "policy": "bf16",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 3
+        }
+      ]
     },
     {
       "seed": 16355755,
@@ -233,7 +365,13 @@
       "world": 32,
       "policy": "bf16",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -241,7 +379,13 @@
       "world": 32,
       "policy": "bf16",
       "schedule": "binomial-tree",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -249,7 +393,13 @@
       "world": 32,
       "policy": "bf16",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355753,
@@ -257,7 +407,13 @@
       "world": 32,
       "policy": "bf16-wire/fp32-add",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 3
+        }
+      ]
     },
     {
       "seed": 16355755,
@@ -265,7 +421,13 @@
       "world": 32,
       "policy": "bf16-wire/fp32-add",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -273,7 +435,13 @@
       "world": 64,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355751,
@@ -281,7 +449,13 @@
       "world": 64,
       "policy": "bf16",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 1
+        }
+      ]
     },
     {
       "seed": 16355758,
@@ -289,7 +463,13 @@
       "world": 64,
       "policy": "bf16",
       "schedule": "halving-doubling",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 2
+        }
+      ]
     },
     {
       "seed": 16355751,
@@ -297,7 +477,13 @@
       "world": 64,
       "policy": "bf16-wire/fp32-add",
       "schedule": "ring",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 1
+        }
+      ]
     },
     {
       "seed": 16355751,
@@ -305,7 +491,13 @@
       "world": 64,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 3
+        }
+      ]
     },
     {
       "seed": 16355754,
@@ -313,7 +505,13 @@
       "world": 64,
       "policy": "bf16",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 4
+        }
+      ]
     },
     {
       "seed": 16355751,
@@ -321,7 +519,13 @@
       "world": 64,
       "policy": "bf16-wire/fp32-add",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 2,
+          "reference_top1_lead_ulps": 3
+        }
+      ]
     },
     {
       "seed": 16355754,
@@ -329,9 +533,328 @@
       "world": 64,
       "policy": "bf16-wire/fp32-add",
       "schedule": "sequential",
-      "tokens_changed": 1
+      "tokens_changed": 1,
+      "tokens": [
+        {
+          "token": 1,
+          "reference_top1_lead_ulps": 4
+        }
+      ]
     }
   ],
+  "reference_top1_leads": {
+    "definition": "for each token of the unsharded FP32 kernel rounded to the output format: ulps of that format between its top-1 output and the largest other output (0 = exact tie); argmax ties resolve to the lowest index",
+    "summary": [
+      {
+        "format": "fp32",
+        "tokens": 96,
+        "leads_ulps": {
+          "min": 56952.0,
+          "median": 1064829.0,
+          "max": 5645611.0
+        }
+      },
+      {
+        "format": "bf16",
+        "tokens": 96,
+        "leads_ulps": {
+          "min": 1.0,
+          "median": 16.0,
+          "max": 86.0
+        }
+      }
+    ],
+    "problems": [
+      {
+        "seed": 16355751,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1104439, 1932540, 1006104, 1295721]
+      },
+      {
+        "seed": 16355751,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [17, 30, 15, 20]
+      },
+      {
+        "seed": 16355751,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [910745, 735968, 56952, 1085762]
+      },
+      {
+        "seed": 16355751,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [14, 11, 1, 16]
+      },
+      {
+        "seed": 16355751,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [3530415, 316847, 193051, 3799040]
+      },
+      {
+        "seed": 16355751,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [54, 5, 3, 58]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1489285, 419152, 2258276, 4453577]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [23, 6, 34, 68]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [944690, 2299590, 1949238, 5645611]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [15, 35, 29, 86]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [2998942, 1743495, 2530923, 892515]
+      },
+      {
+        "seed": 16355752,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [46, 27, 38, 14]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1537764, 3762263, 213152, 251993]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [24, 58, 3, 4]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [241626, 2243171, 209588, 3293022]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [4, 34, 3, 50]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [251108, 172441, 3906368, 1215875]
+      },
+      {
+        "seed": 16355753,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [4, 3, 60, 18]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1251667, 2840096, 1697288, 4969713]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [19, 43, 26, 76]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [1418565, 1588609, 1327149, 2320767]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [22, 24, 20, 36]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [1611619, 258470, 451554, 1292370]
+      },
+      {
+        "seed": 16355754,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [25, 4, 7, 20]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1409806, 1053765, 450832, 1690599]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [22, 16, 7, 26]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [2440290, 92764, 560819, 1521921]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [37, 2, 8, 23]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [2107816, 907579, 682071, 485505]
+      },
+      {
+        "seed": 16355755,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [32, 14, 10, 7]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [842792, 1043981, 385749, 744087]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [13, 16, 5, 11]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [85487, 1835451, 1812807, 265661]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [2, 28, 28, 4]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [867503, 1475211, 410088, 630647]
+      },
+      {
+        "seed": 16355756,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [13, 22, 6, 10]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1007978, 260094, 687959, 1228439]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [15, 4, 11, 18]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [1075893, 3146562, 707157, 366279]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [17, 48, 10, 5]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [2123922, 329839, 748652, 778068]
+      },
+      {
+        "seed": 16355757,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [32, 5, 11, 12]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 1024,
+        "format": "fp32",
+        "leads_ulps": [1112008, 1919341, 758673, 486472]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 1024,
+        "format": "bf16",
+        "leads_ulps": [17, 30, 11, 7]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 4096,
+        "format": "fp32",
+        "leads_ulps": [371520, 992061, 84386, 203829]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 4096,
+        "format": "bf16",
+        "leads_ulps": [6, 15, 2, 3]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 16384,
+        "format": "fp32",
+        "leads_ulps": [624794, 1890217, 2755388, 2608193]
+      },
+      {
+        "seed": 16355758,
+        "hidden": 16384,
+        "format": "bf16",
+        "leads_ulps": [10, 29, 42, 39]
+      }
+    ]
+  },
   "rows": [
     {
       "hidden": 1024,

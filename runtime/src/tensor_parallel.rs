@@ -121,21 +121,41 @@ pub fn compare(format: Format, got: &[u32], expected: &[u32]) -> Comparison {
     }
 }
 
-/// Rows (tokens) whose top-1 output index differs. Ties resolve to the lowest index.
-pub fn argmax_changes(format: Format, outputs: usize, got: &[u32], expected: &[u32]) -> usize {
-    let argmax = |row: &[u32]| -> usize {
-        let mut best = 0;
-        for (i, &raw) in row.iter().enumerate() {
-            if to_f64(format, raw) > to_f64(format, row[best]) {
-                best = i;
-            }
+/// Index of the largest output in `row`. Ties resolve to the lowest index.
+pub fn argmax(format: Format, row: &[u32]) -> usize {
+    let mut best = 0;
+    for (i, &raw) in row.iter().enumerate() {
+        if to_f64(format, raw) > to_f64(format, row[best]) {
+            best = i;
         }
-        best
-    };
+    }
+    best
+}
+
+/// How far the top-1 output of `row` leads the runner-up, in ulps of `format`
+/// (representable values between them; 0 is an exact tie). `None` for fewer
+/// than two outputs.
+pub fn top1_lead_ulps(format: Format, row: &[u32]) -> Option<u64> {
+    let top = argmax(format, row);
+    let runner_up = (0..row.len())
+        .filter(|&i| i != top)
+        .max_by(|&a, &b| to_f64(format, row[a]).total_cmp(&to_f64(format, row[b])))?;
+    ulp_distance(format, row[top], row[runner_up])
+}
+
+/// Rows (tokens) whose top-1 output index differs.
+pub fn changed_top1(format: Format, outputs: usize, got: &[u32], expected: &[u32]) -> Vec<usize> {
     got.chunks(outputs)
         .zip(expected.chunks(outputs))
-        .filter(|(a, b)| argmax(a) != argmax(b))
-        .count()
+        .enumerate()
+        .filter(|(_, (a, b))| argmax(format, a) != argmax(format, b))
+        .map(|(m, _)| m)
+        .collect()
+}
+
+/// Number of rows (tokens) whose top-1 output index differs. Ties resolve to the lowest index.
+pub fn argmax_changes(format: Format, outputs: usize, got: &[u32], expected: &[u32]) -> usize {
+    changed_top1(format, outputs, got, expected).len()
 }
 
 #[derive(Clone, Debug)]
