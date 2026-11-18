@@ -197,13 +197,16 @@ pub enum Mutation {
 
 const ROOT_KEY: u64 = 0x9b1d_c0de_0000_0001;
 
-/// Chain key of a full block from its parent's key and its tokens.
+/// Chain key of a full block from its parent's key and its tokens: a
+/// multiply–rotate hash over the tokens, then the SplitMix64 finalizer.
+/// A hit is always verified against the stored parent key and tokens, so a
+/// collision can only cause a miss.
 pub fn chain_key(parent: u64, tokens: &[u32]) -> u64 {
-    let mut h = SplitMix64::new(parent ^ 0x6b65_7973).next_u64();
+    let mut h = parent ^ 0x6b65_7973_6b65_7973;
     for &t in tokens {
-        h = SplitMix64::new(h ^ u64::from(t)).next_u64();
+        h = (h ^ u64::from(t)).wrapping_mul(0x9e37_79b9_7f4a_7c15).rotate_left(29);
     }
-    h
+    SplitMix64::new(h).next_u64()
 }
 
 pub struct KvCache {
@@ -357,6 +360,60 @@ impl KvCache {
         Some(blocks)
     }
 
+    /// Device blocks appending `n_i` tokens to each `seq_i`, in order, would
+    /// take in total. Exact when several sequences share a partly filled last
+    /// block: the last of them to append owns it and does not copy.
+    pub fn append_cost_batch(&self, work: &[(SeqId, usize)]) -> Option<usize> {
+        let mut drops: BTreeMap<BlockId, u32> = BTreeMap::new();
+        let mut total = 0;
+        for &(seq, n) in work {
+            let table = self.tables.get(&seq)?;
+            let mut cost = self.append_cost(seq, n)?;
+            if let Some(&last) = table.blocks.last() {
+                let shared = self.refcount[last as usize] - drops.get(&last).copied().unwrap_or(0);
+                let copies = n > 0 && self.copies_on_append(table);
+                if copies && shared <= 1 {
+                    // Earlier sequences in this batch already copied away from it.
+                    cost -= 1;
+                } else if copies {
+                    *drops.entry(last).or_default() += 1;
+                }
+            }
+            total += cost;
+        }
+        Some(total)
+    }
+
+    /// The registered blocks [`Self::adopt_prefix`] would adopt for `tokens`.
+    fn match_prefix(&self, tokens: &[u32]) -> Vec<(BlockId, u64)> {
+        let mut found = Vec::new();
+        if !self.config.prefix_caching {
+            return found;
+        }
+        let b = self.config.block_size;
+        let eligible = tokens.len().saturating_sub(1) / b;
+        let mut parent = ROOT_KEY;
+        for chunk in tokens.chunks_exact(b).take(eligible) {
+            let key = chain_key(parent, chunk);
+            let Some(&block) = self.by_key.get(&key) else { break };
+            let i = block as usize;
+            if self.cached_key[i] != Some(key) || self.cached_parent[i] != parent || self.content[i] != chunk {
+                break;
+            }
+            found.push((block, key));
+            parent = key;
+        }
+        found
+    }
+
+    /// What adopting a prefix of `tokens` would do, without doing it:
+    /// (tokens adopted, retained blocks it would take out of the reusable pool).
+    pub fn peek_prefix(&self, tokens: &[u32]) -> (usize, usize) {
+        let found = self.match_prefix(tokens);
+        let retained = found.iter().filter(|(b, _)| self.refcount[*b as usize] == 0).count();
+        (found.len() * self.config.block_size, retained)
+    }
+
     /// Take a block: from the free list, else evict the least recently
     /// released retained block (ties: lower ID). The caller checked availability.
     fn take_block(&mut self) -> BlockId {
@@ -425,21 +482,14 @@ impl KvCache {
             return Ok(0);
         }
         let b = self.config.block_size;
-        let eligible = tokens.len().saturating_sub(1) / b;
-        self.stats.prefix_eligible_blocks += eligible as u64;
-        let mut parent = ROOT_KEY;
+        self.stats.prefix_eligible_blocks += (tokens.len().saturating_sub(1) / b) as u64;
         let mut adopted = BlockTable {
             blocks: Vec::new(),
             len: 0,
             keys: Vec::new(),
         };
-        for chunk in tokens.chunks_exact(b).take(eligible) {
-            let key = chain_key(parent, chunk);
-            let Some(&block) = self.by_key.get(&key) else { break };
+        for (block, key) in self.match_prefix(tokens) {
             let i = block as usize;
-            if self.cached_key[i] != Some(key) || self.cached_parent[i] != parent || self.content[i] != chunk {
-                break;
-            }
             if self.refcount[i] == 0 {
                 self.lru.remove(&(self.released_at[i], block));
             }
@@ -447,7 +497,6 @@ impl KvCache {
             adopted.blocks.push(block);
             adopted.keys.push(key);
             adopted.len += b;
-            parent = key;
         }
         let n = adopted.len;
         self.stats.prefix_hit_blocks += adopted.blocks.len() as u64;

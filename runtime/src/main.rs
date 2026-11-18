@@ -26,12 +26,18 @@ USAGE:
       (R1), and r1.1-policies, r1.1-shard-tree (S logical shards, default
       64) and r1.1-sweep (.json and .md each, R1.1) to DIR (default: results).
       The sweep uses its own fixed grid of seeds, sizes and world sizes.
+      Also writes r2-serving (R2: the serving scenarios, their own fixed
+      configuration; the flags above do not apply to it).
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
       Print one AllReduce schedule round by round with its result and cost.
       Algorithms: sequential, ring, binomial-tree, halving-doubling, exact-gather.
       Policies: fp16, bf16, fp32 (uniform), fp32-rs/bf16-ag, bf16-wire/fp32-add.
+
+  fp-play-runtime traces [--out DIR]
+      Write the golden serving step traces (JSON lines) that
+      tests/serving_traces.rs pins, to DIR (default: tests/traces).
 ";
 
 fn main() -> ExitCode {
@@ -39,6 +45,7 @@ fn main() -> ExitCode {
     let result = match args.first().map(String::as_str) {
         Some("experiment") => experiment(&args[1..]),
         Some("schedule") => schedule(&args[1..]),
+        Some("traces") => traces(&args[1..]),
         Some("-h" | "--help") | None => {
             print!("{USAGE}");
             return ExitCode::SUCCESS;
@@ -159,6 +166,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
         shards: flags.parse("--shards", DEFAULT_SHARDS)?,
         ..SweepConfig::default()
     })?;
+    let serving = fp_play_runtime::serving::experiment::run_all(&Default::default())?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -181,6 +189,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             report::sweep_to_json(&sweep, &command).to_pretty(),
             report::sweep_to_markdown(&sweep, &command),
         ),
+        (
+            "r2-serving",
+            fp_play_runtime::serving::report::to_json(&serving, &command).to_pretty(),
+            fp_play_runtime::serving::report::to_markdown(&serving, &command),
+        ),
     ];
     for (name, json, markdown) in artifacts {
         let json_path = out.join(format!("{name}.json"));
@@ -189,6 +202,19 @@ fn experiment(args: &[String]) -> Result<(), String> {
         fs::write(&md_path, &markdown).map_err(|e| e.to_string())?;
         print!("{markdown}");
         eprintln!("wrote {} and {}", json_path.display(), md_path.display());
+    }
+    Ok(())
+}
+
+fn traces(args: &[String]) -> Result<(), String> {
+    let flags = Flags(args);
+    flags.check_known(&["--out"])?;
+    let out = PathBuf::from(flags.get("--out")?.unwrap_or("tests/traces"));
+    fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
+    for (name, contents) in fp_play_runtime::serving::traces::golden()? {
+        let path = out.join(name);
+        fs::write(&path, contents).map_err(|e| e.to_string())?;
+        eprintln!("wrote {}", path.display());
     }
     Ok(())
 }
