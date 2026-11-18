@@ -128,6 +128,9 @@ fn fork_then_copy_on_write() {
     for s in 0..4 {
         model.insert(seq(0, s), prompt.clone());
     }
+    // Appending nothing never copies.
+    assert_eq!(kv.append_cost(seq(0, 0), 0), Some(0));
+    assert!(!kv.append(seq(0, 0), &[]).unwrap().cow);
     // The first three samples copy the shared partial block; the last owns it.
     for s in 0..4 {
         assert_eq!(kv.append_cost(seq(0, s), 1), Some(usize::from(s < 3)));

@@ -346,7 +346,7 @@ impl KvCache {
         let table = self.tables.get(&seq)?;
         let full_at = self.full_at();
         let mut fill = table.blocks.last().map_or(full_at, |&b| self.content[b as usize].len());
-        let mut blocks = usize::from(self.copies_on_append(table));
+        let mut blocks = usize::from(n > 0 && self.copies_on_append(table));
         for _ in 0..n {
             if fill >= full_at {
                 blocks += 1;
@@ -457,6 +457,7 @@ impl KvCache {
 
     /// Append `tokens` to `seq`, taking blocks as needed (copying a shared
     /// last block first). Fails with nothing changed if blocks run out.
+    /// Appending nothing changes nothing.
     pub fn append(&mut self, seq: SeqId, tokens: &[u32]) -> Result<AppendReport, KvError> {
         let needed = self.append_cost(seq, tokens.len()).ok_or(KvError::UnknownSeq(seq))?;
         if needed > self.available() {
@@ -466,7 +467,7 @@ impl KvCache {
             });
         }
         let mut table = self.tables.remove(&seq).expect("checked above");
-        let cow = self.copies_on_append(&table);
+        let cow = !tokens.is_empty() && self.copies_on_append(&table);
         if cow {
             let last = table.blocks.len() - 1;
             let old = table.blocks[last];
