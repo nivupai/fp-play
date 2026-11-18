@@ -132,52 +132,93 @@ def convert(src, dst, raw):
     return round_to(dst, decode(src, raw))
 
 
+# Styles of a case, with weights. Most cases are finite sums that cover the
+# hard parts of rounding: subnormals, exact ties, and cancellation. Near
+# overflow and special inputs are kept rare so NaN results stay a few percent.
+STYLES = [
+    ("uniform", 6),  # exponents spread over a range that cannot overflow any S used here
+    ("narrow", 5),  # exponents near 1.0: frequent carries, ties and partial cancellation
+    ("subnormal", 4),  # subnormal leaves and sums crossing the normal boundary
+    ("short", 4),  # few significant bits: exact halfway cases
+    ("cancel", 3),  # sibling leaves that cancel exactly or almost exactly
+    ("large", 1),  # near overflow: sums that overflow to infinity
+    ("special", 1),  # one infinity, NaN or signed zero among finite leaves
+]
+STYLE_CYCLE = [name for name, weight in STYLES for _ in range(weight)]
+FINITE_STYLES = ("uniform", "narrow", "subnormal", "short")
+
+
 def random_leaf(rng, name, style):
     e, f, bias = params(name)
     width = 1 + e + f
     sign = rng.getrandbits(1) << (width - 1)
-    if style == "special" and rng.random() < 0.85:
-        style = "narrow"  # special values stay sparse so results are not all NaN
-    if style == "special":
-        kind = rng.randrange(4)
-        if kind == 0:
-            return sign | (((1 << e) - 1) << f)  # infinity
-        if kind == 1:
-            return sign | (((1 << e) - 1) << f) | (rng.getrandbits(f) | 1)  # NaN, any payload
-        if kind == 2:
-            return sign  # signed zero
+    max_field = (1 << e) - 2
     if style == "large":
-        field = (1 << e) - 2 - rng.randrange(2)  # near overflow
+        field = max_field - rng.randrange(2)
     elif style == "subnormal":
-        field = 0
+        field = 0 if rng.random() < 0.8 else 1
     elif style == "narrow":
-        field = bias + rng.randint(-3, 3)  # cancellation and ties are common
-    else:
-        field = rng.randint(0, (1 << e) - 2)
+        field = bias + rng.randint(-3, 3)
+    elif style == "uniform":
+        # 2**8 > 100 leaves, so a sum of S <= 100 of these cannot overflow.
+        field = rng.randint(0, max_field - 8)
+    else:  # "short"
+        field = bias + rng.randint(-6, 6)
     frac = rng.getrandbits(f)
     if style == "short":
-        frac &= ~((1 << max(f - 3, 0)) - 1)  # few significant bits: exact ties
+        frac &= ~((1 << max(f - 3, 0)) - 1)
     return sign | (field << f) | frac
+
+
+def special_leaf(rng, name):
+    e, f, _ = params(name)
+    width = 1 + e + f
+    sign = rng.getrandbits(1) << (width - 1)
+    kind = rng.randrange(4)
+    if kind == 0:
+        return sign | (((1 << e) - 1) << f) | (rng.getrandbits(f) | 1)  # NaN, any payload
+    if kind == 1:
+        return sign | (((1 << e) - 1) << f)  # infinity
+    return sign  # signed zero
+
+
+def case_leaves(rng, name, style, count):
+    e, f, _ = params(name)
+    sign_bit = 1 << (e + f)
+    if style == "cancel":
+        leaves = [random_leaf(rng, name, "narrow") for _ in range(count)]
+        for i in range(0, count - 1, 2):
+            # The sibling is the negation, sometimes nudged by one ulp so a tiny residue survives.
+            leaves[i + 1] = leaves[i] ^ sign_bit
+            if rng.random() < 0.5 and leaves[i + 1] & ((1 << f) - 1):
+                leaves[i + 1] -= 1
+        return leaves
+    if style == "large":
+        # Mostly one sign, so overflow gives an infinity rather than inf - inf.
+        negative = rng.getrandbits(1)
+        leaves = [random_leaf(rng, name, "large") for _ in range(count)]
+        return [(r & ~sign_bit) | (sign_bit if negative else 0) for r in leaves]
+    # Mostly one style, with a few leaves of another for mixed magnitudes.
+    leaves = [
+        random_leaf(rng, name, style if style in FINITE_STYLES and rng.random() < 0.9 else rng.choice(FINITE_STYLES))
+        for _ in range(count)
+    ]
+    if style == "special":
+        leaves[rng.randrange(count)] = special_leaf(rng, name)
+    return leaves
 
 
 def main():
     rng = random.Random(SEED)
     out = sys.stdout
-    styles = ("uniform", "narrow", "subnormal", "short", "large", "special")
     for acc, dst in PAIRS:
+        e, f, _ = params(acc)
         for case in range(CASES_PER_PAIR):
-            style = styles[case % len(styles)]
-            count = SHARD_COUNTS[case % len(SHARD_COUNTS)]
-            # Mostly one style, with a few leaves of a second for mixed magnitudes.
-            leaves = [
-                random_leaf(rng, acc, style if rng.random() < 0.9 else styles[rng.randrange(4)])
-                for _ in range(count)
-            ]
-            if case % 11 == 0 and count >= 2:
-                e, f, _ = params(acc)
-                leaves[1] = leaves[0] ^ (1 << (e + f))  # exact cancellation in the first node
+            style = STYLE_CYCLE[case % len(STYLE_CYCLE)]
+            # Drawn, not cycled, so every style meets every shard count.
+            count = rng.choice(SHARD_COUNTS)
+            leaves = case_leaves(rng, acc, style, count)
             if case % 97 == 0:
-                e, f, _ = params(acc)
                 leaves = [1 << (e + f)] * count  # all negative zero
             expected = convert(acc, dst, tree_sum(acc, leaves))
             out.write(f"{acc}>{dst} {','.join(format(r, 'x') for r in leaves)} {expected:x}\n")
