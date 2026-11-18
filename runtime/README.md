@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 105 tests, including the recorded-artifact checks
+cargo test --release                              # 129 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -263,6 +263,65 @@ behaves as specified). Every planted bug and the check that caught it, and
 every design decision, are listed in [R2_PROGRESS.md](R2_PROGRESS.md).
 `cargo run --release -- traces` regenerates `tests/traces/`.
 
+## R3: does sharding change the tokens?
+
+A tiny Llama-style decoder (RMSNorm, RoPE, grouped-query attention, SwiGLU,
+tied embeddings; hidden 256, 2 layers, 16/8 heads, FFN 704, vocabulary
+2048, deterministic random BF16 weights) decodes greedily inside the R2
+engine. Its row-parallel AllReduces run through the executed R1
+collectives, so every rounding of the schedule and wire policy happens.
+Local kernels are native binary32 in one written order.
+
+| Module                | Role                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| `decoder::forward`    | One step's forward pass; K/V through a `KvStore`, row-parallel projections through a `RowReduce`     |
+| `decoder::parallel`   | P = 1, and tensor parallelism: per-rank or per-shard partials through a collective or the shard tree |
+| `decoder::mathf`      | `exp`, `sin`, `cos` from binary64 basic operations                                                   |
+| `decoder::serve`      | The R2 engine drives the model; a paged K/V tensor store replays copy-on-write and swap block copies |
+| `decoder::variants`   | The workload (32 prompts in 4 shared-prefix groups, 48 tokens each) and seven batch compositions     |
+| `decoder::experiment` | The recorded experiment in [`results/r3-decode.md`](results/r3-decode.md)                            |
+
+Selected results from `results/r3-decode.md`:
+
+- **P and the schedule change tokens.** Against P = 1 with the same policy,
+  6–18 of 32 prompts diverge under a BF16 wire (some at the first generated
+  token) and 1–2 under `fp32-rs/bf16-ag` (first at token 18 or 21). No run
+  at P > 1 keeps any prompt's logits bit-identical to P = 1.
+- **The shard tree does not depend on P.** Its tokens are identical at
+  P = 1, 2, 4 and 8. It differs from the unsharded baseline in 15 prompts
+  (BF16) or 1 (`fp32-rs/bf16-ag`): a fixed change of arithmetic.
+- **Divergence follows the margin.** A token can flip only if its baseline
+  top-2 margin is at most twice the run's largest logit change there; that
+  held for every flip. Under BF16, 14.4% of at-risk tokens met it and 257
+  flipped; under `fp32-rs/bf16-ag` the logit perturbation is about 10×
+  smaller, 1.0% met it and 24 flipped.
+- **A logit scale does not help.** At logit scale 8, 38 of 38 runs chose
+  the same tokens as at scale 1: a power-of-two scale multiplies margins and
+  perturbations alike.
+- **Only the ring depends on batch composition.** At P = 4, sequential,
+  binomial tree, halving-doubling, exact-gather and the shard tree give
+  bit-identical logits in all seven batch variants under both policies, as
+  predicted. The ring changes every prompt's logits in every variant under
+  BF16 (10–13 prompts' tokens) and 18–24 prompts' logits but no token under
+  `fp32-rs/bf16-ag`. The P = 1 control is bit-identical in all seven.
+- **What determinism costs** is R2's result: the shard tree with
+  `fp32-rs/bf16-ag` against ring with `bf16` is +1.2% TPOT and +112.9% TTFT
+  (p50) at P = 4, −23.7% and +171.0% at P = 8
+  ([r2-serving](results/r2-serving.md), illustrative model).
+
+Evidence: `tests/decoder.rs` (a stdlib-only Python reimplementation,
+`scripts/gen_decoder_vectors.py`, matches every logit bit for bit at P = 1,
+ring P = 2 and 4, and shard tree P = 2 under both policies; CI regenerates
+and compares it; pinned cross-platform hashes); `tests/ops_fast_path.rs`
+(the native binary32/BF16 fast path of `ops::add` and `ops::convert` equals
+the exact superaccumulator); `tests/decoder_parallel.rs` (shard-tree
+P-invariance, P = 2 agreement, the batch-invariance prediction, the P = 1
+control, scheduling independent of numerics, the tensor store under
+copy-on-write and swap); `tests/decoder_experiment.rs` (the recorded result
+is current and its stated properties hold). Three planted bugs (skipped
+tensor copy-on-write, RoPE off by one on recompute, a batch-dependent shard
+order) are each caught by a named check; see [R3_PROGRESS.md](R3_PROGRESS.md).
+
 ## Evidence
 
 - **Independent oracles** — Python `Fraction` reference vectors
@@ -313,4 +372,8 @@ uses synthetic tokens (no model numerics), a roofline with illustrative
 constants, no compute/communication overlap, one tensor-parallel group,
 uncontended links and fail-stop failures with constant detection and
 recovery times; P must divide the 8 KV heads (no KV-head replication), and
-it has no speculative decoding, LoRA or quantized KV.
+it has no speculative decoding, LoRA or quantized KV. The R3 decoder has
+random weights (its margins do not transfer to trained models), 2 layers,
+synthetic prompts, greedy decoding with fixed lengths, sequential local
+kernels (real GPU kernels can also break batch invariance locally), and
+deterministic but not correctly rounded `exp`, `sin` and `cos`.

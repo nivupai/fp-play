@@ -9,12 +9,15 @@
 //! * [`decode`] — greedy decoding over a static batch
 //! * [`serve`] — the decoder inside the R2 engine, with a paged K/V tensor store
 //! * [`variants`] — the R3 workload and its batch-composition variants
+//! * [`experiment`] / [`report`] — the recorded experiment (results/r3-decode.*)
 
 pub mod config;
 pub mod decode;
+pub mod experiment;
 pub mod forward;
 pub mod mathf;
 pub mod parallel;
+pub mod report;
 pub mod serve;
 pub mod variants;
 pub mod weights;

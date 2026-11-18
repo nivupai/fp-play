@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — runtime milestone R3
+
+- New `runtime/src/decoder/`: a tiny Llama-style decoder (RMSNorm, RoPE, grouped-query attention, SwiGLU, tied embeddings; deterministic random BF16 weights) with native binary32 local kernels in a written order and `exp`/`sin`/`cos` from binary64 basic operations.
+- Tensor parallelism: the row-parallel projections' per-rank or per-shard partials run through the executed R1 collectives or the shard tree under each wire policy.
+- The R2 engine drives the model (`engine::run_model`, a `StepExecutor`); a paged K/V tensor store replays copy-on-write and swap block copies and is checked after every step.
+- `ops::add` and `ops::convert` use a native binary32/BF16 fast path, checked against the exact superaccumulator; every earlier recorded artifact is byte-identical.
+- New recorded artifact `runtime/results/r3-decode.{json,md}`: divergence from P = 1 across P, schedule and policy at two logit scales; divergence against the top-2 margin; a batch-invariance matrix over seven batch compositions. The prediction that only the ring depends on batch composition held exactly.
+- Verification: a stdlib-only Python reference (`runtime/scripts/gen_decoder_vectors.py`) matched bit for bit and compared in CI; three planted bugs, each caught (listed in `runtime/R3_PROGRESS.md`).
+- `r2-serving` adds the swap-mechanism check: shared blocks copied by swap at 1 and 4 samples.
+
 ## Unreleased — runtime milestone R2
 
 - New `runtime/src/serving/`: a deterministic discrete-event serving simulator for one tensor-parallel group. It models an 8B-class model (not a specific released model) on an illustrative device.

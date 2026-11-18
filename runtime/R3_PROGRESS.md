@@ -10,8 +10,8 @@ AllReduce schedule, the wire policy and batch composition. Plan:
 | Part | Scope                                                                                                                                                  | State                          |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
 | R3a  | Model config, deterministic weights, `exp`/`sin`/`cos`, single-device forward and greedy decoding, Python reference vectors with a CI comparison       | merged (#23)                   |
-| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | PR open (branch `runtime-r3b`) |
-| R3c  | Experiment, `results/r3-decode.*`, stale test, docs and case study                                                                                     | not started                    |
+| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | merged (#24)                   |
+| R3c  | Experiment, `results/r3-decode.*`, stale test, docs and case study                                                                                     | PR open (branch `runtime-r3c`) |
 
 Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 (swap bytes per preemption at 1 vs 4 samples; see `results/r2-serving.md`).
@@ -112,6 +112,35 @@ Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 - **D-14 The Python reference** now uses 8 query / 4 KV heads of dimension
   4 so it can run P = 4; it covers P = 1, ring at P = 2 and 4, and the
   shard tree (S = 8) at P = 2, for both policies.
+
+- **D-15 Experiment** (`decoder/experiment.rs`): the divergence grid serves
+  the workload "together" for P ∈ {2, 4, 8} × 5 collectives × 2 policies,
+  plus the shard tree at P ∈ {1, 2, 4, 8}, at logit scales 1 and 8 (76
+  runs); P = 1 collectives equal the baseline and are not repeated. The
+  batch matrix runs P = 4 for every schedule and policy plus the P = 1
+  control (14 rows × 8 variants).
+- **D-16 Margin unit:** ulps of the baseline's top logit (binary32), so a
+  power-of-two scale leaves it unchanged; bins are powers of four from 2^12
+  to 2^22 ulps. A token is at risk while the run's context matches the
+  baseline (up to and including the first divergence). The report checks
+  the necessary condition for a flip (margin ≤ 2 × the largest logit
+  change) and states how many at-risk tokens met it.
+- **D-17 Logit scale result:** at scale 8, 38 of 38 runs chose the same
+  tokens as at scale 1, as D-1 predicted; reported as a finding rather than
+  a robustness knob. A real peakedness knob is listed as future work.
+- **D-18 Stale-test cost:** the r3-decode stale test takes about 31 s on
+  the 10-core development machine (about 200 s of CPU), so likely about
+  50–60 s on CI's 4 cores, above the 30–40 s estimated in the plan. Most of
+  it is the alone runs of the batch matrix and the scale-8 grid.
+
+## Results (results/r3-decode.md)
+
+- Against P = 1: 6–18 of 32 prompts diverge under BF16, 1–2 under
+  fp32-rs/bf16-ag; no P > 1 run keeps any prompt's logits bit-identical.
+- The shard tree's tokens are identical at P = 1, 2, 4, 8.
+- Every flip met margin ≤ 2 × perturbation; BF16: 14.4% of at-risk tokens
+  met it, 257 flipped; fp32-rs: 1.0%, 24 flipped.
+- The batch-invariance prediction held exactly.
 
 ## Planted bugs (R3)
 

@@ -122,7 +122,35 @@ compute/communication overlap. Every number is from
   in only by a test-only Cargo feature, are each caught by a named check;
   one of them (a wrong preemption victim) only by the reference.
 
+## R3: does sharding change the tokens?
+
+R3 decodes greedily with a tiny Llama-style decoder (2 layers, hidden 256,
+random BF16 weights) inside the R2 engine, with every AllReduce executed.
+Every number is from [r3-decode](../runtime/results/r3-decode.md) (32
+prompts, 48 tokens each).
+
+- **Yes, with P and the schedule.** Against P = 1, 6–18 of 32 prompts
+  diverge under a BF16 wire and 1–2 under `fp32-rs/bf16-ag`; no run at
+  P > 1 keeps a prompt's logits bit-identical. The shard tree's tokens are
+  the same at P = 1, 2, 4 and 8.
+- **Through the margin.** Every flip happened where the baseline's top-2
+  margin was at most twice the run's largest logit change. BF16 met that
+  condition at 14.4% of at-risk tokens (257 flips), `fp32-rs/bf16-ag` at
+  1.0% (24 flips). Scaling the logits by 8 changed no token in 38 runs.
+- **Batch composition matters only for the ring.** At P = 4 the other four
+  collectives and the shard tree are bit-identical across seven batch
+  compositions (chunked prefill, reversed arrival, prefix caching,
+  recompute preemption, a failure with retry), as predicted from the
+  schedules. The ring changes every prompt's logits under BF16 and 10–13
+  prompts' tokens.
+- **The price** of the deterministic pairing is R2's: about +113% TTFT at
+  P = 4 and +171% at P = 8 against ring with `bf16`.
+- **Verified** by a stdlib-only Python reimplementation that matches every
+  logit bit for bit (P = 1, ring at P = 2 and 4, shard tree at P = 2), a
+  P = 1 control, a tensor invariant on the paged K/V store, and three
+  planted bugs each caught. Random weights mean the divergence rates do not
+  transfer to trained models; the margin analysis does.
+
 ## What is next
 
-- **R3, does sharding change the tokens?** Greedy decoding over a real
-  vocabulary, comparing schedules and policies token by token.
+- **R4, per-layer precision policies.**
