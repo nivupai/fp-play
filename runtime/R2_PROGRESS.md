@@ -68,11 +68,15 @@ design calls made while building.
   records in the JSON-lines traces (existing golden traces changed only by
   `"fault":null`), two new golden fault traces.
 
+- Scenario 5 in `results/r2-serving.*`: P = 4, 20 req/s, failure in step
+  1500 (layer 16, second AllReduce), 0.5 s detection, 5 s recovery, retry
+  limit 1; no failure / abort / retry / drain; each failure run rerun and
+  compared (G5). Asserted in `tests/serving_experiment.rs`.
+
 ## Next
 
-R2c: scenario 5 in `results/r2-serving.*` (no failure, abort, retry,
-drain; G5 by rerun), docs (README, PLAN, CHANGELOG, case-study addendum),
-then PR, CI, review, squash-merge, and the final report.
+R2c: docs (runtime README, root README, PLAN, CHANGELOG, case-study
+addendum), then PR, CI, review, squash-merge, and the final report.
 
 ## Open questions
 
@@ -171,6 +175,13 @@ None.
   The KV check after a failure runs regardless of the check interval.
 - R2c-5. Interrupted steps are excluded from the compute and communication
   sums and reported as `fault_ns`.
+- R2c-6. Scenario 5 first used 10 req/s with the failure at step 3000;
+  only 2 requests were in flight at the failure, so it moved to 20 req/s
+  (step 1500, about half of that run's 3,421 steps) to have more in-flight
+  work at the failure. Detection 0.5 s and recovery 5 s are illustrative.
+- R2c-7. Each run's JSON gains `failed`, `fault_steps`, `fault_ns`,
+  `fault_policy`, `faults_fired` and `rerun_identical`; scenarios 1–4
+  values are unchanged.
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1
