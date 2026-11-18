@@ -34,14 +34,17 @@ use super::weights::{bf16_to_f32, f32_to_bf16, Matrix, Weights};
 use crate::serving::detmath::ln;
 use crate::serving::kv::SeqId;
 
-/// One token of a step: its sequence, position, ID, and whether the step
-/// must return its logits (the last prompt token of a prefill, and decodes).
+/// One token of a step: its sequence, position, ID, whether the step must
+/// return its logits (the last prompt token of a prefill, and decodes), and
+/// whether this sequence computed this position before (a recompute after
+/// preemption or a failure; it changes nothing in the arithmetic).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct StepToken {
     pub seq: SeqId,
     pub pos: usize,
     pub token: u32,
     pub logits: bool,
+    pub recompute: bool,
 }
 
 /// K/V storage the forward pass reads and writes. A slice holds one token's
@@ -188,6 +191,9 @@ pub struct Model {
     pub config: DecoderConfig,
     pub weights: Weights,
     rope: Rope,
+    #[cfg(feature = "planted-bugs")]
+    #[doc(hidden)]
+    pub planted: Option<super::DecoderMutation>,
 }
 
 /// Logits of one token that asked for them.
@@ -211,7 +217,18 @@ impl Model {
             rope: Rope::new(&config),
             config,
             weights,
+            #[cfg(feature = "planted-bugs")]
+            planted: None,
         }
+    }
+
+    /// RoPE position of a token (its sequence position, except under a planted bug).
+    fn rope_pos(&self, tok: &StepToken) -> usize {
+        #[cfg(feature = "planted-bugs")]
+        if tok.recompute && self.planted == Some(super::DecoderMutation::RopeOffByOneOnRecompute) {
+            return tok.pos + 1;
+        }
+        tok.pos
     }
 
     /// Run one step. Tokens of one sequence must appear in increasing
@@ -221,7 +238,8 @@ impl Model {
         let c = self.config;
         let (h, d, t) = (c.hidden, c.head_dim, tokens.len());
         let kvw = c.kv_width();
-        self.rope.ensure(tokens.iter().map(|x| x.pos + 1).max().unwrap_or(0));
+        self.rope.ensure(tokens.iter().map(|x| x.pos + 2).max().unwrap_or(0));
+        let rope_pos: Vec<usize> = tokens.iter().map(|tok| self.rope_pos(tok)).collect();
         let w = &self.weights;
         // Residual stream: the embedding rows.
         let mut x: Vec<f32> = Vec::with_capacity(t * h);
@@ -245,23 +263,30 @@ impl Model {
                 matvec(&layer.wq, &n, 0..h, q);
                 matvec(&layer.wk, &n, 0..h, &mut k);
                 matvec(&layer.wv, &n, 0..h, &mut v);
-                self.rope.apply(q, tok.pos, d);
-                self.rope.apply(&mut k, tok.pos, d);
+                self.rope.apply(q, rope_pos[i], d);
+                self.rope.apply(&mut k, rope_pos[i], d);
                 let kb: Vec<u16> = k.iter().map(|&a| f32_to_bf16(a)).collect();
                 let vb: Vec<u16> = v.iter().map(|&a| f32_to_bf16(a)).collect();
                 kv.write(tok.seq, l, tok.pos, &kb, &vb);
             }
             let mut attn = vec![0.0f32; t * h];
             for (i, tok) in tokens.iter().enumerate() {
+                // This token's view of its sequence's K and V, widened once.
+                let keys: Vec<f32> = (0..=tok.pos)
+                    .flat_map(|j| kv.k(tok.seq, l, j).iter().map(|&b| bf16_to_f32(b)))
+                    .collect();
+                let values: Vec<f32> = (0..=tok.pos)
+                    .flat_map(|j| kv.v(tok.seq, l, j).iter().map(|&b| bf16_to_f32(b)))
+                    .collect();
                 for head in 0..c.q_heads {
                     let kvh = head / c.group();
                     let q = &q_all[i * h + head * d..i * h + (head + 1) * d];
                     let mut scores = Vec::with_capacity(tok.pos + 1);
                     for j in 0..=tok.pos {
-                        let kj = &kv.k(tok.seq, l, j)[kvh * d..(kvh + 1) * d];
+                        let kj = &keys[j * kvw + kvh * d..j * kvw + (kvh + 1) * d];
                         let mut s = 0.0f32;
                         for (&a, &b) in q.iter().zip(kj) {
-                            s += a * bf16_to_f32(b);
+                            s += a * b;
                         }
                         scores.push(s * scale);
                     }
@@ -274,9 +299,9 @@ impl Model {
                     let out = &mut attn[i * h + head * d..i * h + (head + 1) * d];
                     for (j, &e) in scores.iter().enumerate() {
                         let p = e / sum;
-                        let vj = &kv.v(tok.seq, l, j)[kvh * d..(kvh + 1) * d];
+                        let vj = &values[j * kvw + kvh * d..j * kvw + (kvh + 1) * d];
                         for (o, &b) in out.iter_mut().zip(vj) {
-                            *o += p * bf16_to_f32(b);
+                            *o += p * b;
                         }
                     }
                 }

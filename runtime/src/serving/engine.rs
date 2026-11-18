@@ -211,7 +211,7 @@ fn check(
     s: &Scheduler,
     plan: Option<&StepPlan>,
     next_commit: &BTreeMap<SeqId, u32>,
-    streams: Option<&[Vec<Vec<u32>>]>,
+    streams: Option<&Streams>,
     step: u64,
 ) -> Result<(), EngineError> {
     let fail = |what: String| Err(EngineError::Invariant { step, what });
@@ -260,12 +260,36 @@ fn check(
         return fail("scheduler: swapped sequences differ from the swapped requests' live sequences".into());
     }
     match streams {
-        Some(streams) => {
+        Some(Streams::Synthetic(streams)) => {
             s.kv.check(&|seq, p| streams[seq.request as usize][seq.sample as usize][p])
+                .or_else(|v| fail(format!("kv: {v}")))
+        }
+        Some(Streams::Model) => {
+            s.kv.check(&|seq, p| s.requests[seq.request as usize].token_at(seq.sample as usize, p as u64))
                 .or_else(|v| fail(format!("kv: {v}")))
         }
         None => Ok(()),
     }
+}
+
+/// Where the KV content check gets each sequence's expected tokens.
+enum Streams {
+    /// The precomputed synthetic streams.
+    Synthetic(Vec<Vec<Vec<u32>>>),
+    /// The requests' model tokens (prompt plus committed outputs).
+    Model,
+}
+
+/// Runs the model for a step (R3). With an executor, token values come from
+/// the model: prompts are given up front and each committed output is the
+/// executor's token.
+pub trait StepExecutor {
+    /// Step `index` (`plan`) has completed without a failure; its commits
+    /// are not applied yet. KV appends for the plan were made when it was
+    /// built, so the block tables already cover every position it computes.
+    fn execute(&mut self, index: u64, plan: &StepPlan, scheduler: &mut Scheduler) -> Result<(), String>;
+    /// The token `seq` commits as output `k` in the step just executed.
+    fn output(&mut self, seq: SeqId, k: u32) -> Result<u32, String>;
 }
 
 /// Record commits in the log, rejecting a gap or a repeat.
@@ -290,7 +314,20 @@ fn log_commits(
 
 /// Run `requests` (ids 0, 1, … in order) to completion.
 pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -> Result<RunResult, EngineError> {
-    run_inner(requests, config, timer, |_| {})
+    run_inner(requests, config, timer, None, |_| {})
+}
+
+/// [`run`] with token values from a model: `prompts[i]` is request i's
+/// prompt, and `executor` computes every completed step and its outputs.
+/// The KV cache records block copies for the executor to replay.
+pub fn run_model(
+    requests: &[Request],
+    prompts: &[Vec<u32>],
+    config: &EngineConfig,
+    timer: &dyn StepTimer,
+    executor: &mut dyn StepExecutor,
+) -> Result<RunResult, EngineError> {
+    run_inner(requests, config, timer, Some((prompts, executor)), |_| {})
 }
 
 /// [`run`] with one planted bug switched on (`planted-bugs` builds only).
@@ -302,7 +339,7 @@ pub fn run_planted(
     timer: &dyn StepTimer,
     planted: Planted,
 ) -> Result<RunResult, EngineError> {
-    run_inner(requests, config, timer, |s| match planted {
+    run_inner(requests, config, timer, None, |s| match planted {
         Planted::Kv(m) => s.kv.plant(m),
         Planted::Scheduler(m) => s.mutation = Some(m),
     })
@@ -312,6 +349,7 @@ fn run_inner(
     requests: &[Request],
     config: &EngineConfig,
     timer: &dyn StepTimer,
+    model: Option<(&[Vec<u32>], &mut dyn StepExecutor)>,
     plant: impl FnOnce(&mut Scheduler),
 ) -> Result<RunResult, EngineError> {
     if requests.iter().enumerate().any(|(i, r)| r.id as usize != i) {
@@ -324,6 +362,14 @@ fn run_inner(
     }
     let mut s = Scheduler::new(config.scheduler, KvCache::new(config.kv), requests);
     plant(&mut s);
+    let mut executor = match model {
+        Some((prompts, executor)) => {
+            s.use_model_tokens(prompts).map_err(EngineError::Config)?;
+            s.kv.record_copies(true);
+            Some(executor)
+        }
+        None => None,
+    };
     let faults = &config.faults;
     if faults.plan.iter().any(|f| f.layer >= faults.layers || f.allreduce > 1) {
         return Err(EngineError::Config(
@@ -334,7 +380,13 @@ fn run_inner(
     let mut retried_floor: BTreeMap<SeqId, u32> = BTreeMap::new();
     let checking = config.kv_check_interval > 0;
     let interval = config.kv_check_interval.max(1);
-    let streams = if checking { token_streams(requests) } else { Vec::new() };
+    let streams = if executor.is_some() {
+        Streams::Model
+    } else if checking {
+        Streams::Synthetic(token_streams(requests))
+    } else {
+        Streams::Synthetic(Vec::new())
+    };
     let mut events = BinaryHeap::new();
     let mut seqno = 0u64;
     for (i, r) in requests.iter().enumerate() {
@@ -406,13 +458,26 @@ fn run_inner(
                 }
                 Event::StepEnd => {
                     let (plan, start, time) = current.take().expect("a step is running");
+                    let model_error = |what: String| EngineError::Invariant {
+                        step: index,
+                        what: format!("model: {what}"),
+                    };
+                    if let Some(x) = executor.as_deref_mut() {
+                        x.execute(index, &plan, &mut s).map_err(model_error)?;
+                    }
                     let outcome = s.complete_step(&plan, now).map_err(|e| EngineError::Invariant {
                         step: index,
                         what: format!("kv: {e}"),
                     })?;
+                    if let Some(x) = executor.as_deref_mut() {
+                        for &(seq, k) in &outcome.commits {
+                            let token = x.output(seq, k).map_err(model_error)?;
+                            s.record_output(seq, k, token).map_err(model_error)?;
+                        }
+                    }
                     log_commits(&outcome, &mut next_commit, index, checking)?;
                     if checking {
-                        let kv = (index % interval == 0).then_some(streams.as_slice());
+                        let kv = (index % interval == 0).then_some(&streams);
                         check(&s, None, &next_commit, kv, index)?;
                     }
                     steps.push(StepRecord {
