@@ -106,7 +106,12 @@ compute/communication overlap. Every number is from
   1600 GB/s brings swap's TTFT p50 to 996.49 ms, but its E2E p50 stays above
   recompute's at every tested bandwidth. With one sample per request instead
   of the 1/2/4 mix, swap is ahead at 25 GB/s (E2E p50 1008.37 against
-  1028.74 ms).
+  1028.74 ms). With four, 48.5% of the blocks a swap copies are still
+  shared with a sibling and come back as private copies, so a swapped-in
+  request needs 1.94× the blocks it released; swap's E2E p50 is 8999.62 ms
+  against recompute's 5186.36 ms, and 8961.78 ms even at 1600 GB/s. That
+  is consistent with the reversal; a swap that keeps sharing was not
+  simulated.
 - **Failures.** After one rank failure at P = 4, retry finished all 200
   requests and recomputed 3,832 tokens; abort failed the 6 in flight; drain
   rejected 112. Every failure run reran byte-identically.

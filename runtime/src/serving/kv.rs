@@ -83,6 +83,10 @@ pub struct KvStats {
     /// Of those, blocks actually adopted from the prefix cache.
     pub prefix_hit_blocks: u64,
     pub swapped_out_blocks: u64,
+    /// Of the swapped-out blocks, those still shared with another sequence
+    /// (refcount > 1) when copied: each becomes a private host copy, and a
+    /// private device block again on swap-in.
+    pub swapped_out_shared_blocks: u64,
     pub swapped_in_blocks: u64,
 }
 
@@ -617,6 +621,9 @@ impl KvCache {
             let s = self.swap_free.pop().expect("checked above");
             self.swap_content[s as usize] = self.content[b as usize].clone();
             host.push(s);
+            if self.refcount[b as usize] > 1 {
+                self.stats.swapped_out_shared_blocks += 1;
+            }
             if self.planted(Mutation::SwapOutKeepsSharedRef) && self.refcount[b as usize] > 1 {
                 continue;
             }

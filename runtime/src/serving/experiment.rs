@@ -346,9 +346,19 @@ impl ServingConfig {
             s.host_bytes_per_s = Some(bw);
             out.push(s);
         }
-        for mut s in base {
-            s.label = format!("{} one sample", s.label);
-            s.workload.samples = vec![(1, 1)];
+        for (n, name) in [(1, "one sample"), (4, "four samples")] {
+            for mut s in base.clone() {
+                s.label = format!("{} {name}", s.label);
+                s.workload.samples = vec![(1, n)];
+                out.push(s);
+            }
+        }
+        // Four samples with the fastest link: does bandwidth alone close the gap?
+        if let Some(&bw) = self.swap_bandwidths.last() {
+            let mut s = base[1].clone();
+            s.label = format!("pressure swap four samples host {} GB/s", bw / 1e9);
+            s.workload.samples = vec![(1, 4)];
+            s.host_bytes_per_s = Some(bw);
             out.push(s);
         }
         out

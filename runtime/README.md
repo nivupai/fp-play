@@ -205,7 +205,12 @@ requests per run):
   p50 is 996.49 ms, and its E2E p50 stays above recompute's at every tested
   bandwidth (25–1600 GB/s), so there is no crossover in that range. With
   one sample per request instead of the 1/2/4 mix, swap is ahead at 25 GB/s
-  (E2E p50 1008.37 ms against recompute's 1028.74 ms).
+  (E2E p50 1008.37 ms against recompute's 1028.74 ms). With four samples,
+  48.5% of the blocks a swap copies are still shared with a sibling (0.0%
+  with one); each returns as a private block, so a swapped-in request needs
+  1.94× the blocks it released, and swap's E2E p50 (8999.62 ms; 8961.78 ms
+  at 1600 GB/s) is far above recompute's (5186.36 ms). This is consistent
+  with the reversal, not isolated by a sharing-preserving swap.
 - **Prefix sharing:** with 4 shared 512-token system prompts, the cache hit
   42.9% of eligible blocks; TTFT p50 fell from 53.47 ms to 28.46 ms and peak
   KV blocks from 1809 to 1027.
