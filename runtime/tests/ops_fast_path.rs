@@ -112,3 +112,108 @@ fn convert_matches_the_exact_path() {
 fn add_still_validates_raw_patterns() {
     add(Format::Bf16, 0x1_0000, 0);
 }
+
+/// Directed cases with hand-derived expected bits: both paths must give them.
+fn both(format: Format, a: u32, b: u32, want: u32) {
+    assert_eq!(add(format, a, b), want, "fast {format:?} {a:#x} + {b:#x}");
+    assert_eq!(add_exact(format, a, b), want, "exact {format:?} {a:#x} + {b:#x}");
+}
+
+#[test]
+fn fp32_directed_cases() {
+    let f = Format::Fp32;
+    // Subnormals: sums on the 2^-149 grid, crossing into the normal range and back.
+    both(f, 0x0000_0001, 0x0000_0001, 0x0000_0002);
+    both(f, 0x007f_ffff, 0x0000_0001, 0x0080_0000);
+    both(f, 0x0080_0000, 0x8000_0001, 0x007f_ffff);
+    both(f, 0x0080_0001, 0x8080_0000, 0x0000_0001);
+    // Ties to even: 1 + 2^-24 is halfway; 1 + 2^-23 + 2^-24 rounds up to even.
+    both(f, 0x3f80_0000, 0x3380_0000, 0x3f80_0000);
+    both(f, 0x3f80_0001, 0x3380_0000, 0x3f80_0002);
+    // Cancellation and signed zeros.
+    both(f, 0x3f80_0000, 0xbf80_0000, 0x0000_0000);
+    both(f, 0x8000_0000, 0x8000_0000, 0x8000_0000);
+    both(f, 0x0000_0000, 0x8000_0000, 0x0000_0000);
+    both(f, 0x3f80_0001, 0xbf80_0000, 0x3400_0000);
+    // Overflow: max + max; max + half an ulp of its binade (2^103) is a tie
+    // and the odd significand rounds up to ∞; max + 2^102 stays finite.
+    both(f, 0x7f7f_ffff, 0x7f7f_ffff, 0x7f80_0000);
+    both(f, 0x7f7f_ffff, 0x7300_0000, 0x7f80_0000);
+    both(f, 0x7f7f_ffff, 0x7280_0000, 0x7f7f_ffff);
+    both(f, 0xff7f_ffff, 0xff7f_ffff, 0xff80_0000);
+    // NaN: payloads, signalling and negative NaNs, and ∞ − ∞ all give the canonical NaN.
+    both(f, 0x7fc0_0001, 0x3f80_0000, 0x7fc0_0000);
+    both(f, 0x7f80_0001, 0x3f80_0000, 0x7fc0_0000);
+    both(f, 0x3f80_0000, 0xffc0_0000, 0x7fc0_0000);
+    both(f, 0x7f80_0000, 0xff80_0000, 0x7fc0_0000);
+    both(f, 0x7f80_0000, 0x3f80_0000, 0x7f80_0000);
+}
+
+#[test]
+fn bf16_directed_cases() {
+    let f = Format::Bf16;
+    // Subnormals (2^-133 grid) and the crossing into normals.
+    both(f, 0x0001, 0x0001, 0x0002);
+    both(f, 0x007f, 0x0001, 0x0080);
+    both(f, 0x0080, 0x8001, 0x007f);
+    // Ties to even.
+    both(f, 0x3f80, 0x3b80, 0x3f80);
+    both(f, 0x3f81, 0x3b80, 0x3f82);
+    // Just above a tie, and far below binary32 precision (the double-rounding cases).
+    both(f, 0x3f80, 0x3b81, 0x3f81);
+    both(f, 0x3f80, 0x3081, 0x3f80);
+    // Cancellation and signed zeros.
+    both(f, 0x3f80, 0xbf80, 0x0000);
+    both(f, 0x8000, 0x8000, 0x8000);
+    both(f, 0x3f81, 0xbf80, 0x3c00);
+    // Overflow.
+    both(f, 0x7f7f, 0x7f7f, 0x7f80);
+    both(f, 0xff7f, 0xfb00, 0xff80);
+    // NaN.
+    both(f, 0x7fc1, 0x3f80, 0x7fc0);
+    both(f, 0x7f81, 0x3f80, 0x7fc0);
+    both(f, 0xff81, 0x3f80, 0x7fc0);
+    both(f, 0x7f80, 0xff80, 0x7fc0);
+}
+
+#[test]
+fn convert_directed_cases() {
+    let to_bf16 = |raw: u32, want: u32| {
+        assert_eq!(convert(Format::Fp32, Format::Bf16, raw), want, "fast {raw:#x}");
+        assert_eq!(convert_exact(Format::Fp32, Format::Bf16, raw), want, "exact {raw:#x}");
+    };
+    to_bf16(0x0000_8000, 0x0000); // subnormal tie, even stays
+    to_bf16(0x0001_8000, 0x0002); // subnormal tie, odd rounds up
+    to_bf16(0x007f_ffff, 0x0080); // largest subnormal rounds into the normals
+    to_bf16(0x3f80_8000, 0x3f80); // normal tie
+    to_bf16(0x7f7f_ffff, 0x7f80); // overflow to ∞
+    to_bf16(0x7f7f_7fff, 0x7f7f);
+    to_bf16(0x8000_0000, 0x8000); // −0
+    to_bf16(0x7f80_0001, 0x7fc0); // a NaN whose payload would truncate to ∞
+    to_bf16(0xffff_ffff, 0x7fc0);
+    let to_fp32 = |raw: u32, want: u32| {
+        assert_eq!(convert(Format::Bf16, Format::Fp32, raw), want, "fast {raw:#x}");
+        assert_eq!(convert_exact(Format::Bf16, Format::Fp32, raw), want, "exact {raw:#x}");
+    };
+    to_fp32(0x0001, 0x0001_0000);
+    to_fp32(0x8000, 0x8000_0000);
+    to_fp32(0x7f81, 0x7fc0_0000);
+    to_fp32(0xff80, 0xff80_0000);
+}
+
+/// The exact path keeps an oracle that does not involve the fast path's
+/// code: binary32 additions against the host's IEEE hardware.
+#[test]
+fn exact_fp32_addition_matches_host_hardware() {
+    let mut rng = SplitMix64::new(0x4057);
+    for _ in 0..400_000 {
+        let (a, b) = (rng.next_u64() as u32, rng.next_u64() as u32);
+        let host = f32::from_bits(a) + f32::from_bits(b);
+        let want = if host.is_nan() {
+            Format::Fp32.canonical_nan()
+        } else {
+            host.to_bits()
+        };
+        assert_eq!(add_exact(Format::Fp32, a, b), want, "{a:#x} + {b:#x}");
+    }
+}

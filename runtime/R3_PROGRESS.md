@@ -7,11 +7,11 @@ AllReduce schedule, the wire policy and batch composition. Plan:
 
 ## Status
 
-| Part | Scope                                                                                                                                                  | State                          |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| R3a  | Model config, deterministic weights, `exp`/`sin`/`cos`, single-device forward and greedy decoding, Python reference vectors with a CI comparison       | merged (#23)                   |
-| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | merged (#24)                   |
-| R3c  | Experiment, `results/r3-decode.*`, stale test, docs and case study                                                                                     | PR open (branch `runtime-r3c`) |
+| Part | Scope                                                                                                                                                  | State        |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| R3a  | Model config, deterministic weights, `exp`/`sin`/`cos`, single-device forward and greedy decoding, Python reference vectors with a CI comparison       | merged (#23) |
+| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | merged (#24) |
+| R3c  | Experiment, `results/r3-decode.*`, stale test, docs and case study                                                                                     | merged (#25) |
 
 Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 (swap bytes per preemption at 1 vs 4 samples; see `results/r2-serving.md`).
@@ -69,8 +69,10 @@ Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 - **D-7 Native fast path for binary32/BF16 `ops::add` and `ops::convert`**
   (R3b). Host IEEE binary32 addition is correctly rounded; a BF16 sum of
   two BF16 values added in binary32 and rounded again equals one rounding
-  (24 ≥ 2·8 + 2). Checked against the exact superaccumulator on specials,
-  ties, overflow and 4M random pairs (`tests/ops_fast_path.rs`); every
+  (24 ≥ 2·8 + 2). Tested equal to the exact superaccumulator on
+  hand-derived subnormal, tie, cancellation, signed-zero, overflow and NaN
+  cases (added in the R3 follow-up), every special-value pair, every BF16
+  rounding boundary and 4M random pairs (`tests/ops_fast_path.rs`); every
   recorded R1/R1.1/R2 artifact regenerates byte-identically. Collectives
   run about 15× faster; without it the shard tree (63 additions per
   element) would not fit the stale-test budget.
@@ -122,12 +124,16 @@ Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 - **D-16 Margin unit:** ulps of the baseline's top logit (binary32), so a
   power-of-two scale leaves it unchanged; bins are powers of four from 2^12
   to 2^22 ulps. A token is at risk while the run's context matches the
-  baseline (up to and including the first divergence). The report checks
-  the necessary condition for a flip (margin ≤ 2 × the largest logit
-  change) and states how many at-risk tokens met it.
-- **D-17 Logit scale result:** at scale 8, 38 of 38 runs chose the same
-  tokens as at scale 1, as D-1 predicted; reported as a finding rather than
-  a robustness knob. A real peakedness knob is listed as future work.
+  baseline (up to and including the first divergence). The report leads
+  with how many at-risk tokens had a margin within reach of the
+  perturbation (≤ 2 × the largest logit change) and how many flipped; that
+  every flip is within reach is a consistency check that holds by
+  construction (R3 follow-up wording).
+- **D-17 Logit scale result:** a positive scale preserves the argmax, so
+  it cannot affect greedy tokens; measured as neutral (at scale 8, 38 of 38
+  runs chose the same tokens as at scale 1). For realistic, confident
+  margins PLAN.md lists training a tiny model deterministically in-repo on
+  a synthetic task (copy or count).
 - **D-18 Stale-test cost:** the r3-decode stale test takes about 31 s on
   the 10-core development machine (about 200 s of CPU), so likely about
   50–60 s on CI's 4 cores, above the 30–40 s estimated in the plan. Most of
@@ -138,8 +144,10 @@ Also in R3a: the R2 swap-mechanism check requested with the R3 approval
 - Against P = 1: 6–18 of 32 prompts diverge under BF16, 1–2 under
   fp32-rs/bf16-ag; no P > 1 run keeps any prompt's logits bit-identical.
 - The shard tree's tokens are identical at P = 1, 2, 4, 8.
-- Every flip met margin ≤ 2 × perturbation; BF16: 14.4% of at-risk tokens
-  met it, 257 flipped; fp32-rs: 1.0%, 24 flipped.
+- BF16: 14.4% of at-risk tokens within reach of the perturbation, 257
+  flipped; fp32-rs: 1.0%, 24 flipped, with a 10.5× smaller median
+  perturbation (9,228 against 97,340 ulps). Every flip within reach is a
+  consistency check, true by construction.
 - The batch-invariance prediction held exactly.
 
 ## Planted bugs (R3)

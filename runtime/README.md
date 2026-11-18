@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 129 tests, including the recorded-artifact checks
+cargo test --release                              # 133 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -41,7 +41,7 @@ round  6 [all-gather] 0→1 (2)  1→2 (2)  2→3 (2)  3→0 (2)
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `format`           | FP16 / BF16 / FP32 encodings, exact decoding, ulp distance                                                                                                                                          |
 | `exact`            | 768-bit fixed-point superaccumulator; **one** round-to-nearest-even per operation, with gradual underflow and overflow                                                                              |
-| `ops`              | add, convert, exact products, sequential fused-chain dot, exact dot                                                                                                                                 |
+| `ops`              | correctly rounded add, convert, exact products, sequential fused-chain dot, exact dot; binary32/BF16 add and convert use a native fast path tested equal to the exact path                          |
 | `collectives`      | sequential chain, ring, binomial tree, halving-doubling (Rabenseifner), exact-gather — executed as synchronous rounds over virtual ranks; wire policies; reduce-scatter and all-gather on their own |
 | `cost`             | α–β estimate: per round, latency + largest message / bandwidth                                                                                                                                      |
 | `tensor_parallel`  | row-parallel `Y = X·W` (BF16 inputs, FP32 local accumulation) AllReduced in a chosen wire format                                                                                                    |
@@ -52,7 +52,10 @@ round  6 [all-gather] 0→1 (2)  1→2 (2)  2→3 (2)  3→0 (2)
 
 Every addition a simulated rank performs is a real correctly rounded addition
 in the policy's accumulator format, and every message is converted (one
-correct rounding) to its wire format. The association order comes from the schedule being
+correct rounding) to its wire format. Since R3, binary32 and BF16 additions
+and conversions use the host's IEEE binary32 arithmetic (correctly rounded
+by IEEE 754) instead of the superaccumulator; the two paths are tested equal
+(see Evidence), and every recorded result is unchanged. The association order comes from the schedule being
 executed, not from a separate formula, so the output bits are an observation
 of the schedule.
 
@@ -290,14 +293,16 @@ Selected results from `results/r3-decode.md`:
 - **The shard tree does not depend on P.** Its tokens are identical at
   P = 1, 2, 4 and 8. It differs from the unsharded baseline in 15 prompts
   (BF16) or 1 (`fp32-rs/bf16-ag`): a fixed change of arithmetic.
-- **Divergence follows the margin.** A token can flip only if its baseline
-  top-2 margin is at most twice the run's largest logit change there; that
-  held for every flip. Under BF16, 14.4% of at-risk tokens met it and 257
-  flipped; under `fp32-rs/bf16-ag` the logit perturbation is about 10×
-  smaller, 1.0% met it and 24 flipped.
-- **A logit scale does not help.** At logit scale 8, 38 of 38 runs chose
-  the same tokens as at scale 1: a power-of-two scale multiplies margins and
-  perturbations alike.
+- **How close the calls were.** Under BF16, 14.4% of at-risk tokens had a
+  baseline top-2 margin within reach of the run's logit perturbation (at
+  most twice its largest logit change) and 257 flipped; under
+  `fp32-rs/bf16-ag`, whose median perturbation is 10.5× smaller (9,228
+  against 97,340 ulps of the top logit), 1.0% were within reach and 24
+  flipped. Every flip being within reach is a consistency check that holds
+  by construction.
+- **Logit scale.** A positive scale preserves the argmax, so it cannot
+  affect greedy tokens; measured as neutral: at scale 8, 38 of 38 runs
+  chose the same tokens as at scale 1.
 - **Only the ring depends on batch composition.** At P = 4, sequential,
   binomial tree, halving-doubling, exact-gather and the shard tree give
   bit-identical logits in all seven batch variants under both policies, as
@@ -331,6 +336,13 @@ order) are each caught by a named check; see [R3_PROGRESS.md](R3_PROGRESS.md).
   addition and FP32→BF16 conversion against the standard integer bit-rounding
   identity; the fused chain against a host FP32 chain where products are
   exact.
+- **Fast path** — `tests/ops_fast_path.rs`: binary32 and BF16 `add`, and
+  binary32 ↔ BF16 `convert`, equal the exact superaccumulator path on
+  hand-derived subnormal, tie, cancellation, signed-zero, overflow and NaN
+  cases, every special-value pair, every BF16 rounding boundary, and 4M
+  random pairs. Because `add` itself now uses the host's binary32 addition,
+  the host-hardware check of FP32 addition above applies to the fast path;
+  the exact path keeps its own 400,000-case host check there.
 - **Exhaustive** — all 65,536 FP16 and all 65,536 BF16 patterns round-trip
   through the exact path and through binary64.
 - **Schedules** — exact results on integer data for P = 1…9 and lengths

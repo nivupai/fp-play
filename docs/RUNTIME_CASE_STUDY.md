@@ -51,7 +51,11 @@ exact-gather's 7 rounds and 112 KiB.
   the crate, produces 18,000 exact multi-term sums and 6,000 shard-tree sums.
   The tree sums are rich in ties, cancellation, subnormals and special values.
   The host's IEEE FP32 hardware checks 400,000 additions and conversions, and
-  all 65,536 FP16 and BF16 bit patterns round-trip exhaustively.
+  all 65,536 FP16 and BF16 bit patterns round-trip exhaustively. FP32 and
+  BF16 additions in the collectives use the host's correctly rounded binary32
+  arithmetic (since R3, for speed), tested equal to the exact
+  superaccumulator on subnormals, ties, cancellation, overflow, NaNs and
+  random inputs; every recorded result is unchanged.
 - **Planted bugs.** Rounding cross-device tree children through BF16 fails
   three separate checks. Changing one schedule's association order fails a
   2,898-case regression against a frozen copy of the original simulator.
@@ -129,27 +133,37 @@ random BF16 weights) inside the R2 engine, with every AllReduce executed.
 Every number is from [r3-decode](../runtime/results/r3-decode.md) (32
 prompts, 48 tokens each).
 
-- **Yes, with P and the schedule.** Against P = 1, 6–18 of 32 prompts
-  diverge under a BF16 wire and 1–2 under `fp32-rs/bf16-ag`; no run at
-  P > 1 keeps a prompt's logits bit-identical. The shard tree's tokens are
+- **Yes, with P and the schedule.** Against P = 1 with the same policy,
+  6–18 of 32 prompts diverge under a BF16 wire, some at the first generated
+  token, and 1–2 under `fp32-rs/bf16-ag`, first at token 18 or 21. No run at
+  P > 1 keeps any prompt's logits bit-identical. The shard tree's tokens are
   the same at P = 1, 2, 4 and 8.
-- **Through the margin.** Every flip happened where the baseline's top-2
-  margin was at most twice the run's largest logit change. BF16 met that
-  condition at 14.4% of at-risk tokens (257 flips), `fp32-rs/bf16-ag` at
-  1.0% (24 flips). Scaling the logits by 8 changed no token in 38 runs.
-- **Batch composition matters only for the ring.** At P = 4 the other four
-  collectives and the shard tree are bit-identical across seven batch
-  compositions (chunked prefill, reversed arrival, prefix caching,
-  recompute preemption, a failure with retry), as predicted from the
-  schedules. The ring changes every prompt's logits under BF16 and 10–13
-  prompts' tokens.
-- **The price** of the deterministic pairing is R2's: about +113% TTFT at
-  P = 4 and +171% at P = 8 against ring with `bf16`.
+- **How close the calls were.** Pooling every run, 14.4% of at-risk tokens
+  under BF16 had a baseline top-2 margin within reach of the run's logit
+  perturbation (at most twice its largest logit change), and 257 flipped;
+  under `fp32-rs/bf16-ag`, 1.0% were within reach and 24 flipped. The median
+  perturbation was 97,340 ulps of the top logit under BF16 and 9,228 under
+  `fp32-rs/bf16-ag`, 10.5× smaller. That every flip was within reach is a
+  consistency check that holds by construction, not a finding.
+- **Logit scale.** A positive scale preserves the argmax, so it cannot affect
+  greedy tokens; measured as neutral (38 of 38 runs chose the same tokens at
+  scale 8 as at scale 1).
+- **Batch composition matters only for the ring.** At P = 4, sequential,
+  binomial tree, halving-doubling, exact-gather and the shard tree are
+  bit-identical across seven batch compositions (one batch, reversed
+  arrival, 8- and 64-token budgets, prefix caching, recompute preemption, a
+  failure with retry), as predicted from the schedules. The ring changes
+  every prompt's logits under BF16 (10–13 prompts' tokens) and 18–24
+  prompts' logits but no token under `fp32-rs/bf16-ag`. At P = 1 every
+  composition is bit-identical.
+- **The price** of the deterministic pairing is R2's: TTFT p50 +112.9% at
+  P = 4 and +171.0% at P = 8 against ring with `bf16`
+  ([r2-serving](../runtime/results/r2-serving.md)).
 - **Verified** by a stdlib-only Python reimplementation that matches every
-  logit bit for bit (P = 1, ring at P = 2 and 4, shard tree at P = 2), a
+  logit bit for bit (P = 1, ring at P = 2 and 4, shard tree at P = 2), the
   P = 1 control, a tensor invariant on the paged K/V store, and three
-  planted bugs each caught. Random weights mean the divergence rates do not
-  transfer to trained models; the margin analysis does.
+  planted bugs, each caught. The weights are random, so the divergence rates
+  do not transfer to trained models, whose margins differ.
 
 ## What is next
 
