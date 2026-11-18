@@ -24,6 +24,6 @@ fn hand_derived_trace_lines() {
     assert_eq!(lines.len(), 4);
     assert_eq!(
         lines[1],
-        r#"{"step":1,"start_ns":150,"end_ns":310,"swapped_in":[],"admitted":[1,2],"preempted":[],"stalls":0,"work":[[0,0,5,1],[1,0,0,3],[2,0,0,2]],"cow_blocks":0,"swap_blocks":0,"commits":[[0,0,1],[1,0,0],[1,1,0]],"finished":[0],"used_blocks":2}"#
+        r#"{"step":1,"start_ns":150,"end_ns":310,"swapped_in":[],"admitted":[1,2],"preempted":[],"stalls":0,"work":[[0,0,5,1],[1,0,0,3],[2,0,0,2]],"cow_blocks":0,"swap_blocks":0,"commits":[[0,0,1],[1,0,0],[1,1,0]],"finished":[0],"used_blocks":2,"fault":null}"#
     );
 }

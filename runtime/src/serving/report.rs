@@ -58,6 +58,9 @@ fn metrics_json(result: &ServingResult, run: &ScenarioRun) -> Json {
         ("requests", Json::uint(m.requests)),
         ("finished", Json::uint(m.finished)),
         ("rejected", Json::uint(m.rejected)),
+        ("failed", Json::uint(m.failed)),
+        ("fault_steps", Json::uint(m.fault_steps)),
+        ("fault_ns", int(m.fault_ns)),
         ("output_tokens", int(m.output_tokens)),
         ("ttft_ns", pct_json(m.ttft)),
         ("tpot_ns", pct_json(m.tpot)),
@@ -104,6 +107,26 @@ fn run_json(result: &ServingResult, run: &ScenarioRun) -> Json {
         ("collective", Json::str(run.collective.name())),
         ("wire_policy", Json::str(run.policy.name())),
         ("kv_check_interval_steps", int(run.kv_check_interval)),
+        (
+            "fault_policy",
+            run.fault_policy.map_or(Json::Null, |p| Json::str(p.name())),
+        ),
+        (
+            "faults_fired",
+            Json::Arr(
+                run.fault_outcomes
+                    .iter()
+                    .map(|&(f, r, j)| {
+                        Json::obj(vec![
+                            ("failed", Json::uint(f)),
+                            ("retried", Json::uint(r)),
+                            ("rejected", Json::uint(j)),
+                        ])
+                    })
+                    .collect(),
+            ),
+        ),
+        ("rerun_identical", run.rerun_identical.map_or(Json::Null, Json::Bool)),
         ("metrics", metrics_json(result, run)),
     ])
 }
@@ -201,7 +224,21 @@ pub fn to_json(result: &ServingResult, command: &str) -> Json {
                 ),
                 (
                     "invariants",
-                    Json::str("every run checks the scheduler and token-stream invariants after every step, and the KV-cache invariants after every kv_check_interval_steps-th step and the last one"),
+                    Json::str("every run checks the scheduler and token-stream invariants after every step, and the KV-cache invariants after every kv_check_interval_steps-th step, after every failure and after the last step"),
+                ),
+                (
+                    "failures",
+                    Json::obj(vec![
+                        ("world", int(c.failure_world)),
+                        ("rate_per_s", num(c.failure_rate)),
+                        ("step", int(c.failure.step)),
+                        ("layer", int(u64::from(c.failure.layer))),
+                        ("allreduce", int(u64::from(c.failure.allreduce))),
+                        ("detection_ns", int(c.failure_detection_ns)),
+                        ("recovery_ns", int(c.failure_recovery_ns)),
+                        ("retry_limit", int(u64::from(c.failure_retry_limit))),
+                        ("guarantees", Json::str("G1 no leaked blocks, G2 no duplicated tokens, G3 nothing lost under retry and G4 exactly one ending are checked inside every run (a violation stops the experiment with an error); G5 determinism: each failure run is run twice and its traces compared (rerun_identical)")),
+                    ]),
                 ),
             ]),
         ),
@@ -212,6 +249,7 @@ pub fn to_json(result: &ServingResult, command: &str) -> Json {
                 ("preemption_under_memory_pressure", runs(&result.pressure)),
                 ("prefix_sharing", runs(&result.prefix)),
                 ("collective_choice", runs(&result.collectives)),
+                ("failures", runs(&result.failures)),
             ]),
         ),
     ])
@@ -405,11 +443,44 @@ pub fn to_markdown(result: &ServingResult, command: &str) -> String {
         ));
     }
 
+    md.push_str("\n## 5. Failures\n\n");
+    md.push_str(&format!(
+        "P = {}, {} req/s, device memory {} GB; a fail-stop rank failure in step {} at layer {}'s {} AllReduce, {} s detection and {} s recovery (illustrative), retry limit {}. Every device KV block is lost; the failed step commits nothing. G1–G4 are checked inside each run (a violation stops the experiment); G5 by running each failure run twice. Latencies are over finished requests only.\n\n",
+        c.failure_world,
+        c.failure_rate,
+        gb(c.device.memory_bytes),
+        c.failure.step,
+        c.failure.layer,
+        if c.failure.allreduce == 0 { "first (after attention)" } else { "second (after the MLP)" },
+        c.failure_detection_ns as f64 / 1e9,
+        c.failure_recovery_ns as f64 / 1e9,
+        c.failure_retry_limit
+    ));
+    md.push_str("| Policy | Finished | Failed | Rejected | Retried at the failure | Recomputed tokens | Time in the failed step (s) | TTFT p50 / p99 | E2E p50 / p99 | Rerun identical (G5) |\n");
+    md.push_str("|---|---:|---:|---:|---:|---:|---:|---:|---:|---|\n");
+    for r in &result.failures {
+        let x = &r.metrics;
+        md.push_str(&format!(
+            "| {} | {} | {} | {} | {} | {} | {:.3} | {} | {} | {} |\n",
+            r.fault_policy.map_or("no failure", |p| p.name()),
+            x.finished,
+            x.failed,
+            x.rejected,
+            r.fault_outcomes.iter().map(|o| o.1).sum::<usize>(),
+            x.recomputed_tokens,
+            x.fault_ns as f64 / 1e9,
+            p50_99(x.ttft),
+            p50_99(x.e2e),
+            r.rerun_identical.map_or("–", |b| if b { "yes" } else { "no" })
+        ));
+    }
+
     md.push_str("\n## What this does and does not show\n\n");
     md.push_str("- It shows how a paged KV cache, continuous batching, preemption and the AllReduce schedule interact under one explicit, deterministic model, with every step checked against the invariants and, in the tests, against an independent reference scheduler.\n");
     md.push_str("- The compute model is a roofline with illustrative constants, not a measured device. Compute and communication do not overlap. The links have no contention.\n");
     md.push_str("- Tokens are synthetic; no model numerics run (that is R3). There is one tensor-parallel group, with no replicas or routing.\n");
     md.push_str("- P must divide the 8 KV heads; KV-head replication for larger P is not modeled.\n");
+    md.push_str("- Failures are fail-stop with constant detection and recovery times; after recovery the group continues at the same P. Continuing at P − 1 is future work.\n");
     md.push_str("- No speculative decoding, LoRA or quantized KV. No hardware is measured.\n");
     md
 }

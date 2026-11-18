@@ -66,10 +66,22 @@ P = 1, 10 req/s, device memory 30.00 GB → 4741 KV blocks; 4 shared system prom
 | 8 | fp32-rs/bf16-ag | halving-doubling | 57.6% | 1.58 / 2.13 | -40.8% | 13.10 / 25.52 |
 | 8 | fp32-rs/bf16-ag | shard-tree (S = 64) | 66.9% | 1.98 / 3.78 | -25.5% | 34.39 / 88.78 |
 
+## 5. Failures
+
+P = 4, 20 req/s, device memory 80.00 GB; a fail-stop rank failure in step 1500 at layer 16's second (after the MLP) AllReduce, 0.5 s detection and 5 s recovery (illustrative), retry limit 1. Every device KV block is lost; the failed step commits nothing. G1–G4 are checked inside each run (a violation stops the experiment); G5 by running each failure run twice. Latencies are over finished requests only.
+
+| Policy | Finished | Failed | Rejected | Retried at the failure | Recomputed tokens | Time in the failed step (s) | TTFT p50 / p99 | E2E p50 / p99 | Rerun identical (G5) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| no failure | 200 | 0 | 0 | 0 | 0 | 0.000 | 14.66 / 34.98 | 366.30 / 758.31 | – |
+| abort | 194 | 6 | 0 | 0 | 0 | 5.501 | 3178.44 / 5450.69 | 3510.40 / 6221.37 | yes |
+| retry | 200 | 0 | 0 | 6 | 3832 | 5.501 | 3190.70 / 5452.13 | 3720.22 / 6284.10 | yes |
+| drain | 88 | 0 | 112 | 6 | 3832 | 5.501 | 13.45 / 33.32 | 356.84 / 6063.95 | yes |
+
 ## What this does and does not show
 
 - It shows how a paged KV cache, continuous batching, preemption and the AllReduce schedule interact under one explicit, deterministic model, with every step checked against the invariants and, in the tests, against an independent reference scheduler.
 - The compute model is a roofline with illustrative constants, not a measured device. Compute and communication do not overlap. The links have no contention.
 - Tokens are synthetic; no model numerics run (that is R3). There is one tensor-parallel group, with no replicas or routing.
 - P must divide the 8 KV heads; KV-head replication for larger P is not modeled.
+- Failures are fail-stop with constant detection and recovery times; after recovery the group continues at the same P. Continuing at P − 1 is future work.
 - No speculative decoding, LoRA or quantized KV. No hardware is measured.

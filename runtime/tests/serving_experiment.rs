@@ -71,3 +71,21 @@ fn halving_doubling_communicates_less_than_ring_at_p8() {
         assert!(comm("halving-doubling", policy) < comm("ring", policy), "{policy}");
     }
 }
+
+#[test]
+fn failure_scenario_outcomes() {
+    let f = &result().failures;
+    assert_eq!(f.len(), 4);
+    assert!(f[0].fault_policy.is_none() && f[0].fault_outcomes.is_empty());
+    for run in &f[1..] {
+        assert_eq!(run.fault_outcomes.len(), 1, "{}: the failure must fire once", run.label);
+        assert_eq!(run.rerun_identical, Some(true), "{}: G5", run.label);
+        assert_eq!(run.metrics.fault_steps, 1);
+        let m = &run.metrics;
+        assert_eq!(m.finished + m.failed + m.rejected, m.requests, "{}: G4", run.label);
+    }
+    let (abort, retry, drain) = (&f[1].metrics, &f[2].metrics, &f[3].metrics);
+    assert!(abort.failed > 0 && abort.recomputed_tokens == 0);
+    assert!(retry.failed == 0 && retry.finished == retry.requests && retry.recomputed_tokens > 0);
+    assert!(drain.rejected > 0 && drain.failed == 0);
+}

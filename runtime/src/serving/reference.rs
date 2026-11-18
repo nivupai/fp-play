@@ -20,9 +20,11 @@
 
 use std::collections::BTreeMap;
 
-use super::engine::StepRecord;
+use super::engine::{FaultConfig, FaultRecord, StepRecord};
 use super::kv::{KvConfig, SeqId};
-use super::scheduler::{PreemptKind, PreemptionMode, SchedulerConfig, StepOutcome, StepPlan, Work};
+use super::scheduler::{
+    FaultOutcome, FaultPolicy, PreemptKind, PreemptionMode, SchedulerConfig, StepOutcome, StepPlan, Work,
+};
 use super::step_time::{SeqWork, StepTimer, StepWork};
 use super::workload::Request;
 
@@ -37,6 +39,7 @@ struct Block {
 #[derive(Clone)]
 struct Kv {
     b: usize,
+    capacity: usize,
     caching: bool,
     swap_capacity: usize,
     /// Blocks that hold tokens (referenced or retained).
@@ -56,6 +59,7 @@ impl Kv {
     fn new(c: KvConfig) -> Kv {
         Kv {
             b: c.block_size,
+            capacity: c.device_blocks,
             caching: c.prefix_caching,
             swap_capacity: c.swap_blocks,
             blocks: BTreeMap::new(),
@@ -255,6 +259,7 @@ enum St {
     Swapped,
     Finished,
     Rejected,
+    Failed,
 }
 
 struct Req {
@@ -263,6 +268,8 @@ struct Req {
     committed: Vec<u32>,
     done: Vec<bool>,
     forked: bool,
+    admitted: bool,
+    retries: u32,
 }
 
 impl Req {
@@ -506,6 +513,7 @@ impl Sim<'_> {
                 let seq = self.reqs[i].seq(c);
                 self.kv.tables.insert(seq, hits);
                 self.reqs[i].st = St::Running;
+                self.reqs[i].admitted = true;
                 plan.admitted.push(self.reqs[i].r.id);
                 self.add_work(&mut plan, i, c, n);
                 budget -= n;
@@ -557,6 +565,36 @@ impl Sim<'_> {
         out
     }
 
+    /// A rank failed: forget every device block, then apply the policy.
+    fn fault(&mut self, policy: FaultPolicy, retry_limit: u32, draining: &mut bool) -> FaultOutcome {
+        let mut out = FaultOutcome::default();
+        self.kv.tables.clear();
+        self.kv.blocks.clear();
+        self.kv.free = (0..self.kv.capacity as u32).rev().collect();
+        for i in self.ordered(St::Running) {
+            if policy == FaultPolicy::Abort || self.reqs[i].retries >= retry_limit {
+                self.reqs[i].st = St::Failed;
+                out.failed.push(self.reqs[i].r.id);
+            } else {
+                let r = &mut self.reqs[i];
+                r.retries += 1;
+                r.st = St::Waiting;
+                r.forked = r.unfinished().len() <= 1;
+                out.retried.push(r.r.id);
+            }
+        }
+        if policy == FaultPolicy::Drain {
+            *draining = true;
+            for i in self.ordered(St::Waiting) {
+                if !self.reqs[i].admitted {
+                    self.reqs[i].st = St::Rejected;
+                    out.rejected.push(self.reqs[i].r.id);
+                }
+            }
+        }
+        out
+    }
+
     fn step_work(&self, plan: &StepPlan) -> StepWork {
         StepWork {
             seqs: plan
@@ -579,7 +617,13 @@ impl Sim<'_> {
 
 /// Run the reference over `requests` and return its step trace.
 /// `used_blocks` in each record is the device blocks referenced at step end.
-pub fn run(requests: &[Request], scheduler: SchedulerConfig, kv: KvConfig, timer: &dyn StepTimer) -> Vec<StepRecord> {
+pub fn run(
+    requests: &[Request],
+    scheduler: SchedulerConfig,
+    kv: KvConfig,
+    faults: &FaultConfig,
+    timer: &dyn StepTimer,
+) -> Vec<StepRecord> {
     let b = kv.block_size as u64;
     let mut sim = Sim {
         cfg: scheduler,
@@ -592,12 +636,16 @@ pub fn run(requests: &[Request], scheduler: SchedulerConfig, kv: KvConfig, timer
                 committed: vec![0; r.samples as usize],
                 done: vec![false; r.samples as usize],
                 forked: r.samples <= 1,
+                admitted: false,
+                retries: 0,
             })
             .collect(),
         timer,
     };
     let mut records = Vec::new();
     let mut running: Option<(StepPlan, u64, u64, super::step_time::StepTime)> = None;
+    let mut draining = false;
+    let fault_at = |step: usize| faults.plan.iter().copied().find(|f| f.step == step as u64);
     loop {
         let next_arrival = sim
             .reqs
@@ -617,12 +665,25 @@ pub fn run(requests: &[Request], scheduler: SchedulerConfig, kv: KvConfig, timer
                 let need = u64::from(r.prompt_len + r.output_len - 1).div_ceil(b) * u64::from(r.samples);
                 let fits = need as usize + scheduler.watermark_blocks <= kv.device_blocks
                     && r.samples as usize <= scheduler.max_seqs;
-                sim.reqs[i].st = if fits { St::Waiting } else { St::Rejected };
+                sim.reqs[i].st = if fits && !draining { St::Waiting } else { St::Rejected };
             }
         }
         if running.as_ref().is_some_and(|(_, _, end, _)| *end == now) {
             let (plan, start, end, time) = running.take().expect("checked");
-            let outcome = sim.complete(&plan);
+            let (outcome, fault) = match fault_at(records.len()) {
+                Some(f) => {
+                    let o = sim.fault(faults.policy, faults.retry_limit, &mut draining);
+                    (
+                        StepOutcome::default(),
+                        Some(FaultRecord {
+                            layer: f.layer,
+                            allreduce: f.allreduce,
+                            outcome: o,
+                        }),
+                    )
+                }
+                None => (sim.complete(&plan), None),
+            };
             let used = (0..kv.device_blocks as u32)
                 .filter(|&id| sim.kv.refcount(id) > 0)
                 .count();
@@ -634,6 +695,7 @@ pub fn run(requests: &[Request], scheduler: SchedulerConfig, kv: KvConfig, timer
                 outcome,
                 time,
                 used_blocks: used,
+                fault,
             });
         }
         if running.is_none() {
@@ -655,7 +717,11 @@ pub fn run(requests: &[Request], scheduler: SchedulerConfig, kv: KvConfig, timer
             }
             if !plan.work.is_empty() {
                 let time = sim.timer.time(&sim.step_work(&plan));
-                running = Some((plan, now, now + time.total_ns, time));
+                let duration = match fault_at(records.len()) {
+                    Some(f) => faults.failed_step_ns(&time, f),
+                    None => time.total_ns,
+                };
+                running = Some((plan, now, now + duration, time));
             }
         }
     }

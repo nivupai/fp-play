@@ -79,10 +79,33 @@ exact-gather's 7 rounds and 112 KiB.
   These are near-ties. The "vocabulary" is 256 outputs, not a real one.
   ([sweep](../runtime/results/r1.1-sweep.md))
 
+## Addendum: R2, a serving simulator
+
+R2 puts these collectives inside a deterministic serving loop: a paged KV
+cache with prefix sharing and copy-on-write, continuous batching, recompute
+or swap preemption, and fail-stop rank failures. Step time is an
+illustrative roofline plus the AllReduce schedules simulated above. All
+numbers are from [r2-serving](../runtime/results/r2-serving.md) (200
+requests per run, an 8B-class model on an illustrative device).
+
+- **The collective shows up in latency.** At 10 req/s, TPOT p50 is 2.33 ms
+  at P = 4 but 2.73 ms at P = 8, where ring AllReduces take 73.7% of step
+  time. At P = 8, halving-doubling cuts TPOT p50 by 41.2% against ring; the
+  shard tree cuts it by 31.4% but raises TTFT p50 from 12.69 ms to 24.32 ms.
+  In this model the tree sends the whole buffer at every level, so large
+  prefill steps cost it the most.
+- **Memory pressure and failures.** With 449 KV
+  blocks, recompute preempted 131 times and swap 84 times. After one rank
+  failure at P = 4, retry finished all 200 requests and recomputed 3,832
+  tokens; abort failed the 6 in flight; drain rejected 112.
+- **How it is verified.** A slow reference scheduler must produce the same
+  step trace as the engine on 600 random workloads, 300 of them with
+  failures. In those tests every step is checked for leaked blocks,
+  refcounts, KV contents and duplicated tokens. Eight planted bugs are each
+  caught by a named check, and one of them (a wrong preemption victim) only
+  by the reference.
+
 ## What is next
 
-- **R2, a serving runtime**: a deterministic discrete-event simulator with a
-  paged KV cache, continuous batching, preemption and failure injection, using
-  this cost model for tensor-parallel step time.
 - **R3, does sharding change the tokens?** Greedy decoding over a real
   vocabulary, comparing schedules and policies token by token.

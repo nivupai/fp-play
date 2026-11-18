@@ -6,7 +6,7 @@
 //!   decision, under both preemption modes, with and without prefix caching.
 
 use fp_play_runtime::rng::SplitMix64;
-use fp_play_runtime::serving::engine::{run, EngineConfig, EngineError, Planted, StepRecord};
+use fp_play_runtime::serving::engine::{run, EngineConfig, EngineError, FaultConfig, Planted, StepRecord};
 use fp_play_runtime::serving::kv::{KvConfig, Mutation, SeqId};
 use fp_play_runtime::serving::metrics::{metrics, nearest_rank};
 use fp_play_runtime::serving::reference;
@@ -71,6 +71,7 @@ fn hand_derived_three_request_trace() {
             swap_blocks: 0,
             prefix_caching: false,
         },
+        faults: FaultConfig::none(),
         kv_check_interval: 1,
         planted: None,
     };
@@ -111,7 +112,7 @@ fn hand_derived_three_request_trace() {
     assert_eq!(m.ttft.unwrap().p50, 260);
     assert_eq!(m.cow_copies, 1);
     assert_eq!(
-        reference::run(&requests, config.scheduler, config.kv, &TIMER),
+        reference::run(&requests, config.scheduler, config.kv, &config.faults, &TIMER),
         result.steps
     );
 }
@@ -166,6 +167,7 @@ fn random_case(seed: u64) -> (Vec<Request>, EngineConfig) {
             swap_blocks: rng.below(60) as usize,
             prefix_caching: rng.below(3) != 0,
         },
+        faults: FaultConfig::none(),
         kv_check_interval: 1,
         planted: None,
     };
@@ -189,7 +191,7 @@ fn random_workloads_keep_every_invariant_and_match_the_reference() {
         for r in &result.requests {
             assert!(matches!(r.phase, Phase::Finished | Phase::Rejected), "seed {seed}");
         }
-        let expected = reference::run(&requests, config.scheduler, config.kv, &timer);
+        let expected = reference::run(&requests, config.scheduler, config.kv, &config.faults, &timer);
         if let Some(i) = (0..result.steps.len().max(expected.len())).find(|&i| result.steps.get(i) != expected.get(i)) {
             panic!(
                 "seed {seed}: step {i} differs from the reference\nengine:    {:?}\nreference: {:?}",
@@ -257,7 +259,7 @@ fn first_catch(planted: Planted) -> Option<(u64, Caught)> {
             Ok(result) => {
                 let mut clean = config;
                 clean.planted = None;
-                if result.steps != reference::run(&requests, clean.scheduler, clean.kv, &timer) {
+                if result.steps != reference::run(&requests, clean.scheduler, clean.kv, &clean.faults, &timer) {
                     return Some((seed, Caught::Reference));
                 }
             }

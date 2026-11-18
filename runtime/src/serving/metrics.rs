@@ -13,7 +13,8 @@
 //!   second over the busy span, first arrival to last finish.
 //! * **KV utilization**: device blocks in use at each step's end, weighted
 //!   by step duration, over the capacity.
-//! * **Compute and communication**: summed step-time parts.
+//! * **Compute and communication**: summed step-time parts of completed
+//!   steps. A step interrupted by a failure counts in `fault_ns` instead.
 
 use super::engine::RunResult;
 use super::scheduler::Phase;
@@ -51,6 +52,12 @@ pub struct Metrics {
     pub requests: usize,
     pub finished: usize,
     pub rejected: usize,
+    /// Requests ended by a rank failure.
+    pub failed: usize,
+    /// Steps interrupted by a failure.
+    pub fault_steps: usize,
+    /// Wall time of interrupted steps, including detection and recovery.
+    pub fault_ns: u64,
     pub output_tokens: u64,
     pub ttft: Option<Percentiles>,
     pub tpot: Option<Percentiles>,
@@ -127,7 +134,9 @@ pub fn metrics(run: &RunResult) -> Metrics {
         .unwrap_or(first_arrival);
     let span_ns = last_finish - first_arrival;
     let per_s = |x: f64| if span_ns == 0 { 0.0 } else { x * 1e9 / span_ns as f64 };
-    let sum = |f: fn(&super::engine::StepRecord) -> f64| run.steps.iter().map(f).sum::<f64>();
+    // Completed steps only; an interrupted step's time is in `fault_ns`.
+    let sum =
+        |f: fn(&super::engine::StepRecord) -> f64| run.steps.iter().filter(|s| s.fault.is_none()).map(f).sum::<f64>();
     let (compute_ns, comm_ns) = (sum(|s| s.time.compute_ns), sum(|s| s.time.comm_ns));
     let (copy_ns, overhead_ns) = (sum(|s| s.time.copy_ns), sum(|s| s.time.overhead_ns));
     let total_ns = compute_ns + comm_ns + copy_ns + overhead_ns;
@@ -142,6 +151,14 @@ pub fn metrics(run: &RunResult) -> Metrics {
         requests: run.requests.len(),
         finished: finished.len(),
         rejected: run.requests.iter().filter(|r| r.phase == Phase::Rejected).count(),
+        failed: run.requests.iter().filter(|r| r.phase == Phase::Failed).count(),
+        fault_steps: run.steps.iter().filter(|s| s.fault.is_some()).count(),
+        fault_ns: run
+            .steps
+            .iter()
+            .filter(|s| s.fault.is_some())
+            .map(|s| s.end_ns - s.start_ns)
+            .sum(),
         output_tokens,
         ttft,
         tpot,
