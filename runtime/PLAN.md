@@ -52,8 +52,8 @@ Verification: property tests on allocator invariants, a reference scheduler
 written as a slow obvious loop, and recorded traces.
 
 Progress, the approved design answers and every design call made while
-building are tracked in [`R2_PROGRESS.md`](R2_PROGRESS.md) (decisions are
-copied below when each piece merges).
+building are tracked in [`R2_PROGRESS.md`](R2_PROGRESS.md); the decisions
+are also summarized below.
 
 ### R2 decisions
 
@@ -78,6 +78,36 @@ Approved before building (answers 1–9 and additions A–C):
 - B. P must divide the KV head count (8); other values are rejected.
 - C. The dry-run equality test covers every algorithm, the shard tree and
   both wire policies.
+
+Made while building (details and rationale in
+[`R2_PROGRESS.md`](R2_PROGRESS.md)):
+
+- R2a: the dry run reuses each schedule's plan code and skips only data
+  movement; vocabulary 128,000 (illustrative) with embedding and head
+  counted (8,028,164,096 parameters); P must also divide the query heads,
+  hidden and FFN widths; `prompt_len` includes the shared prefix and
+  tokens are 32-bit hashes; planted bugs use a hidden mutation switch so
+  their tests run in CI; KV invariants live in `KvCache::check`; prefix
+  adoption leaves at least one prompt token and the free list is used
+  before evicting; identical full blocks are not deduplicated and
+  swapped-in blocks are not re-registered; prefix hit rate = adopted ÷
+  eligible full prompt blocks.
+- R2b: no admission in a step that preempted; decodes may preempt their
+  own request when no victim remains, a prefill chunk without blocks is
+  skipped for the step, and an empty step preempts the last running
+  request (a counted stall); the watermark gates admission and swap-in
+  only; requests that could never fit are rejected on arrival; KV appends
+  happen while the step is built; forked siblings take their first token
+  from the carrier's prompt logits and re-prefill their own outputs after a
+  recompute; priority sets order and victim only; step time skips the
+  embedding read, runs the output head only for sampled tokens and adds a
+  20 µs overhead; TPOT is per sample, rounded down; the KV check runs every
+  k steps (k = 1 in tests and the pressure and prefix scenarios, 256 for
+  the nearly empty 80 GB pools) while scheduler and token-stream checks
+  run every step; the reference shares only the step-time model and token
+  functions; golden traces have their own `traces` command; scenario
+  settings are listed in `results/r2-serving.md`; the chain-key hash is a
+  multiply–rotate loop with hits verified against stored tokens.
 
 ### R2 future work
 
