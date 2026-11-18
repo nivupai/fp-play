@@ -7,15 +7,77 @@ use crate::exact::ExactSum;
 use crate::format::{decode, decode_f64, Dyadic, Format, Value};
 
 /// `round(a + b)` in `format`.
+///
+/// For binary32 and BF16 this uses the host's IEEE 754 binary32 addition,
+/// which is correctly rounded (Rust does not flush subnormals). A BF16 sum
+/// is added in binary32 and then rounded to BF16: binary32 has at least
+/// 2·8 + 2 significant bits, so that double rounding equals one rounding
+/// of the exact sum. NaN results are the canonical NaN, as on the exact
+/// path. `tests/ops_fast_path.rs` checks both against [`add_exact`]; the
+/// fast path exists because the R3 decoder runs millions of collective
+/// additions.
 pub fn add(format: Format, a: u32, b: u32) -> u32 {
+    match format {
+        Format::Fp32 => {
+            let sum = f32::from_bits(a) + f32::from_bits(b);
+            if sum.is_nan() {
+                format.canonical_nan()
+            } else {
+                sum.to_bits()
+            }
+        }
+        Format::Bf16 => {
+            format.assert_raw(a);
+            format.assert_raw(b);
+            let sum = f32::from_bits(a << 16) + f32::from_bits(b << 16);
+            fp32_to_bf16(sum.to_bits())
+        }
+        Format::Fp16 => add_exact(format, a, b),
+    }
+}
+
+/// `round(a + b)` through the exact superaccumulator (the reference for [`add`]).
+pub fn add_exact(format: Format, a: u32, b: u32) -> u32 {
     let mut sum = ExactSum::new();
     sum.add_raw(format, a);
     sum.add_raw(format, b);
     sum.round(format)
 }
 
+/// binary32 → BF16, round to nearest, ties to even, by bit arithmetic
+/// (canonical NaN for NaN). Overflow carries into the exponent and gives ∞.
+fn fp32_to_bf16(raw: u32) -> u32 {
+    if f32::from_bits(raw).is_nan() {
+        return Format::Bf16.canonical_nan();
+    }
+    raw.wrapping_add(0x7fff + ((raw >> 16) & 1)) >> 16
+}
+
 /// Round a value from one format to another (NaN becomes the target's canonical NaN).
+///
+/// binary32 → BF16 and BF16 → binary32 use bit arithmetic (checked against
+/// [`convert_exact`] in `tests/ops_fast_path.rs`); other pairs use the exact path.
 pub fn convert(from: Format, to: Format, raw: u32) -> u32 {
+    match (from, to) {
+        (Format::Fp32, Format::Bf16) => {
+            from.assert_raw(raw);
+            fp32_to_bf16(raw)
+        }
+        (Format::Bf16, Format::Fp32) => {
+            from.assert_raw(raw);
+            let wide = f32::from_bits(raw << 16);
+            if wide.is_nan() {
+                Format::Fp32.canonical_nan()
+            } else {
+                wide.to_bits()
+            }
+        }
+        _ => convert_exact(from, to, raw),
+    }
+}
+
+/// [`convert`] through the exact superaccumulator.
+pub fn convert_exact(from: Format, to: Format, raw: u32) -> u32 {
     let mut sum = ExactSum::new();
     sum.add_raw(from, raw);
     sum.round(to)

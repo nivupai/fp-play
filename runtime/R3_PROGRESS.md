@@ -9,8 +9,8 @@ AllReduce schedule, the wire policy and batch composition. Plan:
 
 | Part | Scope                                                                                                                                                  | State                              |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| R3a  | Model config, deterministic weights, `exp`/`sin`/`cos`, single-device forward and greedy decoding, Python reference vectors with a CI comparison       | in progress (branch `runtime-r3a`) |
-| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | not started                        |
+| R3a  | Model config, deterministic weights, `exp`/`sin`/`cos`, single-device forward and greedy decoding, Python reference vectors with a CI comparison       | merged (#23)                       |
+| R3b  | Tensor-parallel forward (executed collectives, shard tree), engine integration with a K/V tensor store, batch variants, invariance tests, planted bugs | in progress (branch `runtime-r3b`) |
 | R3c  | Experiment, `results/r3-decode.*`, stale test, docs and case study                                                                                     | not started                        |
 
 Also in R3a: the R2 swap-mechanism check requested with the R3 approval
