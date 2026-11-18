@@ -12,6 +12,6 @@
 //! results on every platform.
 
 pub mod detmath;
-
+pub mod kv;
 pub mod model;
 pub mod workload;

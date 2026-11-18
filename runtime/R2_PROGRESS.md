@@ -32,11 +32,16 @@ design calls made while building.
   classes, synthetic tokens) and `tests/serving_workload.rs` with a pinned
   fingerprint (`0x6dc5be0175451b62`, generated on macOS arm64).
 
+- `serving::kv` with `KvCache::check` (invariants: conservation, refcount,
+  shape, content, prefix cache, swap) and `tests/serving_kv.rs`:
+  hand-derived cases, 400 seeds × 400 random operations against a plain
+  model, five planted bugs.
+
 ## Next
 
-3. `serving::kv`: block pool, LIFO free list, refcounts, block tables, prefix
-   cache with LRU retention, fork + copy-on-write, swap pool.
-4. `serving::kv` invariants, property tests, planted bugs.
+R2a: open the PR, wait for CI, review, merge. Then R2b from the updated
+main: `step_time`, `scheduler`, `engine`, `metrics`, preemption,
+`reference`, trace tests, scenarios 1–4 in `results/r2-serving.*`.
 
 ## Open questions
 
@@ -61,6 +66,20 @@ None.
 - R2a-4. A request's prompt is its shared prefix (if any) followed by its own
   tokens, so `prompt_len` includes the prefix. Tokens are 32-bit SplitMix64
   hashes, not a vocabulary index.
+- R2a-5. Planted bugs are a hidden `kv::Mutation` switch on the cache
+  (`#[doc(hidden)]`, set only by tests), so the catching tests run on every
+  CI build instead of once by hand.
+- R2a-6. KV invariants live in `KvCache::check` rather than a separate
+  `invariants` module; scheduler, token-stream and event invariants (plan
+  items 7–9) join in R2b with the engine.
+- R2a-7. Prefix adoption leaves at least one prompt token to compute (the
+  last token's logits are needed), so at most floor((len − 1) ÷ B) blocks
+  are adopted. The free list is used before evicting a retained block.
+- R2a-8. A newly full block whose key is already registered is not
+  registered again (no deduplication of identical blocks); swapped-in
+  blocks are private and not re-registered.
+- R2a-9. The prefix hit rate is adopted blocks ÷ eligible full prompt
+  blocks, counted at admission.
 - R2a-1. The dry run shares each schedule's plan code and skips only the data
   movement, so the equality test checks the skipping, not a second schedule
   derivation. The executed schedules remain pinned by the frozen R1

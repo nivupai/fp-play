@@ -9,8 +9,9 @@ why, and what it costs to make them stop changing.
 Milestone **R1** is an exact, message-level AllReduce simulator plus a
 tensor-parallel experiment. **R1.1** adds mixed wire policies, reduce-scatter /
 all-gather as separate collectives, a deterministic AllReduce over a fixed tree
-of shards, and a sweep across seeds. The serving runtime (paged KV
-cache, continuous batching) is the next milestone — see [PLAN.md](PLAN.md).
+of shards, and a sweep across seeds. **R2**, a deterministic serving
+simulator (paged KV cache, continuous batching), is in progress — see
+[PLAN.md](PLAN.md) and [R2_PROGRESS.md](R2_PROGRESS.md).
 For a two-page summary of the results, read the
 [runtime case study](../docs/RUNTIME_CASE_STUDY.md).
 
@@ -20,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 60 tests, including the recorded-artifact checks (~15 s)
+cargo test --release                              # 83 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -171,6 +172,28 @@ seeds.
   with the unsharded kernel's top-1 lead over its runner-up: the 6 tokens
   that changed led by only 1–4 BF16 ulps, against a median of 16 ulps over
   all 96 tokens, so these are near-ties.
+
+## R2 (in progress): the serving simulator
+
+The first piece, R2a, is a tested paged-KV-cache library with no scheduler
+yet:
+
+| Module                                                        | Role                                                                                                                                              |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `serving::model`                                              | 8B-class dimensions (not a specific released model), illustrative device constants, KV capacity per device; P must divide the 8 KV heads          |
+| `serving::detmath`                                            | `ln` from IEEE basic operations only, so Poisson arrivals match on every platform                                                                 |
+| `serving::workload`                                           | Poisson arrivals, prompt and output length tables, shared system prompts, n ∈ {1, 2, 4} samples, priority classes, deterministic synthetic tokens |
+| `serving::kv`                                                 | Block pool (LIFO free list, refcounts), block tables, prefix cache with LRU retention, fork and copy-on-write, host swap pool, invariant checks   |
+| `collectives::schedule_rounds`, `shard_tree::schedule_rounds` | Dry-run schedules: the rounds of a collective without moving data, for step-time costing                                                          |
+
+With the default device (80 GB, 4 GB reserve) and 16-token blocks, the KV
+capacity is 28,583 blocks (457,328 tokens) at P = 1. Evidence:
+`tests/dry_run.rs` (dry-run rounds equal executed rounds for every algorithm,
+policy and P ≤ 16, and the shard tree for every P ≤ S), `tests/serving_kv.rs`
+(hand-derived cases, 400 random operation sequences checked against a plain
+model after every operation, and five planted bugs each caught by a named
+invariant) and `tests/serving_workload.rs` (a pinned workload fingerprint that
+CI checks on Linux, and `ln` against the host).
 
 ## Evidence
 
