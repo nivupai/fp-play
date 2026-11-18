@@ -9,6 +9,8 @@ use fp_play_runtime::ops::from_f64;
 use fp_play_runtime::policies;
 use fp_play_runtime::report;
 use fp_play_runtime::rng::SplitMix64;
+use fp_play_runtime::shard_experiment;
+use fp_play_runtime::shard_tree::DEFAULT_SHARDS;
 use fp_play_runtime::tensor_parallel::{prepare, run_prepared, ExperimentConfig};
 
 const USAGE: &str = "\
@@ -17,9 +19,11 @@ fp-play-runtime — exact simulation of AllReduce numerics
 USAGE:
   fp-play-runtime experiment [--tokens N] [--hidden N] [--outputs N]
                              [--world 2,3,4,8] [--wire fp32,bf16] [--seed N]
-                             [--latency-us X] [--bandwidth-gbps X] [--out DIR]
+                             [--latency-us X] [--bandwidth-gbps X] [--shards S]
+                             [--out DIR]
       Run the tensor-parallel experiments; write tp-allreduce.{json,md}
-      (R1) and r1.1-policies.{json,md} (R1.1) to DIR (default: results).
+      (R1), r1.1-policies.{json,md} and r1.1-shard-tree.{json,md} (R1.1,
+      S logical shards, default 64) to DIR (default: results).
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
@@ -110,6 +114,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
         "--seed",
         "--latency-us",
         "--bandwidth-gbps",
+        "--shards",
         "--out",
     ])?;
     let defaults = ExperimentConfig::default();
@@ -147,6 +152,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
     let prepared = prepare(&config)?;
     let result = run_prepared(&config, &prepared)?;
     let policies = policies::run_prepared(&config, &prepared)?;
+    let shards = shard_experiment::run_prepared(&config, &prepared, flags.parse("--shards", DEFAULT_SHARDS)?)?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -158,6 +164,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r1.1-policies",
             report::policies_to_json(&policies, &command).to_pretty(),
             report::policies_to_markdown(&policies, &command),
+        ),
+        (
+            "r1.1-shard-tree",
+            report::shard_tree_to_json(&shards, &command).to_pretty(),
+            report::shard_tree_to_markdown(&shards, &command),
         ),
     ];
     for (name, json, markdown) in artifacts {
