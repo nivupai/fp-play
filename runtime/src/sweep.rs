@@ -110,6 +110,7 @@ pub fn stats(values: &[f64]) -> Stats {
 /// One run's metrics.
 #[derive(Clone, Debug)]
 struct RunMetrics {
+    seed: u64,
     hidden: usize,
     world: usize,
     policy: WirePolicy,
@@ -138,11 +139,25 @@ pub struct SweepRow {
     pub top1_changes: Stats,
 }
 
+/// One run whose top-1 output changed for at least one token.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Top1Change {
+    pub seed: u64,
+    pub hidden: usize,
+    pub world: usize,
+    pub policy: WirePolicy,
+    pub schedule: Schedule,
+    /// Tokens whose top-1 output differs from the unsharded kernel.
+    pub tokens: usize,
+}
+
 #[derive(Clone, Debug)]
 pub struct SweepResult {
     pub config: SweepConfig,
     pub elements: usize,
     pub rows: Vec<SweepRow>,
+    /// Every run that changed a top-1 output, ordered by hidden, P, policy, schedule and seed.
+    pub top1_changes: Vec<Top1Change>,
     /// Shard-tree outputs compared across every swept P, per (seed, hidden, policy).
     pub shard_tree_invariance_checks: usize,
     /// All of those comparisons found identical bits.
@@ -244,6 +259,7 @@ fn job(config: &SweepConfig, seed: u64, hidden: usize) -> JobResult {
                     .max()
                     .unwrap_or(0);
                 runs.push(RunMetrics {
+                    seed,
                     hidden,
                     world,
                     policy,
@@ -328,10 +344,34 @@ pub fn run(config: &SweepConfig) -> Result<SweepResult, String> {
             }
         }
     }
+    let mut top1_changes = Vec::new();
+    for row in &rows {
+        for &seed in &config.seeds {
+            if let Some(m) = all.iter().find(|m| {
+                m.seed == seed
+                    && m.hidden == row.hidden
+                    && m.world == row.world
+                    && m.policy == row.policy
+                    && m.schedule == row.schedule
+            }) {
+                if m.top1_changes > 0.0 {
+                    top1_changes.push(Top1Change {
+                        seed,
+                        hidden: m.hidden,
+                        world: m.world,
+                        policy: m.policy,
+                        schedule: m.schedule,
+                        tokens: m.top1_changes as usize,
+                    });
+                }
+            }
+        }
+    }
     Ok(SweepResult {
         config: config.clone(),
         elements: config.tokens * config.outputs,
         rows,
+        top1_changes,
         shard_tree_invariance_checks: checks,
         shard_tree_p_invariant: invariant,
     })

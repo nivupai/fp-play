@@ -117,13 +117,24 @@ invariant: every tree node is one accumulator-format addition, whether its
 children are on one device or two. So the reduce wire must carry accumulator
 values exactly, and `bf16-wire/fp32-add` is rejected.
 
-- **The same bits for every P from 1 to 64**, under `bf16` and
-  `fp32-rs/bf16-ag`, on every rank. This is checked on the recorded problem, on
-  raw patterns (NaN, infinities, signed zeros) for S ∈ {64, 48, 16, 5, 1} in
-  `tests/shard_tree.rs`, and in the sweep (432 of 432 comparisons).
-- **Accuracy depends on the policy, not on P.** Under `fp32-rs/bf16-ag` it is
-  0.02% wrong (one element of 4,096). Under `bf16` it is 66.8% wrong, because
-  each of the 64 shard partials is rounded to BF16 first.
+- **It buys determinism, not accuracy.** Under `bf16` it is the least
+  accurate option up to P = 8: 66.8% of elements wrong, because each of the
+  64 shard partials is rounded to BF16 before the tree. In the sweep, from
+  P = 16 the deeper `bf16` sequential and ring reductions become worse still.
+  The shard tree is meant to be paired with `fp32-rs/bf16-ag`, which gets
+  0.02% wrong (one element of 4,096).
+- **The same bits for every P from 1 to 64**, under both policies, on every
+  rank. This holds by construction: the tree and every node's formats depend
+  on S alone. The checks verify that the distributed schedule implements that
+  tree faithfully:
+  - the recorded problem for every P from 1 to 64;
+  - raw patterns (NaN, infinities, signed zeros) for S ∈ {64, 48, 16, 5, 1};
+  - agreement with the binomial-tree reduce at P = S;
+  - the sweep (432 of 432 comparisons).
+- **It reproduces a single-device shard-tree kernel** (S partials, then the
+  same tree on one device), not the plain single-device kernel that sums the
+  whole hidden dimension in one chain. Under `fp32-rs/bf16-ag` the two differ
+  on 0.07% of elements.
 - **Cost depends on P's shape.** With P a power of two, log2 P tree levels
   cross devices. At P = 8 under `fp32-rs/bf16-ag` that gives 6 rounds and 32 KB
   per rank (~12.7 µs, illustrative model), against 7 rounds and 115 KB for
@@ -151,7 +162,10 @@ seeds.
   FP32 result, yet relative RMS error stays below 1×10⁻⁶. Max ulp reaches
   about 1.6 million on elements whose exact value is near zero, where an ulp
   is tiny; R1 shows the same effect at smaller scale.
-- **Top-1**: at most 1 of the 4 tokens changed in any run.
+- **Top-1**: 35 of 3,768 runs changed the top-1 output of one token (never
+  more). All of them are under `bf16` (25) or `bf16-wire/fp32-add` (10).
+  None are under `fp32` or `fp32-rs/bf16-ag`, and none involve the shard
+  tree. 22 come from one seed (`0xf991ae`). The sweep page lists every one.
 
 ## Evidence
 

@@ -75,6 +75,18 @@ fn the_grid_covers_every_applicable_configuration() {
         }
     }
     assert_eq!(result.rows.len(), expected_rows * config.hiddens.len());
+    // The listed top-1 changes are exactly the runs behind each row's top-1 statistics.
+    for r in &result.rows {
+        let listed: Vec<f64> = result
+            .top1_changes
+            .iter()
+            .filter(|t| t.hidden == r.hidden && t.world == r.world && t.policy == r.policy && t.schedule == r.schedule)
+            .map(|t| t.tokens as f64)
+            .collect();
+        assert_eq!(listed.iter().copied().fold(0.0, f64::max), r.top1_changes.max);
+        assert_eq!(listed.is_empty(), r.top1_changes.max == 0.0);
+        assert!(listed.len() <= r.runs);
+    }
     for r in &result.rows {
         assert_eq!(r.runs, config.seeds.len());
         for s in [

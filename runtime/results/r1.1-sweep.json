@@ -50,6 +50,288 @@
     "comparisons_across_world_sizes": 432,
     "all_identical": true
   },
+  "top1_changes": [
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16",
+      "schedule": "exact-gather",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 2,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "exact-gather",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 3,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 3,
+      "policy": "bf16",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 3,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355755,
+      "hidden": 4096,
+      "world": 3,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 3,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 4,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 4,
+      "policy": "bf16",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355755,
+      "hidden": 4096,
+      "world": 8,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 8,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 16,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 16,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 16,
+      "policy": "bf16",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 16,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 16,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355751,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355753,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355755,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16",
+      "schedule": "binomial-tree",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355753,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355755,
+      "hidden": 4096,
+      "world": 32,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 64,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355751,
+      "hidden": 4096,
+      "world": 64,
+      "policy": "bf16",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355758,
+      "hidden": 4096,
+      "world": 64,
+      "policy": "bf16",
+      "schedule": "halving-doubling",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355751,
+      "hidden": 4096,
+      "world": 64,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "ring",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355751,
+      "hidden": 16384,
+      "world": 64,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355754,
+      "hidden": 16384,
+      "world": 64,
+      "policy": "bf16",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355751,
+      "hidden": 16384,
+      "world": 64,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    },
+    {
+      "seed": 16355754,
+      "hidden": 16384,
+      "world": 64,
+      "policy": "bf16-wire/fp32-add",
+      "schedule": "sequential",
+      "tokens_changed": 1
+    }
+  ],
   "rows": [
     {
       "hidden": 1024,

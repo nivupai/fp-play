@@ -867,6 +867,11 @@ on device 0, and a binomial broadcast follows.\n\n",
 device or two. That requires a reduce wire that carries every accumulator value exactly. `bf16` (BF16 shard partials, \
 BF16 additions, BF16 wire) and `fp32-rs/bf16-ag` (FP32 additions and reduce wire, one rounding to BF16, BF16 broadcast) \
 qualify. `bf16-wire/fp32-add` is rejected, because its BF16 messages would round a child only because it crossed devices.\n\n");
+    md.push_str("**P-invariance holds by construction.** The tree and every node's formats depend on S alone, so the result \
+cannot depend on P. What the checks here and in `tests/shard_tree.rs` verify is that the distributed schedule (messages, \
+rounds, which device computes which node) implements that tree faithfully. The output for any P equals a **single-device \
+shard-tree kernel** (S partials, then the same tree on one device, i.e. P = 1), not the plain single-device kernel that \
+sums the whole hidden dimension in one chain (**≠ 1-device** below).\n\n");
 
     md.push_str("## Headline\n\n");
     let invariant_all = result
@@ -884,6 +889,26 @@ of elements; the ideal for the {s} shard partials (their exact sum rounded once)
         pct(result.single_device_vs_exact.mismatched, n),
         pct(result.ideal_vs_exact.mismatched, n),
     ));
+    // Determinism, not accuracy: compare with the baselines at the same P.
+    let bf16 = shard_experiment::POLICIES[0];
+    if let Some(tree) = result.policy(bf16) {
+        let worse_everywhere = c.world_sizes.iter().all(|&w| {
+            result
+                .baselines
+                .iter()
+                .filter(|b| b.world == w && b.policy == bf16)
+                .all(|b| b.vs_exact.mismatched < tree.vs_exact.mismatched)
+        });
+        let worlds: Vec<String> = c.world_sizes.iter().map(|w| w.to_string()).collect();
+        md.push_str(&format!(
+            "**The shard tree buys determinism, not accuracy.** Under `bf16` it is {} accurate than ring and exact-gather \
+at every P compared here ({}): {} of elements wrong, because each of the {s} shard partials is rounded to BF16 before the \
+tree. It is meant to be paired with `fp32-rs/bf16-ag`, which keeps the partials and additions in FP32 and rounds once.\n\n",
+            if worse_everywhere { "less" } else { "not always less" },
+            worlds.join(", "),
+            pct(tree.vs_exact.mismatched, n),
+        ));
+    }
     md.push_str("| policy | same bits for every P | roundings/elem | ≠ exact | ≠ ideal | rel. RMS err | ≠ 1-device | top-1 Δ |\n");
     md.push_str("|---|:-:|--:|--:|--:|--:|--:|--:|\n");
     for p in &result.policies {
@@ -999,15 +1024,17 @@ added because a level's messages had to be serialized. The counts are the rounds
     md.push('\n');
 
     md.push_str("## What this does and does not show\n\n");
-    md.push_str("- P-invariance is a property of the fixed tree plus the invariant, checked here on this data for every P from \
-1 to S; `tests/shard_tree.rs` checks it on raw patterns (NaN, infinities, signed zeros) for several S, and \
-`tests/vectors/tree-sums.txt` checks the tree sums against independent Python `Fraction` arithmetic.\n");
+    md.push_str("- P-invariance holds by construction; what is tested is the distributed implementation. It is checked here \
+on this data for every P from 1 to S, in `tests/shard_tree.rs` on raw patterns (NaN, infinities, signed zeros) for several \
+S and against the separately written binomial-tree reduce at P = S, and the tree sums against independent Python \
+`Fraction` arithmetic (`tests/vectors/tree-sums.txt`).\n");
     md.push_str(
         "- The bits are fixed for a given S, not across S: changing S changes the shard partials and the tree.\n",
     );
     md.push_str(
         "- Every device computes S/P shard partials separately instead of one partial over its slice, so the local \
-kernel's summation order differs from the per-device kernel of the other schedules.\n",
+kernel's summation order differs from the per-device kernel of the other schedules, and from the plain single-device \
+kernel: the shard tree reproduces the single-device *shard-tree* kernel bit for bit, not the unsharded chain.\n",
     );
     md.push_str(
         "- With contiguous ownership every device sends and receives at most one message per tree level, so \
@@ -1094,6 +1121,25 @@ pub fn sweep_to_json(result: &SweepResult, command: &str) -> Json {
                 ("comparisons_across_world_sizes", Json::uint(result.shard_tree_invariance_checks)),
                 ("all_identical", Json::Bool(result.shard_tree_p_invariant)),
             ]),
+        ),
+        (
+            "top1_changes",
+            Json::Arr(
+                result
+                    .top1_changes
+                    .iter()
+                    .map(|t| {
+                        Json::obj(vec![
+                            ("seed", Json::Int(t.seed as i64)),
+                            ("hidden", Json::uint(t.hidden)),
+                            ("world", Json::uint(t.world)),
+                            ("policy", Json::str(t.policy.name())),
+                            ("schedule", Json::str(t.schedule.name())),
+                            ("tokens_changed", Json::uint(t.tokens)),
+                        ])
+                    })
+                    .collect(),
+            ),
         ),
         (
             "rows",
@@ -1205,6 +1251,55 @@ halving-doubling) as the range of their medians, with the worst single seed and 
         }
     }
     md.push('\n');
+
+    md.push_str("## Runs that changed a top-1 output\n\n");
+    let runs = result.rows.iter().map(|r| r.runs).sum::<usize>();
+    md.push_str(&format!(
+        "{} of {runs} runs changed the top-1 output of at least one of the {} tokens against the unsharded kernel \
+(argmax over {} outputs; ties resolve to the lowest index).\n\n",
+        result.top1_changes.len(),
+        c.tokens,
+        c.outputs
+    ));
+    if !result.top1_changes.is_empty() {
+        let count_by = |label: &dyn Fn(&sweep::Top1Change) -> String, all: Vec<String>| -> String {
+            all.iter()
+                .map(|name| {
+                    let k = result.top1_changes.iter().filter(|t| label(t) == *name).count();
+                    format!("{name} {k}")
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        md.push_str(&format!(
+            "- By policy: {}.\n- By schedule: {}.\n- By seed: {}.\n\n",
+            count_by(
+                &|t| format!("`{}`", t.policy.name()),
+                sweep::POLICIES.iter().map(|p| format!("`{}`", p.name())).collect()
+            ),
+            count_by(
+                &|t| t.schedule.name().to_string(),
+                Schedule::ALL.iter().map(|s| s.name().to_string()).collect()
+            ),
+            count_by(
+                &|t| format!("`{:#x}`", t.seed),
+                c.seeds.iter().map(|s| format!("`{s:#x}`")).collect()
+            ),
+        ));
+        md.push_str("| seed | hidden | P | policy | schedule | tokens changed |\n|---|--:|--:|---|---|--:|\n");
+        for t in &result.top1_changes {
+            md.push_str(&format!(
+                "| `{:#x}` | {} | {} | `{}` | {} | {} |\n",
+                t.seed,
+                t.hidden,
+                t.world,
+                t.policy.name(),
+                t.schedule.name(),
+                t.tokens
+            ));
+        }
+        md.push('\n');
+    }
 
     md.push_str("## Elements ≠ exact, every configuration\n\n");
     md.push_str("Relative RMS error, max ulp and disagreement with ring are in the JSON with the same statistics.\n\n");
