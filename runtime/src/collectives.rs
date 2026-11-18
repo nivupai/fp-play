@@ -442,6 +442,10 @@ struct Message {
 
 struct Simulator {
     policy: WirePolicy,
+    /// Dry run: record rounds without reading or writing any buffer.
+    dry: bool,
+    world: usize,
+    len: usize,
     /// Every rank's buffer, in the accumulator format (or, once `final_output`
     /// is set, already in the output format).
     buffers: Vec<Vec<u32>>,
@@ -461,6 +465,9 @@ impl Simulator {
         };
         Simulator {
             policy,
+            dry: false,
+            world: inputs.len(),
+            len: inputs.first().map_or(0, Vec::len),
             buffers: inputs.to_vec(),
             tracks: inputs.iter().map(|b| vec![fresh; b.len()]).collect(),
             rounds: Vec::new(),
@@ -469,12 +476,27 @@ impl Simulator {
         }
     }
 
+    /// A simulator that only records rounds: no buffers, no arithmetic.
+    fn dry(policy: WirePolicy, world: usize, len: usize) -> Simulator {
+        Simulator {
+            policy,
+            dry: true,
+            world,
+            len,
+            buffers: Vec::new(),
+            tracks: Vec::new(),
+            rounds: Vec::new(),
+            additions: 0,
+            final_output: false,
+        }
+    }
+
     fn world(&self) -> usize {
-        self.buffers.len()
+        self.world
     }
 
     fn len(&self) -> usize {
-        self.buffers[0].len()
+        self.len
     }
 
     fn wire(&self, kind: TransferKind) -> Format {
@@ -488,6 +510,23 @@ impl Simulator {
     fn round(&mut self, phase: &'static str, kind: TransferKind, plan: &[(usize, usize, Range<usize>)]) {
         let acc = self.policy.accumulator;
         let wire = self.wire(kind);
+        if self.dry {
+            // The same plan, recorded without touching data.
+            self.rounds.push(Round {
+                phase,
+                kind,
+                transfers: plan
+                    .iter()
+                    .map(|(src, dst, range)| Transfer {
+                        src: *src,
+                        dst: *dst,
+                        elements: range.len(),
+                        bytes_per_element: wire.bytes(),
+                    })
+                    .collect(),
+            });
+            return;
+        }
         let messages: Vec<Message> = plan
             .iter()
             .map(|(src, dst, range)| Message {
@@ -668,6 +707,7 @@ impl Simulator {
             .iter()
             .map(|b| b.iter().map(|&v| transcode(acc, wire, v)).collect())
             .collect();
+        // (In a dry run `buffers` is empty, so this gathers nothing.)
         // have[r][s]: rank r holds rank s's input. Ring all-gather of whole buffers.
         let mut have = vec![vec![false; n]; n];
         for (r, row) in have.iter_mut().enumerate() {
@@ -694,6 +734,9 @@ impl Simulator {
             });
         }
         debug_assert!(have.iter().all(|row| row.iter().all(|&h| h)));
+        if self.dry {
+            return;
+        }
         // Every input's provenance, after its conversion to the wire, plus the
         // one rounding of the exact sum.
         let output = self.policy.output;
@@ -792,6 +835,36 @@ pub fn all_reduce_with(
         }
     }
     Ok(sim.into_outcome())
+}
+
+/// The rounds `algorithm` would record under `policy` for `world` ranks and
+/// `len` elements per rank, without moving or adding any data (a dry run).
+/// They equal [`all_reduce_with`]'s `rounds` for any valid inputs of that
+/// shape; `tests/dry_run.rs` checks this. Used by the serving simulator,
+/// which needs only the schedule of very large collectives.
+pub fn schedule_rounds(
+    algorithm: Algorithm,
+    policy: WirePolicy,
+    world: usize,
+    len: usize,
+) -> Result<Vec<Round>, CollectiveError> {
+    if world == 0 {
+        return Err(CollectiveError::EmptyWorld);
+    }
+    if !algorithm.supports(world) {
+        return Err(CollectiveError::UnsupportedWorld { algorithm, world });
+    }
+    let mut sim = Simulator::dry(policy, world, len);
+    if world > 1 {
+        match algorithm {
+            Algorithm::Sequential => sim.sequential(),
+            Algorithm::Ring => sim.ring(),
+            Algorithm::BinomialTree => sim.binomial_tree(),
+            Algorithm::HalvingDoubling => sim.halving_doubling(),
+            Algorithm::ExactGather => sim.exact_gather(),
+        }
+    }
+    Ok(sim.rounds)
 }
 
 /// Result of a reduce-scatter: each rank holds only the fully reduced range it owns.
