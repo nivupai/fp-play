@@ -196,19 +196,21 @@ fn conversion_roundings(from: Format, to: Format) -> u32 {
     u32::from(!to.contains(from))
 }
 
+/// The shard tree's schedule without data (a dry run).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ShardTreeSchedule {
+    pub rounds: Vec<Round>,
+    pub levels: usize,
+    pub levels_with_messages: usize,
+    pub reduce_rounds: usize,
+    pub broadcast_rounds: usize,
+}
+
 /// AllReduce `shards` (one buffer per shard, in the policy's accumulator
 /// format) over `world` ranks with the fixed shard tree.
 pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Result<ShardTreeOutcome, ShardTreeError> {
     let s = shards.len();
-    if s == 0 {
-        return Err(ShardTreeError::NoShards);
-    }
-    if world == 0 {
-        return Err(ShardTreeError::EmptyWorld);
-    }
-    if world > s {
-        return Err(ShardTreeError::TooManyRanks { world, shards: s });
-    }
+    check_shape(policy, world, s)?;
     let len = shards[0].len();
     if shards.iter().any(|b| b.len() != len) {
         return Err(ShardTreeError::RaggedInputs);
@@ -219,6 +221,41 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
             return Err(ShardTreeError::InvalidRaw { shard, index, raw });
         }
     }
+    run(policy, world, s, len, Some(shards))
+}
+
+/// The rounds [`all_reduce`] would record for `shards` shards of `len`
+/// elements over `world` ranks, without moving or adding any data. They equal
+/// `all_reduce`'s rounds for any valid inputs of that shape;
+/// `tests/dry_run.rs` checks this.
+pub fn schedule_rounds(
+    policy: WirePolicy,
+    world: usize,
+    shards: usize,
+    len: usize,
+) -> Result<ShardTreeSchedule, ShardTreeError> {
+    check_shape(policy, world, shards)?;
+    let o = run(policy, world, shards, len, None)?;
+    Ok(ShardTreeSchedule {
+        rounds: o.outcome.rounds,
+        levels: o.levels,
+        levels_with_messages: o.levels_with_messages,
+        reduce_rounds: o.reduce_rounds,
+        broadcast_rounds: o.broadcast_rounds,
+    })
+}
+
+fn check_shape(policy: WirePolicy, world: usize, s: usize) -> Result<(), ShardTreeError> {
+    if s == 0 {
+        return Err(ShardTreeError::NoShards);
+    }
+    if world == 0 {
+        return Err(ShardTreeError::EmptyWorld);
+    }
+    if world > s {
+        return Err(ShardTreeError::TooManyRanks { world, shards: s });
+    }
+    let acc = policy.accumulator;
     if !policy.reduce_wire.contains(acc) {
         return Err(ShardTreeError::LossyReduceWire {
             accumulator: acc,
@@ -231,9 +268,23 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
             gather_wire: policy.gather_wire,
         });
     }
+    Ok(())
+}
 
+/// The shard tree over `s` shards of `len` elements. With `data`, every node
+/// is computed; without it (a dry run) only the rounds are recorded, and the
+/// results and roundings in the returned outcome are empty.
+fn run(
+    policy: WirePolicy,
+    world: usize,
+    s: usize,
+    len: usize,
+    data: Option<&[Vec<u32>]>,
+) -> Result<ShardTreeOutcome, ShardTreeError> {
+    let acc = policy.accumulator;
     let wire = policy.reduce_wire;
-    let mut nodes: Vec<Vec<u32>> = shards.to_vec();
+    let dry = data.is_none();
+    let mut nodes: Vec<Vec<u32>> = data.map_or_else(Vec::new, <[Vec<u32>]>::to_vec);
     // Roundings in each node's tree. Every element of a node has the same count.
     let mut node_roundings = vec![0u32; s];
     let mut rounds = Vec::new();
@@ -248,10 +299,16 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
         let mut messages = Vec::new();
         for c in &at_level {
             let (src, dst) = (shard_owner(s, world, c.right), shard_owner(s, world, c.left));
+            if src != dst {
+                messages.push((src, dst));
+            }
+            additions += len;
+            if dry {
+                continue;
+            }
             let right: Vec<u32> = if src == dst {
                 nodes[c.right].clone()
             } else {
-                messages.push((src, dst));
                 // Sent in the reduce wire and widened back: exact by the check above.
                 nodes[c.right]
                     .iter()
@@ -265,7 +322,6 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
             // One addition; the message round trip is exact (the value is in
             // `acc`, which `wire` contains), so it adds no rounding.
             node_roundings[c.left] += node_roundings[c.right] + 1;
-            additions += len;
         }
         if !messages.is_empty() {
             levels_with_messages += 1;
@@ -290,10 +346,12 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
 
     // The root (rank 0, which owns shard 0) converts once to the output format.
     let output = policy.output;
-    let root: Vec<u32> = nodes[0].iter().map(|&v| transcode(acc, output, v)).collect();
+    let root: Vec<u32> = nodes
+        .first()
+        .map_or_else(Vec::new, |n| n.iter().map(|&v| transcode(acc, output, v)).collect());
     let root_roundings = node_roundings[0] + conversion_roundings(acc, output);
     let gather = policy.gather_wire;
-    let mut results: Vec<Option<Vec<u32>>> = vec![None; world];
+    let mut results: Vec<Option<Vec<u32>>> = (0..world).map(|_| None).collect();
     results[0] = Some(root);
     let mut distance = 1;
     while distance < world {
@@ -326,13 +384,22 @@ pub fn all_reduce(policy: WirePolicy, world: usize, shards: &[Vec<u32>]) -> Resu
     }
     let broadcast_rounds = rounds.len() - reduce_rounds;
     // Broadcast copies are exact (the value is in `output`, which `gather` contains).
-    let roundings = vec![vec![root_roundings; len]; world];
+    let roundings = if dry {
+        Vec::new()
+    } else {
+        vec![vec![root_roundings; len]; world]
+    };
+    let results = if dry {
+        Vec::new()
+    } else {
+        results
+            .into_iter()
+            .map(|r| r.expect("broadcast reaches every rank"))
+            .collect()
+    };
     Ok(ShardTreeOutcome {
         outcome: AllReduceOutcome {
-            results: results
-                .into_iter()
-                .map(|r| r.expect("broadcast reaches every rank"))
-                .collect(),
+            results,
             roundings,
             rounds,
             additions,

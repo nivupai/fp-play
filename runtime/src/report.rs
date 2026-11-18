@@ -234,7 +234,7 @@ stays far from the single-device baseline even though it rounds only once.\n");
     md.push_str("- exact-gather is topology-independent: for fixed partials its result does not depend on the schedule, at the cost of all-gathering every input.\n");
     md.push_str("- Changing P changes the local partial sums themselves, so no AllReduce can make a sharded run match the unsharded kernel bit for bit.\n");
     md.push_str("- Inputs are synthetic (Irwin–Hall normal, weights scaled by 1/√hidden); the local kernel is one sequential order, not a blocked GEMM; \
-the cost model ignores contention, compute and overlap. No hardware, interconnect or Etched-system measurement is claimed.\n");
+the cost model ignores contention, compute and overlap. No measurement of hardware, an interconnect or any particular vendor's system is claimed.\n");
     md
 }
 

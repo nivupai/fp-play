@@ -3,8 +3,8 @@
 //! Each round costs `latency + largest_message_bytes / bandwidth`. The model
 //! assumes full-duplex point-to-point links with no contention, no compute
 //! cost for additions, and no overlap between rounds. Defaults are
-//! illustrative, not measurements of any particular interconnect or Etched
-//! hardware.
+//! illustrative, not measurements of any particular interconnect or any
+//! particular vendor's system.
 
 use crate::collectives::{Round, Transfer, TransferKind};
 
