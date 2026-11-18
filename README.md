@@ -43,7 +43,10 @@ deterministic shard-tree AllReduce whose bits do not depend on the device
 count, and a sweep across seeds. R2 is a deterministic serving simulator:
 paged KV cache, continuous batching, preemption and rank failures, with step
 times that include the simulated AllReduce schedules
-([recorded scenarios](runtime/results/r2-serving.md)). The two-page
+([recorded scenarios](runtime/results/r2-serving.md)). R3 runs a tiny
+decoder tensor-parallel through that engine and asks whether greedy tokens
+change with P, the schedule, the wire policy and batch composition
+([recorded result](runtime/results/r3-decode.md)). The two-page
 [runtime case study](docs/RUNTIME_CASE_STUDY.md) summarizes the results; see
 the [runtime plan](runtime/PLAN.md) for what comes next. Run it with
 `cd runtime && cargo test --release`.

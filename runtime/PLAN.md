@@ -124,7 +124,7 @@ Made while building (details and rationale in
   shard tree makes the P − 1 numerics bit-identical to P; it needs KV
   re-sharding.
 
-## R3 — End to end: does sharding change the tokens?
+## R3 — End to end: does sharding change the tokens? ✅
 
 A tiny Llama-style decoder (RMSNorm, RoPE, SwiGLU, grouped-query attention)
 run tensor-parallel across virtual devices inside the R2 runtime, with the
@@ -140,7 +140,31 @@ Uses random weights by default; a small real checkpoint is optional (it needs
 network access to download).
 
 Progress, the approved answers and the design calls made while building are
-tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md).
+tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md). Recorded in
+`results/r3-decode.*`.
+
+### R3 decisions (details in R3_PROGRESS.md)
+
+- Approved: hidden 256, 2 layers, 16/8 heads, FFN 704, vocabulary 2048;
+  native binary32 local kernels; BF16 weights and KV, binary32 residual,
+  attention and logits; no latency recomputation (R2's pairing is cited);
+  greedy, n = 1, fixed length; baseline P = 1 with the same policy; seven
+  batch variants plus a P = 1 control; one AllReduce buffer per step; a
+  logit scale at two values; divergence against the top-2 margin.
+- Made while building: a native binary32/BF16 fast path in `ops` (checked
+  against the exact path); the model runs at step completion and K/V live
+  in a paged tensor store replaying the cache's block copies; column-parallel
+  work computed once; the prediction corrected before measuring (only the
+  ring, not halving-doubling, can depend on batch composition); the logit
+  scale is applied after the head and is provably neutral for greedy
+  decoding, reported as a finding.
+
+### R3 future work
+
+- A peakedness knob that changes margins relative to the perturbation (or a
+  small trained checkpoint), since a logit scale cannot.
+- Batch-shape-dependent local kernels (tiling, split-K) to model GPU-style
+  local batch variance.
 
 ## R4 — Per-layer precision policies (idea #5)
 
