@@ -234,8 +234,27 @@ pub struct KvCache {
     swap_content: Vec<Vec<u32>>,
     swapped: BTreeMap<SeqId, SwappedTable>,
     stats: KvStats,
+    /// Block copies since the last [`KvCache::take_copies`], recorded only
+    /// when switched on (R3's tensor store replays them).
+    copies: Option<Vec<BlockCopy>>,
     #[cfg(feature = "planted-bugs")]
     mutation: Option<Mutation>,
+}
+
+/// Where a block's contents live.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BlockLoc {
+    Device(BlockId),
+    /// A host swap block.
+    Host(u32),
+}
+
+/// One whole-block copy made by copy-on-write, swap-out or swap-in, in the
+/// order the cache made them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BlockCopy {
+    pub from: BlockLoc,
+    pub to: BlockLoc,
 }
 
 impl KvCache {
@@ -259,6 +278,7 @@ impl KvCache {
             swap_content: vec![Vec::new(); config.swap_blocks],
             swapped: BTreeMap::new(),
             stats: KvStats::default(),
+            copies: None,
             #[cfg(feature = "planted-bugs")]
             mutation: None,
         }
@@ -281,6 +301,22 @@ impl KvCache {
     #[inline(always)]
     fn planted(&self, _: Mutation) -> bool {
         false
+    }
+
+    /// Start (or stop) recording block copies for [`KvCache::take_copies`].
+    pub fn record_copies(&mut self, on: bool) {
+        self.copies = on.then(Vec::new);
+    }
+
+    /// The block copies made since the last call, in order (empty unless recording).
+    pub fn take_copies(&mut self) -> Vec<BlockCopy> {
+        self.copies.as_mut().map(std::mem::take).unwrap_or_default()
+    }
+
+    fn copied(&mut self, from: BlockLoc, to: BlockLoc) {
+        if let Some(c) = self.copies.as_mut() {
+            c.push(BlockCopy { from, to });
+        }
     }
 
     pub fn config(&self) -> &KvConfig {
@@ -539,6 +575,7 @@ impl KvCache {
             let old = table.blocks[last];
             let copy = self.take_block();
             self.content[copy as usize] = self.content[old as usize].clone();
+            self.copied(BlockLoc::Device(old), BlockLoc::Device(copy));
             self.refcount[copy as usize] = 1;
             self.release(old);
             table.blocks[last] = copy;
@@ -620,6 +657,7 @@ impl KvCache {
         for &b in &table.blocks {
             let s = self.swap_free.pop().expect("checked above");
             self.swap_content[s as usize] = self.content[b as usize].clone();
+            self.copied(BlockLoc::Device(b), BlockLoc::Host(s));
             host.push(s);
             if self.refcount[b as usize] > 1 {
                 self.stats.swapped_out_shared_blocks += 1;
@@ -656,6 +694,7 @@ impl KvCache {
         for &s in &host.blocks {
             let b = self.take_block();
             self.content[b as usize] = std::mem::take(&mut self.swap_content[s as usize]);
+            self.copied(BlockLoc::Host(s), BlockLoc::Device(b));
             self.refcount[b as usize] = 1;
             self.swap_free.push(s);
             blocks.push(b);

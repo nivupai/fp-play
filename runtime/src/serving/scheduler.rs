@@ -184,6 +184,15 @@ pub struct RequestState {
     pub admitted: bool,
     pub retries: u32,
     pub preemptions: u32,
+    /// Token values from a model (R3) instead of the synthetic hash.
+    pub model: Option<ModelTokens>,
+}
+
+/// A request's real tokens: its prompt, and each sample's outputs so far.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ModelTokens {
+    pub prompt: Vec<u32>,
+    pub outputs: Vec<Vec<u32>>,
 }
 
 impl RequestState {
@@ -208,6 +217,7 @@ impl RequestState {
             admitted: false,
             retries: 0,
             preemptions: 0,
+            model: None,
         }
     }
 
@@ -257,7 +267,26 @@ impl RequestState {
     }
 
     fn token(&self, sample: usize, position: u64) -> u32 {
-        self.request.sequence_token(sample as u32, position as u32)
+        match &self.model {
+            Some(m) => {
+                let p = position as usize;
+                match p.checked_sub(m.prompt.len()) {
+                    None => m.prompt[p],
+                    Some(k) => m.outputs[sample][k],
+                }
+            }
+            None => self.request.sequence_token(sample as u32, position as u32),
+        }
+    }
+
+    /// Token at `position` of `sample`'s stream (model tokens if set).
+    pub fn token_at(&self, sample: usize, position: u64) -> u32 {
+        self.token(sample, position)
+    }
+
+    /// Tokens this sample's stream holds so far (prompt plus committed outputs).
+    pub fn known_len(&self, sample: usize) -> u64 {
+        self.known(sample)
     }
 }
 
@@ -354,6 +383,40 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
+    /// Take token values from a model: `prompts[i]` is request i's prompt
+    /// (its length must equal `prompt_len`); outputs are added with
+    /// [`Scheduler::record_output`] as they are committed.
+    pub fn use_model_tokens(&mut self, prompts: &[Vec<u32>]) -> Result<(), String> {
+        if prompts.len() != self.requests.len() {
+            return Err("one prompt per request".into());
+        }
+        for (r, p) in self.requests.iter_mut().zip(prompts) {
+            if p.len() != r.request.prompt_len as usize {
+                return Err(format!(
+                    "request {}: prompt length differs from prompt_len",
+                    r.request.id
+                ));
+            }
+            r.model = Some(ModelTokens {
+                prompt: p.clone(),
+                outputs: vec![Vec::new(); r.samples.len()],
+            });
+        }
+        Ok(())
+    }
+
+    /// Record the value of the output `k` that `seq` just committed.
+    pub fn record_output(&mut self, seq: SeqId, k: u32, token: u32) -> Result<(), String> {
+        let r = &mut self.requests[seq.request as usize];
+        let m = r.model.as_mut().ok_or("no model tokens")?;
+        let outputs = &mut m.outputs[seq.sample as usize];
+        if outputs.len() != k as usize {
+            return Err(format!("{seq}: output {k} recorded after {} outputs", outputs.len()));
+        }
+        outputs.push(token);
+        Ok(())
+    }
+
     pub fn new(config: SchedulerConfig, kv: KvCache, requests: &[Request]) -> Scheduler {
         Scheduler {
             config,
