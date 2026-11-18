@@ -38,7 +38,11 @@ same exact-arithmetic discipline to multiple devices. Milestone R1 simulates
 sequential, ring, binomial-tree, halving-doubling and exact-gather AllReduce
 schedules message by message and records how they change the output bits of a
 tensor-parallel layer ([recorded result](runtime/results/tp-allreduce.md)).
-A serving runtime (paged KV cache, continuous batching) follows; see the
+R1.1 adds mixed BF16/FP32 wire policies, reduce-scatter and all-gather, a
+deterministic shard-tree AllReduce whose bits do not depend on the device
+count, and a sweep across seeds. The two-page
+[runtime case study](docs/RUNTIME_CASE_STUDY.md) summarizes the results. A
+serving runtime (paged KV cache, continuous batching) follows; see the
 [runtime plan](runtime/PLAN.md). Run it with `cd runtime && cargo test --release`.
 
 ## Run in minutes

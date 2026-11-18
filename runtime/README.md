@@ -11,6 +11,8 @@ tensor-parallel experiment. **R1.1** adds mixed wire policies, reduce-scatter /
 all-gather as separate collectives, a deterministic AllReduce over a fixed tree
 of shards, and a sweep across seeds. The serving runtime (paged KV
 cache, continuous batching) is the next milestone — see [PLAN.md](PLAN.md).
+For a two-page summary of the results, read the
+[runtime case study](../docs/RUNTIME_CASE_STUDY.md).
 
 ## Run it
 

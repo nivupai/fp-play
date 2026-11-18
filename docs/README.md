@@ -8,6 +8,7 @@ interactive laboratory; these documents specify what its results mean.
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Explore existing controls and examples                              | [User guide](USER_GUIDE.md)                                                                                     |
 | Understand motivation, architecture and measured findings           | [Technical case study](CASE_STUDY.md)                                                                           |
+| See what the multi-device runtime found, in two pages               | [Runtime case study](RUNTIME_CASE_STUDY.md)                                                                     |
 | Run fast frontend checks or advanced hardware tools                 | [Reproducibility](REPRODUCIBILITY.md)                                                                           |
 | Inspect FP16 encodings, adjacency and ULP semantics                 | [Numerical API](../src/lib/numerics/README.md), [microscope](../src/lib/microscope/README.md)                   |
 | Check exact arithmetic, FMA, flags and independent reference policy | [Arithmetic](../src/lib/arithmetic/README.md), [multiply/FMA](../src/lib/arithmetic/MULTIPLY_FMA.md)            |
