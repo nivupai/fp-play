@@ -73,10 +73,11 @@ exact-gather's 7 rounds and 112 KiB.
 - **Top-1 changes are rare and concentrated.** None of the 8 tokens changed in
   any configuration of the main problem. In the sweep, 35 of 3,768 runs changed
   one token's top-1 output, all under BF16-wire policies, and they fall in 6 of
-  the 24 seed-and-size problems (22 from one seed). A one-off check, not part
-  of the recorded results, found that each changed token led its runner-up by
-  only 1–4 BF16 ulps, against a median lead of 16 ulps over all 96 tokens:
-  these are near-ties. The "vocabulary" is 256 outputs, not a real one.
+  the 24 seed-and-size problems (22 from one seed). The sweep records each
+  token's top-1 lead over its runner-up: the 6 distinct tokens that changed led
+  by only 1–4 BF16 ulps, against a median lead of 16 ulps over all 96 tokens.
+  These are near-ties. The "vocabulary" is 256 outputs, not a real one.
+  ([sweep](../runtime/results/r1.1-sweep.md))
 
 ## What is next
 
@@ -85,5 +86,3 @@ exact-gather's 7 rounds and 112 KiB.
   this cost model for tensor-parallel step time.
 - **R3, does sharding change the tokens?** Greedy decoding over a real
   vocabulary, comparing schedules and policies token by token.
-- **Top-2 margins**: record each token's top-1/top-2 margin in the sweep, so
-  that the near-tie explanation above becomes a recorded, stale-checked number.
