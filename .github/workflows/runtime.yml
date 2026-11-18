@@ -41,3 +41,7 @@ jobs:
         run: |
           python3 -I scripts/gen_tree_vectors.py > /tmp/tree-sums.txt
           cmp /tmp/tree-sums.txt tests/vectors/tree-sums.txt
+      - name: Independent Python decoder vectors are current
+        run: |
+          python3 -I scripts/gen_decoder_vectors.py > /tmp/decoder.txt
+          cmp /tmp/decoder.txt tests/vectors/decoder.txt

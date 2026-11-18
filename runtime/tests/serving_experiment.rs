@@ -87,6 +87,10 @@ fn swap_sensitivity_varies_only_what_it_says() {
         .filter(|s| s.samples == vec![(1, 1)])
         .collect();
     assert_eq!(single.len(), 2);
+    assert_eq!(
+        r.swap_sensitivity.iter().filter(|s| s.samples == vec![(1, 4)]).count(),
+        3
+    );
     assert!(single.iter().all(|s| s.host_bytes_per_s == base.host_bytes_per_s));
 }
 
@@ -123,4 +127,22 @@ fn failure_scenario_outcomes() {
     assert!(abort.failed > 0 && abort.recomputed_tokens == 0);
     assert!(retry.failed == 0 && retry.finished == retry.requests && retry.recomputed_tokens > 0);
     assert!(drain.rejected > 0 && drain.failed == 0);
+}
+
+/// The swap mechanism check: only forked samples leave shared blocks to copy.
+#[test]
+fn swap_copies_shared_blocks_only_with_forked_samples() {
+    use fp_play_runtime::serving::scheduler::PreemptionMode;
+    let r = result();
+    let swap_with = |n: u32| {
+        r.swap_sensitivity
+            .iter()
+            .find(|s| s.samples == vec![(1, n)] && s.preemption == PreemptionMode::Swap)
+            .expect("run exists")
+    };
+    let (one, four) = (swap_with(1), swap_with(4));
+    assert!(!one.prefix_caching && !four.prefix_caching);
+    assert!(one.metrics.swapped_out_blocks > 0 && one.metrics.swapped_out_shared_blocks == 0);
+    assert!(four.metrics.swapped_out_shared_blocks > 0);
+    assert!(four.metrics.swapped_out_shared_blocks < four.metrics.swapped_out_blocks);
 }

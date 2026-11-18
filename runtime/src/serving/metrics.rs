@@ -80,6 +80,9 @@ pub struct Metrics {
     pub stalls: u64,
     pub recomputed_tokens: u64,
     pub swapped_blocks: u64,
+    /// Blocks copied to the host by swap-outs, and those still shared with a sibling.
+    pub swapped_out_blocks: u64,
+    pub swapped_out_shared_blocks: u64,
     pub cow_copies: u64,
     pub evictions: u64,
     pub prefix_eligible_blocks: u64,
@@ -184,6 +187,8 @@ pub fn metrics(run: &RunResult) -> Metrics {
         stalls: run.counters.stalls,
         recomputed_tokens: run.counters.recomputed_tokens,
         swapped_blocks: run.kv_stats.swapped_out_blocks + run.kv_stats.swapped_in_blocks,
+        swapped_out_blocks: run.kv_stats.swapped_out_blocks,
+        swapped_out_shared_blocks: run.kv_stats.swapped_out_shared_blocks,
         cow_copies: run.kv_stats.cow_copies,
         evictions: run.kv_stats.evictions,
         prefix_eligible_blocks: run.kv_stats.prefix_eligible_blocks,

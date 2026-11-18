@@ -83,6 +83,8 @@ fn metrics_json(result: &ServingResult, run: &ScenarioRun) -> Json {
         ("recomputed_tokens", int(m.recomputed_tokens)),
         ("swapped_blocks", int(m.swapped_blocks)),
         ("swap_bytes_all_devices", int(swap_bytes(result, run))),
+        ("swapped_out_blocks", int(m.swapped_out_blocks)),
+        ("swapped_out_shared_blocks", int(m.swapped_out_shared_blocks)),
         ("cow_copies", int(m.cow_copies)),
         ("prefix_evictions", int(m.evictions)),
         ("prefix_eligible_blocks", int(m.prefix_eligible_blocks)),
@@ -296,21 +298,31 @@ fn samples_text(samples: &[(u32, u32)]) -> String {
 
 /// Section 2's sensitivity of swap versus recompute to the host link.
 fn swap_sensitivity_markdown(result: &ServingResult) -> String {
+    use super::scheduler::PreemptionMode;
     let mut md = String::new();
     md.push_str("\n### Sensitivity to the host link and to forked samples\n\n");
-    md.push_str("Swap's cost depends on the host-link bandwidth (swap traffic ÷ bandwidth is charged to the step); recompute does not use the host link. Same scenario, varying the swap bandwidth, then both modes with one sample per request.\n\n");
+    md.push_str("Swap's cost depends on the host-link bandwidth (swap traffic ÷ bandwidth is charged to the step); recompute does not use the host link. Same scenario, varying the swap bandwidth, then both modes with one and with four samples per request. A swap-out copies every block of every sample, including blocks still shared with a sibling; the last two columns count them.\n\n");
     md.push_str(
-        "| Samples | Mode | Host link (GB/s) | Preemptions | TTFT p50 / p99 | E2E p50 / p99 | Output tok/s |\n",
+        "| Samples | Mode | Host link (GB/s) | Preemptions | TTFT p50 / p99 | E2E p50 / p99 | Output tok/s | Blocks swapped out per preemption | Still shared when swapped out |\n",
     );
-    md.push_str("|---|---|---:|---:|---:|---:|---:|\n");
+    md.push_str("|---|---|---:|---:|---:|---:|---:|---:|---:|\n");
     let rows: Vec<&ScenarioRun> = result.pressure.iter().chain(&result.swap_sensitivity).collect();
+    let is_swap = |r: &ScenarioRun| r.preemption == PreemptionMode::Swap;
+    let per_preemption = |r: &ScenarioRun| {
+        let x = &r.metrics;
+        (x.preemptions_swap > 0).then(|| x.swapped_out_blocks as f64 / x.preemptions_swap as f64)
+    };
+    let shared_share = |r: &ScenarioRun| {
+        let x = &r.metrics;
+        (x.swapped_out_blocks > 0).then(|| x.swapped_out_shared_blocks as f64 / x.swapped_out_blocks as f64)
+    };
     for r in &rows {
         let x = &r.metrics;
         md.push_str(&format!(
-            "| {} | {} | {} | {} | {} | {} | {:.0} |\n",
+            "| {} | {} | {} | {} | {} | {} | {:.0} | {} | {} |\n",
             samples_text(&r.samples),
             r.preemption.name(),
-            if r.preemption == super::scheduler::PreemptionMode::Swap {
+            if is_swap(r) {
                 format!("{}", r.host_bytes_per_s / 1e9)
             } else {
                 "–".into()
@@ -318,17 +330,15 @@ fn swap_sensitivity_markdown(result: &ServingResult) -> String {
             x.preemptions_recompute + x.preemptions_swap,
             p50_99(x.ttft),
             p50_99(x.e2e),
-            x.tokens_per_s
+            x.tokens_per_s,
+            per_preemption(r).map_or("–".into(), |v| format!("{v:.1}")),
+            shared_share(r).map_or("–".into(), |v| format!("{:.1}%", 100.0 * v)),
         ));
     }
     let e2e = |r: &ScenarioRun| r.metrics.e2e.map(|p| p.p50);
-    let forked = |r: &&&ScenarioRun| r.samples.len() > 1;
-    let recompute = rows.iter().filter(forked).find(|r| r.preemption.name() == "recompute");
-    let swaps: Vec<&&ScenarioRun> = rows
-        .iter()
-        .filter(forked)
-        .filter(|r| r.preemption.name() == "swap")
-        .collect();
+    let mixed = |r: &&&ScenarioRun| r.samples.len() > 1;
+    let recompute = rows.iter().filter(mixed).find(|r| !is_swap(r));
+    let swaps: Vec<&&ScenarioRun> = rows.iter().filter(mixed).filter(|r| is_swap(r)).collect();
     if let Some(rc) = recompute {
         let below: Vec<f64> = swaps
             .iter()
@@ -344,16 +354,43 @@ fn swap_sensitivity_markdown(result: &ServingResult) -> String {
             format!("\nWith the recorded mix of 1, 2 and 4 samples, swap's E2E p50 is below recompute's at {} GB/s.", below.iter().map(|b| b.to_string()).collect::<Vec<_>>().join(", "))
         });
     }
-    let single: Vec<&&ScenarioRun> = rows.iter().filter(|r| r.samples.len() == 1).collect();
-    if let (Some(rc), Some(sw)) = (
-        single.iter().find(|r| r.preemption.name() == "recompute"),
-        single.iter().find(|r| r.preemption.name() == "swap"),
-    ) {
-        let (a, b) = (e2e(rc).unwrap_or(0), e2e(sw).unwrap_or(0));
+    let fixed = |n: u32, bw: f64| -> Option<(&ScenarioRun, &ScenarioRun)> {
+        let of = |swap: bool| {
+            rows.iter()
+                .find(|r| r.samples == vec![(1, n)] && is_swap(r) == swap && (!swap || r.host_bytes_per_s == bw))
+                .copied()
+        };
+        Some((of(false)?, of(true)?))
+    };
+    let base_bw = result.pressure.get(1).map_or(0.0, |r| r.host_bytes_per_s);
+    for n in [1, 4] {
+        if let Some((rc, sw)) = fixed(n, base_bw) {
+            md.push_str(&format!(
+                " With {n} sample{} per request, swap's E2E p50 is {} ms against recompute's {} ms at {} GB/s; a swap preemption copies {} blocks, {} of them still shared with a sibling.",
+                if n == 1 { "" } else { "s" },
+                ms(e2e(sw).unwrap_or(0)),
+                ms(e2e(rc).unwrap_or(0)),
+                sw.host_bytes_per_s / 1e9,
+                per_preemption(sw).map_or("–".into(), |v| format!("{v:.1}")),
+                shared_share(sw).map_or("–".into(), |v| format!("{:.1}%", 100.0 * v)),
+            ));
+        }
+    }
+    let fast = result.config.swap_bandwidths.last().copied().unwrap_or(0.0);
+    let share = |n: u32| fixed(n, base_bw).and_then(|(_, sw)| shared_share(sw));
+    let no_prefix_cache = rows.iter().all(|r| !r.prefix_caching);
+    if let (Some((rc, sw)), Some(one), Some(four), true) = (fixed(4, fast), share(1), share(4), no_prefix_cache) {
         md.push_str(&format!(
-            " With one sample per request, swap's E2E p50 is {} ms against recompute's {} ms at {} GB/s. Changing only the samples per request reverses the order. That is consistent with a swapped sample getting private copies of the blocks it shared with its siblings, so swapping back in needs more blocks than the request held; this mechanism was not isolated further.\n",
-            ms(b), ms(a), sw.host_bytes_per_s / 1e9
+            "\n\nWhy: prefix caching is off in these runs, so every shared block is shared between the samples of one request, and a swap preemption swaps all of them. A block shared by k samples is copied k times and comes back as k private device blocks, so a swapped-in request needs 1 ÷ (1 − shared share) of the device blocks it released: {:.2}× with 1 sample, {:.2}× with 4. A faster link does not remove the gap: at {} GB/s with 4 samples, swap's E2E p50 is {} ms against recompute's {} ms. The private copies are the measured difference in what a swap does between the two runs and are consistent with the reversal; a swap that keeps blocks shared was not simulated, so the cause is not isolated by a counterfactual run.\n",
+            1.0 / (1.0 - one),
+            1.0 / (1.0 - four),
+            fast / 1e9,
+            ms(e2e(sw).unwrap_or(0)),
+            ms(e2e(rc).unwrap_or(0)),
         ));
+    }
+    if !md.ends_with('\n') {
+        md.push('\n');
     }
     md
 }

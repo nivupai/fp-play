@@ -40,19 +40,24 @@ P = 1, 10 req/s, device memory 21.00 GB → 449 KV blocks (7184 tokens); 1024 ho
 
 ### Sensitivity to the host link and to forked samples
 
-Swap's cost depends on the host-link bandwidth (swap traffic ÷ bandwidth is charged to the step); recompute does not use the host link. Same scenario, varying the swap bandwidth, then both modes with one sample per request.
+Swap's cost depends on the host-link bandwidth (swap traffic ÷ bandwidth is charged to the step); recompute does not use the host link. Same scenario, varying the swap bandwidth, then both modes with one and with four samples per request. A swap-out copies every block of every sample, including blocks still shared with a sibling; the last two columns count them.
 
-| Samples | Mode | Host link (GB/s) | Preemptions | TTFT p50 / p99 | E2E p50 / p99 | Output tok/s |
-|---|---|---:|---:|---:|---:|---:|
-| 1, 2 or 4 (weights 2 : 1 : 1) | recompute | – | 131 | 593.52 / 3263.96 | 1610.65 / 4769.42 | 2518 |
-| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 25 | 84 | 1280.26 / 5789.22 | 2275.53 / 7061.50 | 2212 |
-| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 100 | 89 | 1039.61 / 4937.70 | 2013.81 / 5984.00 | 2322 |
-| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 400 | 87 | 1000.54 / 4261.64 | 1946.73 / 5532.05 | 2433 |
-| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 1600 | 82 | 996.49 / 4278.49 | 1942.30 / 5423.93 | 2389 |
-| 1 per request | recompute | – | 33 | 56.40 / 939.20 | 1028.74 / 2039.30 | 1393 |
-| 1 per request | swap | 25 | 23 | 45.66 / 870.85 | 1008.37 / 1980.69 | 1405 |
+| Samples | Mode | Host link (GB/s) | Preemptions | TTFT p50 / p99 | E2E p50 / p99 | Output tok/s | Blocks swapped out per preemption | Still shared when swapped out |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 1, 2 or 4 (weights 2 : 1 : 1) | recompute | – | 131 | 593.52 / 3263.96 | 1610.65 / 4769.42 | 2518 | – | – |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 25 | 84 | 1280.26 / 5789.22 | 2275.53 / 7061.50 | 2212 | 65.4 | 31.1% |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 100 | 89 | 1039.61 / 4937.70 | 2013.81 / 5984.00 | 2322 | 60.3 | 27.6% |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 400 | 87 | 1000.54 / 4261.64 | 1946.73 / 5532.05 | 2433 | 52.6 | 24.9% |
+| 1, 2 or 4 (weights 2 : 1 : 1) | swap | 1600 | 82 | 996.49 / 4278.49 | 1942.30 / 5423.93 | 2389 | 59.4 | 24.9% |
+| 1 per request | recompute | – | 33 | 56.40 / 939.20 | 1028.74 / 2039.30 | 1393 | – | – |
+| 1 per request | swap | 25 | 23 | 45.66 / 870.85 | 1008.37 / 1980.69 | 1405 | 33.2 | 0.0% |
+| 4 per request | recompute | – | 348 | 3953.44 / 10108.27 | 5186.36 / 11579.84 | 3723 | – | – |
+| 4 per request | swap | 25 | 139 | 8149.64 / 20396.92 | 8999.62 / 21411.80 | 2702 | 102.2 | 48.5% |
+| 4 per request | swap | 1600 | 134 | 8223.18 / 19156.23 | 8961.78 / 20132.81 | 2791 | 109.7 | 47.1% |
 
-With the recorded mix of 1, 2 and 4 samples, swap's E2E p50 stays above recompute's at every tested host-link bandwidth (25–1600 GB/s): there is no crossover in this range. With one sample per request, swap's E2E p50 is 1008.37 ms against recompute's 1028.74 ms at 25 GB/s. Changing only the samples per request reverses the order. That is consistent with a swapped sample getting private copies of the blocks it shared with its siblings, so swapping back in needs more blocks than the request held; this mechanism was not isolated further.
+With the recorded mix of 1, 2 and 4 samples, swap's E2E p50 stays above recompute's at every tested host-link bandwidth (25–1600 GB/s): there is no crossover in this range. With 1 sample per request, swap's E2E p50 is 1008.37 ms against recompute's 1028.74 ms at 25 GB/s; a swap preemption copies 33.2 blocks, 0.0% of them still shared with a sibling. With 4 samples per request, swap's E2E p50 is 8999.62 ms against recompute's 5186.36 ms at 25 GB/s; a swap preemption copies 102.2 blocks, 48.5% of them still shared with a sibling.
+
+Why: prefix caching is off in these runs, so every shared block is shared between the samples of one request, and a swap preemption swaps all of them. A block shared by k samples is copied k times and comes back as k private device blocks, so a swapped-in request needs 1 ÷ (1 − shared share) of the device blocks it released: 1.00× with 1 sample, 1.94× with 4. A faster link does not remove the gap: at 1600 GB/s with 4 samples, swap's E2E p50 is 8961.78 ms against recompute's 5186.36 ms. The private copies are the measured difference in what a swap does between the two runs and are consistent with the reversal; a swap that keeps blocks shared was not simulated, so the cause is not isolated by a counterfactual run.
 
 ## 3. Prefix sharing
 
