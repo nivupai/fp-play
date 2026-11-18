@@ -10,6 +10,7 @@
 //! * [`cost`] — α–β latency/bandwidth estimate of a schedule
 //! * [`tensor_parallel`] — the row-parallel linear-layer experiment
 //! * [`report`] / [`json`] — deterministic artifacts
+//! * [`serving`] — R2: the deterministic serving simulator
 
 pub mod collectives;
 pub mod cost;
@@ -20,6 +21,7 @@ pub mod ops;
 pub mod policies;
 pub mod report;
 pub mod rng;
+pub mod serving;
 pub mod shard_experiment;
 pub mod shard_tree;
 pub mod sweep;
