@@ -11,7 +11,9 @@
 use std::collections::BTreeMap;
 
 use fp_play_runtime::rng::SplitMix64;
-use fp_play_runtime::serving::kv::{Invariant, KvCache, KvConfig, KvError, Mutation, SeqId, Violation};
+#[cfg(feature = "planted-bugs")]
+use fp_play_runtime::serving::kv::Invariant;
+use fp_play_runtime::serving::kv::{KvCache, KvConfig, KvError, Mutation, SeqId, Violation};
 
 fn seq(request: u32, sample: u32) -> SeqId {
     SeqId { request, sample }
@@ -237,7 +239,7 @@ impl Driver {
         };
         let mut kv = KvCache::new(config);
         if let Some(m) = mutation {
-            kv.plant(m);
+            plant(&mut kv, m);
         }
         // Three shared system prompts, each a few blocks long.
         let prompts = (0..3)
@@ -447,7 +449,18 @@ fn random_operations_exercise_every_path() {
 // Planted bugs
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "planted-bugs")]
+fn plant(kv: &mut KvCache, m: Mutation) {
+    kv.plant(m);
+}
+
+#[cfg(not(feature = "planted-bugs"))]
+fn plant(_: &mut KvCache, m: Mutation) {
+    panic!("{m:?} can only be planted in a `planted-bugs` build");
+}
+
 /// Each planted bug and the invariant that must catch it.
+#[cfg(feature = "planted-bugs")]
 const PLANTED: [(Mutation, Invariant); 5] = [
     (Mutation::LeakOnFree, Invariant::Refcount),
     (Mutation::SkipCow, Invariant::Content),
@@ -456,6 +469,8 @@ const PLANTED: [(Mutation, Invariant); 5] = [
     (Mutation::StalePrefixKey, Invariant::PrefixCache),
 ];
 
+/// Compiled only with `--features planted-bugs`.
+#[cfg(feature = "planted-bugs")]
 #[test]
 fn every_planted_bug_is_caught_by_its_invariant() {
     for (mutation, invariant) in PLANTED {

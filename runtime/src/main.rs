@@ -42,6 +42,13 @@ USAGE:
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    let records = matches!(args.first().map(String::as_str), Some("experiment" | "traces"));
+    if records && fp_play_runtime::PLANTED_BUGS {
+        eprintln!(
+            "error: this binary was built with the `planted-bugs` feature; it will not write recorded results or traces"
+        );
+        return ExitCode::FAILURE;
+    }
     let result = match args.first().map(String::as_str) {
         Some("experiment") => experiment(&args[1..]),
         Some("schedule") => schedule(&args[1..]),

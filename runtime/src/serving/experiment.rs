@@ -201,7 +201,6 @@ pub fn run_spec(config: &ServingConfig, spec: &RunSpec) -> Result<(ScenarioRun, 
         },
         faults: spec.faults.clone(),
         kv_check_interval: spec.kv_check_interval,
-        planted: None,
     };
     let requests = spec.workload.generate().map_err(|e| e.to_string())?;
     let result = run(&requests, &engine, &timer).map_err(|e| format!("{}: {e}", spec.label))?;

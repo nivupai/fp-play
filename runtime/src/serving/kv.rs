@@ -179,7 +179,8 @@ impl fmt::Display for Violation {
 }
 
 /// Deliberate bugs that tests plant to show the invariant checks catch them.
-/// Never set outside tests.
+/// They can be switched on only in a build with the `planted-bugs` feature
+/// (see [`KvCache::plant`]); without it no code can enable them.
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mutation {
@@ -229,6 +230,7 @@ pub struct KvCache {
     swap_content: Vec<Vec<u32>>,
     swapped: BTreeMap<SeqId, SwappedTable>,
     stats: KvStats,
+    #[cfg(feature = "planted-bugs")]
     mutation: Option<Mutation>,
 }
 
@@ -253,17 +255,28 @@ impl KvCache {
             swap_content: vec![Vec::new(); config.swap_blocks],
             swapped: BTreeMap::new(),
             stats: KvStats::default(),
+            #[cfg(feature = "planted-bugs")]
             mutation: None,
         }
     }
 
+    /// Switch on a planted bug (only in a `planted-bugs` build).
+    #[cfg(feature = "planted-bugs")]
     #[doc(hidden)]
     pub fn plant(&mut self, mutation: Mutation) {
         self.mutation = Some(mutation);
     }
 
+    #[cfg(feature = "planted-bugs")]
     fn planted(&self, m: Mutation) -> bool {
         self.mutation == Some(m)
+    }
+
+    /// Without the `planted-bugs` feature no bug can be active.
+    #[cfg(not(feature = "planted-bugs"))]
+    #[inline(always)]
+    fn planted(&self, _: Mutation) -> bool {
+        false
     }
 
     pub fn config(&self) -> &KvConfig {

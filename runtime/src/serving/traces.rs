@@ -128,7 +128,6 @@ pub fn three_requests() -> (Vec<Request>, EngineConfig) {
             },
             faults: FaultConfig::none(),
             kv_check_interval: 1,
-            planted: None,
         },
     )
 }
@@ -167,7 +166,6 @@ fn pressure(preemption: PreemptionMode) -> (Vec<Request>, EngineConfig) {
         },
         faults: FaultConfig::none(),
         kv_check_interval: 1,
-        planted: None,
     };
     (workload.generate().expect("valid workload"), config)
 }
@@ -199,7 +197,6 @@ fn roofline() -> (Vec<Request>, EngineConfig, StepModel) {
         },
         faults: FaultConfig::none(),
         kv_check_interval: 1,
-        planted: None,
     };
     let timer = StepModel::new(
         model,

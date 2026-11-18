@@ -50,10 +50,14 @@ use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 use std::fmt;
 
-use super::kv::{KvCache, KvConfig, KvStats, Mutation, SeqId};
+#[cfg(feature = "planted-bugs")]
+use super::kv::Mutation;
+use super::kv::{KvCache, KvConfig, KvStats, SeqId};
+#[cfg(feature = "planted-bugs")]
+use super::scheduler::SchedulerMutation;
 use super::scheduler::{
-    FaultOutcome, FaultPolicy, Phase, RequestState, Scheduler, SchedulerConfig, SchedulerCounters, SchedulerMutation,
-    StepOutcome, StepPlan,
+    FaultOutcome, FaultPolicy, Phase, RequestState, Scheduler, SchedulerConfig, SchedulerCounters, StepOutcome,
+    StepPlan,
 };
 use super::step_time::{StepTime, StepTimer};
 use super::workload::Request;
@@ -122,12 +126,10 @@ pub struct EngineConfig {
     /// invariants after every step, the KV-cache invariants after every k-th
     /// step and after the last one.
     pub kv_check_interval: u64,
-    /// A deliberate bug for tests (never set otherwise).
-    #[doc(hidden)]
-    pub planted: Option<Planted>,
 }
 
-/// A deliberate bug planted by tests.
+/// A deliberate bug planted by tests (`planted-bugs` builds only).
+#[cfg(feature = "planted-bugs")]
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Planted {
@@ -288,6 +290,30 @@ fn log_commits(
 
 /// Run `requests` (ids 0, 1, … in order) to completion.
 pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -> Result<RunResult, EngineError> {
+    run_inner(requests, config, timer, |_| {})
+}
+
+/// [`run`] with one planted bug switched on (`planted-bugs` builds only).
+#[cfg(feature = "planted-bugs")]
+#[doc(hidden)]
+pub fn run_planted(
+    requests: &[Request],
+    config: &EngineConfig,
+    timer: &dyn StepTimer,
+    planted: Planted,
+) -> Result<RunResult, EngineError> {
+    run_inner(requests, config, timer, |s| match planted {
+        Planted::Kv(m) => s.kv.plant(m),
+        Planted::Scheduler(m) => s.mutation = Some(m),
+    })
+}
+
+fn run_inner(
+    requests: &[Request],
+    config: &EngineConfig,
+    timer: &dyn StepTimer,
+    plant: impl FnOnce(&mut Scheduler),
+) -> Result<RunResult, EngineError> {
     if requests.iter().enumerate().any(|(i, r)| r.id as usize != i) {
         return Err(EngineError::Config("request ids must be 0, 1, … in order".into()));
     }
@@ -296,14 +322,8 @@ pub fn run(requests: &[Request], config: &EngineConfig, timer: &dyn StepTimer) -
             "token budget and maximum sequences must be positive".into(),
         ));
     }
-    let mut kv = KvCache::new(config.kv);
-    if let Some(Planted::Kv(m)) = config.planted {
-        kv.plant(m);
-    }
-    let mut s = Scheduler::new(config.scheduler, kv, requests);
-    if let Some(Planted::Scheduler(m)) = config.planted {
-        s.mutation = Some(m);
-    }
+    let mut s = Scheduler::new(config.scheduler, KvCache::new(config.kv), requests);
+    plant(&mut s);
     let faults = &config.faults;
     if faults.plan.iter().any(|f| f.layer >= faults.layers || f.allreduce > 1) {
         return Err(EngineError::Config(
