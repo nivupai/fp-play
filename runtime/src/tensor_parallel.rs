@@ -249,33 +249,40 @@ pub fn prepare(config: &ExperimentConfig) -> Result<Prepared, String> {
     let partials = config
         .world_sizes
         .iter()
-        .map(|&world| {
-            let partials: Vec<Vec<u32>> = (0..world)
-                .map(|r| {
-                    let slice = chunk_range(hidden, world, r);
-                    per_token(tokens, |m| {
-                        (0..outputs)
-                            .map(|n| {
-                                fused_chain_dot(
-                                    LOCAL_ACCUMULATOR,
-                                    INPUT_FORMAT,
-                                    &x_row(m)[slice.clone()],
-                                    &w_col(n)[slice.clone()],
-                                )
-                            })
-                            .collect::<Vec<u32>>()
-                    })
-                    .concat()
-                })
-                .collect();
-            (world, partials)
-        })
+        .map(|&world| (world, split_partials(config, &problem, world)))
         .collect();
     Ok(Prepared {
         exact,
         single_fp32,
         partials,
     })
+}
+
+/// FP32 partials of every output element when the hidden dimension is split
+/// into `parts` contiguous slices: `partials[i]` is the fused-chain kernel over
+/// slice `i` (token-major, `tokens × outputs` elements).
+pub fn split_partials(config: &ExperimentConfig, problem: &Problem, parts: usize) -> Vec<Vec<u32>> {
+    let (tokens, hidden, outputs) = (config.tokens, config.hidden, config.outputs);
+    let x_row = |m: usize| &problem.activations[m * hidden..(m + 1) * hidden];
+    let w_col = |n: usize| &problem.weights[n * hidden..(n + 1) * hidden];
+    (0..parts)
+        .map(|i| {
+            let slice = chunk_range(hidden, parts, i);
+            per_token(tokens, |m| {
+                (0..outputs)
+                    .map(|n| {
+                        fused_chain_dot(
+                            LOCAL_ACCUMULATOR,
+                            INPUT_FORMAT,
+                            &x_row(m)[slice.clone()],
+                            &w_col(n)[slice.clone()],
+                        )
+                    })
+                    .collect::<Vec<u32>>()
+            })
+            .concat()
+        })
+        .collect()
 }
 
 pub fn run(config: &ExperimentConfig) -> Result<ExperimentResult, String> {

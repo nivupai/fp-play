@@ -11,11 +11,14 @@ Exact superaccumulator numerics; five AllReduce schedules as message-level
 simulations; α–β cost model; row-parallel linear experiment; recorded
 artifact with stale detection. See [README.md](README.md).
 
-## R1.1 — Policies people actually choose (small, next)
+## R1.1 — Policies people actually choose ✅
 
-Progress: PR A (wire policies, reduce-scatter / all-gather, recorded in
-`results/r1.1-policies.*`) is done. PR B (the shard tree and the sweep) is
-next.
+Done in two parts. PR A added wire policies and reduce-scatter / all-gather,
+recorded in `results/r1.1-policies.*`. PR B added the shard tree and the
+sweep, recorded in `results/r1.1-shard-tree.*` and `results/r1.1-sweep.*`. The
+shard-tree comparison has its own artifact instead of a table inside
+r1.1-policies, so that file stays unchanged. Deferred: a chunked, pipelined
+shard tree, and non-contiguous shard ownership.
 
 - **Wire ≠ accumulator**: BF16 on the wire with FP32 accumulation inside
   reduce-scatter (2× bytes in that phase). Measure how much of exact-gather's
@@ -89,8 +92,9 @@ Nangate45 delays can feed one unit model, clearly labeled as an assumption.
 
 ## Housekeeping
 
-- CI job running `cargo fmt --check`, `cargo clippy -D warnings` and
-  `cargo test --release`, with actions pinned to commit IDs like the existing
-  workflows.
+- ✅ CI job running `cargo fmt --check`, `cargo clippy -D warnings`,
+  `cargo test --release` and both Python vector comparisons, with actions
+  pinned to commit IDs and the toolchain installed from
+  `rust-toolchain.toml`.
 - Python bindings (PyO3) once crates can be fetched; the crate has no
   dependencies until then.

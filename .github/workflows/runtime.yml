@@ -19,10 +19,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install pinned Rust toolchain (preinstalled rustup, no third-party action)
+      - name: Install the toolchain pinned in runtime/rust-toolchain.toml (preinstalled rustup, no third-party action)
         run: |
-          rustup toolchain install 1.97.0 --profile minimal --component clippy,rustfmt
-          rustup default 1.97.0
+          rustup toolchain install
+          rustup show active-toolchain | grep -F "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)-"
+          cargo --version
+          cargo clippy --version
       - run: cargo fmt --check
       - run: cargo clippy --all-targets --locked -- -D warnings
       - name: Tests, including the recorded-artifact check
@@ -31,3 +33,7 @@ jobs:
         run: |
           python3 -I scripts/gen_sum_vectors.py > /tmp/exact-sums.txt
           cmp /tmp/exact-sums.txt tests/vectors/exact-sums.txt
+      - name: Independent Python shard-tree vectors are current
+        run: |
+          python3 -I scripts/gen_tree_vectors.py > /tmp/tree-sums.txt
+          cmp /tmp/tree-sums.txt tests/vectors/tree-sums.txt

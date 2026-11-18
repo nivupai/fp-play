@@ -1,0 +1,6 @@
+# The Rust toolchain for this crate, local and CI alike. CI installs from this
+# file (`rustup toolchain install` with no arguments), so the two cannot drift.
+[toolchain]
+channel = "1.97.0"
+components = ["clippy", "rustfmt"]
+profile = "minimal"

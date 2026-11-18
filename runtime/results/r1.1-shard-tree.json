@@ -1,0 +1,2375 @@
+{
+  "schema": "fp-play-runtime/r1.1-shard-tree/v1",
+  "tool": "fp-play-runtime 0.1.0",
+  "command": "fp-play-runtime experiment --out results",
+  "config": {
+    "tokens": 8,
+    "hidden": 4096,
+    "outputs": 512,
+    "seed": 16355751,
+    "shards": 64,
+    "baseline_world_sizes": [2, 3, 4, 8],
+    "input_format": "bf16",
+    "local_accumulator": "fp32",
+    "shard_kernel": "per shard: sequential fused chain over its contiguous hidden slice, start +0",
+    "tree": "level k: node i absorbs node i + 2^k for every multiple i of 2^(k+1); root = node 0 on rank 0, then binomial broadcast",
+    "ownership": "contiguous blocks of shards, rank r owns chunk r of S into P",
+    "output_format": "bf16",
+    "policies": [
+      {
+        "name": "bf16",
+        "accumulator": "bf16",
+        "reduce_wire": "bf16",
+        "gather_wire": "bf16",
+        "output": "bf16"
+      },
+      {
+        "name": "fp32-rs/bf16-ag",
+        "accumulator": "fp32",
+        "reduce_wire": "fp32",
+        "gather_wire": "bf16",
+        "output": "bf16"
+      }
+    ],
+    "rejected_policies": [
+      {
+        "name": "bf16-wire/fp32-add",
+        "reason": "its reduce wire cannot carry every accumulator value exactly, so a node would round a child only because it crossed ranks"
+      }
+    ],
+    "ideal": "exact sum of the S FP32 shard partials rounded once to the output format",
+    "rounding": "round-to-nearest, ties-to-even",
+    "link_model": {
+      "latency_us": 2.0,
+      "bandwidth_gbps": 100.0,
+      "note": "illustrative alpha-beta model; not a measurement"
+    }
+  },
+  "elements_per_run": 4096,
+  "single_device_vs_exact": {
+    "mismatched": 2,
+    "mismatched_fraction": 0.00048828125,
+    "max_ulp": 1,
+    "mean_ulp": 0.00048828125,
+    "relative_rms_error": 1.5244040764990188e-5
+  },
+  "ideal_vs_exact": {
+    "mismatched": 0,
+    "mismatched_fraction": 0.0,
+    "max_ulp": 0,
+    "mean_ulp": 0.0,
+    "relative_rms_error": 0.0
+  },
+  "shard_tree": [
+    {
+      "policy": "bf16",
+      "p_invariant_for_every_world_1_to_s": true,
+      "consistent_across_ranks": true,
+      "roundings_per_element": {
+        "before_collective": 64,
+        "collective_min": 63,
+        "collective_max": 63
+      },
+      "vs_exact": {
+        "mismatched": 2738,
+        "mismatched_fraction": 0.66845703125,
+        "max_ulp": 30301,
+        "mean_ulp": 36.01708984375,
+        "relative_rms_error": 0.005071083357282324
+      },
+      "vs_ideal": {
+        "mismatched": 2738,
+        "mismatched_fraction": 0.66845703125,
+        "max_ulp": 30301,
+        "mean_ulp": 36.01708984375,
+        "relative_rms_error": 0.005071083357282324
+      },
+      "vs_single_device": {
+        "mismatched": 2738,
+        "mismatched_fraction": 0.66845703125,
+        "max_ulp": 30301,
+        "mean_ulp": 36.0166015625,
+        "relative_rms_error": 0.005070911983571439
+      },
+      "argmax_changes_vs_single_device": 0,
+      "worlds": [
+        {
+          "world": 1,
+          "reduce_rounds": 0,
+          "broadcast_rounds": 0,
+          "levels_with_messages": 0,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 0,
+            "estimated_us": 0.0,
+            "max_bytes_sent_per_rank": 0,
+            "max_reduce_bytes_per_rank": 0,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 0
+          }
+        },
+        {
+          "world": 2,
+          "reduce_rounds": 1,
+          "broadcast_rounds": 1,
+          "levels_with_messages": 1,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.16384,
+            "max_bytes_sent_per_rank": 8192,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 16384
+          }
+        },
+        {
+          "world": 3,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 2,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 8,
+            "estimated_us": 16.65536,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 65536
+          }
+        },
+        {
+          "world": 4,
+          "reduce_rounds": 2,
+          "broadcast_rounds": 2,
+          "levels_with_messages": 2,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.32768,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 49152
+          }
+        },
+        {
+          "world": 5,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 18.737280000000002,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 122880
+          }
+        },
+        {
+          "world": 6,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 18.737280000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 155648
+          }
+        },
+        {
+          "world": 7,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 18.737280000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "world": 8,
+          "reduce_rounds": 3,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 3,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.491520000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "world": 9,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 221184
+          }
+        },
+        {
+          "world": 10,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 221184
+          }
+        },
+        {
+          "world": 11,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 229376
+          }
+        },
+        {
+          "world": 12,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 278528
+          }
+        },
+        {
+          "world": 13,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 303104
+          }
+        },
+        {
+          "world": 14,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 286720
+          }
+        },
+        {
+          "world": 15,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 24576,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 262144
+          }
+        },
+        {
+          "world": 16,
+          "reduce_rounds": 4,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 4,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 8,
+            "estimated_us": 16.65536,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 245760
+          }
+        },
+        {
+          "world": 17,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 286720
+          }
+        },
+        {
+          "world": 18,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 327680
+          }
+        },
+        {
+          "world": 19,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 368640
+          }
+        },
+        {
+          "world": 20,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 409600
+          }
+        },
+        {
+          "world": 21,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 450560
+          }
+        },
+        {
+          "world": 22,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 466944
+          }
+        },
+        {
+          "world": 23,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 466944
+          }
+        },
+        {
+          "world": 24,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 475136
+          }
+        },
+        {
+          "world": 25,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 475136
+          }
+        },
+        {
+          "world": 26,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 483328
+          }
+        },
+        {
+          "world": 27,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 483328
+          }
+        },
+        {
+          "world": 28,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 491520
+          }
+        },
+        {
+          "world": 29,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 491520
+          }
+        },
+        {
+          "world": 30,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 499712
+          }
+        },
+        {
+          "world": 31,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 22.901120000000002,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 499712
+          }
+        },
+        {
+          "world": 32,
+          "reduce_rounds": 5,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 5,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 20.819200000000002,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 507904
+          }
+        },
+        {
+          "world": 33,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 524288
+          }
+        },
+        {
+          "world": 34,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 540672
+          }
+        },
+        {
+          "world": 35,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 557056
+          }
+        },
+        {
+          "world": 36,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 573440
+          }
+        },
+        {
+          "world": 37,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 589824
+          }
+        },
+        {
+          "world": 38,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 606208
+          }
+        },
+        {
+          "world": 39,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 622592
+          }
+        },
+        {
+          "world": 40,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 638976
+          }
+        },
+        {
+          "world": 41,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 655360
+          }
+        },
+        {
+          "world": 42,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 671744
+          }
+        },
+        {
+          "world": 43,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 688128
+          }
+        },
+        {
+          "world": 44,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 704512
+          }
+        },
+        {
+          "world": 45,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 720896
+          }
+        },
+        {
+          "world": 46,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 737280
+          }
+        },
+        {
+          "world": 47,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 48,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 770048
+          }
+        },
+        {
+          "world": 49,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 786432
+          }
+        },
+        {
+          "world": 50,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 802816
+          }
+        },
+        {
+          "world": 51,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 819200
+          }
+        },
+        {
+          "world": 52,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 835584
+          }
+        },
+        {
+          "world": 53,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 851968
+          }
+        },
+        {
+          "world": 54,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 868352
+          }
+        },
+        {
+          "world": 55,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 884736
+          }
+        },
+        {
+          "world": 56,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 901120
+          }
+        },
+        {
+          "world": 57,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 917504
+          }
+        },
+        {
+          "world": 58,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 933888
+          }
+        },
+        {
+          "world": 59,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 950272
+          }
+        },
+        {
+          "world": 60,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 966656
+          }
+        },
+        {
+          "world": 61,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 983040
+          }
+        },
+        {
+          "world": 62,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 999424
+          }
+        },
+        {
+          "world": 63,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1015808
+          }
+        },
+        {
+          "world": 64,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 24.983040000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 8192,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1032192
+          }
+        }
+      ]
+    },
+    {
+      "policy": "fp32-rs/bf16-ag",
+      "p_invariant_for_every_world_1_to_s": true,
+      "consistent_across_ranks": true,
+      "roundings_per_element": {
+        "before_collective": 0,
+        "collective_min": 64,
+        "collective_max": 64
+      },
+      "vs_exact": {
+        "mismatched": 1,
+        "mismatched_fraction": 0.000244140625,
+        "max_ulp": 1,
+        "mean_ulp": 0.000244140625,
+        "relative_rms_error": 9.522876770607127e-7
+      },
+      "vs_ideal": {
+        "mismatched": 1,
+        "mismatched_fraction": 0.000244140625,
+        "max_ulp": 1,
+        "mean_ulp": 0.000244140625,
+        "relative_rms_error": 9.522876770607127e-7
+      },
+      "vs_single_device": {
+        "mismatched": 3,
+        "mismatched_fraction": 0.000732421875,
+        "max_ulp": 1,
+        "mean_ulp": 0.000732421875,
+        "relative_rms_error": 1.5273756851562333e-5
+      },
+      "argmax_changes_vs_single_device": 0,
+      "worlds": [
+        {
+          "world": 1,
+          "reduce_rounds": 0,
+          "broadcast_rounds": 0,
+          "levels_with_messages": 0,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 0,
+            "estimated_us": 0.0,
+            "max_bytes_sent_per_rank": 0,
+            "max_reduce_bytes_per_rank": 0,
+            "max_gather_bytes_per_rank": 0,
+            "total_bytes": 0
+          }
+        },
+        {
+          "world": 2,
+          "reduce_rounds": 1,
+          "broadcast_rounds": 1,
+          "levels_with_messages": 1,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 2,
+            "estimated_us": 4.245760000000001,
+            "max_bytes_sent_per_rank": 16384,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 8192,
+            "total_bytes": 24576
+          }
+        },
+        {
+          "world": 3,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 2,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 8,
+            "estimated_us": 17.146880000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 114688
+          }
+        },
+        {
+          "world": 4,
+          "reduce_rounds": 2,
+          "broadcast_rounds": 2,
+          "levels_with_messages": 2,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 4,
+            "estimated_us": 8.491520000000001,
+            "max_bytes_sent_per_rank": 24576,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 16384,
+            "total_bytes": 73728
+          }
+        },
+        {
+          "world": 5,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 19.228800000000003,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 212992
+          }
+        },
+        {
+          "world": 6,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 19.228800000000003,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 65536,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 270336
+          }
+        },
+        {
+          "world": 7,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 9,
+            "estimated_us": 19.228800000000003,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 294912
+          }
+        },
+        {
+          "world": 8,
+          "reduce_rounds": 3,
+          "broadcast_rounds": 3,
+          "levels_with_messages": 3,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 6,
+            "estimated_us": 12.73728,
+            "max_bytes_sent_per_rank": 32768,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 24576,
+            "total_bytes": 172032
+          }
+        },
+        {
+          "world": 9,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 376832
+          }
+        },
+        {
+          "world": 10,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 368640
+          }
+        },
+        {
+          "world": 11,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 376832
+          }
+        },
+        {
+          "world": 12,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 466944
+          }
+        },
+        {
+          "world": 13,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 73728,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 507904
+          }
+        },
+        {
+          "world": 14,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 73728,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 466944
+          }
+        },
+        {
+          "world": 15,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.310720000000003,
+            "max_bytes_sent_per_rank": 73728,
+            "max_reduce_bytes_per_rank": 49152,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 409600
+          }
+        },
+        {
+          "world": 16,
+          "reduce_rounds": 4,
+          "broadcast_rounds": 4,
+          "levels_with_messages": 4,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 8,
+            "estimated_us": 16.983040000000003,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 32768,
+            "total_bytes": 368640
+          }
+        },
+        {
+          "world": 17,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 40960,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 442368
+          }
+        },
+        {
+          "world": 18,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 516096
+          }
+        },
+        {
+          "world": 19,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 589824
+          }
+        },
+        {
+          "world": 20,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 663552
+          }
+        },
+        {
+          "world": 21,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 737280
+          }
+        },
+        {
+          "world": 22,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 23,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 24,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 25,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 26,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 27,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 28,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 29,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 30,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 31,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 11,
+            "estimated_us": 23.392640000000004,
+            "max_bytes_sent_per_rank": 65536,
+            "max_reduce_bytes_per_rank": 32768,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 753664
+          }
+        },
+        {
+          "world": 32,
+          "reduce_rounds": 5,
+          "broadcast_rounds": 5,
+          "levels_with_messages": 5,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 10,
+            "estimated_us": 21.2288,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 40960,
+            "total_bytes": 761856
+          }
+        },
+        {
+          "world": 33,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 49152,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 786432
+          }
+        },
+        {
+          "world": 34,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 811008
+          }
+        },
+        {
+          "world": 35,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 835584
+          }
+        },
+        {
+          "world": 36,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 860160
+          }
+        },
+        {
+          "world": 37,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 884736
+          }
+        },
+        {
+          "world": 38,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 909312
+          }
+        },
+        {
+          "world": 39,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 933888
+          }
+        },
+        {
+          "world": 40,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 958464
+          }
+        },
+        {
+          "world": 41,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 983040
+          }
+        },
+        {
+          "world": 42,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1007616
+          }
+        },
+        {
+          "world": 43,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1032192
+          }
+        },
+        {
+          "world": 44,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1056768
+          }
+        },
+        {
+          "world": 45,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1081344
+          }
+        },
+        {
+          "world": 46,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1105920
+          }
+        },
+        {
+          "world": 47,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1130496
+          }
+        },
+        {
+          "world": 48,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1155072
+          }
+        },
+        {
+          "world": 49,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1179648
+          }
+        },
+        {
+          "world": 50,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1204224
+          }
+        },
+        {
+          "world": 51,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1228800
+          }
+        },
+        {
+          "world": 52,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1253376
+          }
+        },
+        {
+          "world": 53,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1277952
+          }
+        },
+        {
+          "world": 54,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1302528
+          }
+        },
+        {
+          "world": 55,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1327104
+          }
+        },
+        {
+          "world": 56,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1351680
+          }
+        },
+        {
+          "world": 57,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1376256
+          }
+        },
+        {
+          "world": 58,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1400832
+          }
+        },
+        {
+          "world": 59,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1425408
+          }
+        },
+        {
+          "world": 60,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1449984
+          }
+        },
+        {
+          "world": 61,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1474560
+          }
+        },
+        {
+          "world": 62,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1499136
+          }
+        },
+        {
+          "world": 63,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1523712
+          }
+        },
+        {
+          "world": 64,
+          "reduce_rounds": 6,
+          "broadcast_rounds": 6,
+          "levels_with_messages": 6,
+          "serialization_extra_rounds": 0,
+          "cost": {
+            "rounds": 12,
+            "estimated_us": 25.474560000000004,
+            "max_bytes_sent_per_rank": 57344,
+            "max_reduce_bytes_per_rank": 16384,
+            "max_gather_bytes_per_rank": 49152,
+            "total_bytes": 1548288
+          }
+        }
+      ]
+    }
+  ],
+  "baselines": [
+    {
+      "world": 2,
+      "policy": "bf16",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 1524,
+        "mismatched_fraction": 0.3720703125,
+        "max_ulp": 15072,
+        "mean_ulp": 15.468994140625,
+        "relative_rms_error": 0.0028777829245299922
+      },
+      "cost": {
+        "rounds": 2,
+        "estimated_us": 4.08192,
+        "max_bytes_sent_per_rank": 8192,
+        "max_reduce_bytes_per_rank": 4096,
+        "max_gather_bytes_per_rank": 4096,
+        "total_bytes": 16384
+      }
+    },
+    {
+      "world": 2,
+      "policy": "bf16",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 1524,
+        "mismatched_fraction": 0.3720703125,
+        "max_ulp": 15072,
+        "mean_ulp": 15.468994140625,
+        "relative_rms_error": 0.0028777829245299922
+      },
+      "cost": {
+        "rounds": 1,
+        "estimated_us": 2.08192,
+        "max_bytes_sent_per_rank": 8192,
+        "max_reduce_bytes_per_rank": 8192,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 16384
+      }
+    },
+    {
+      "world": 2,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 2,
+        "mismatched_fraction": 0.00048828125,
+        "max_ulp": 1,
+        "mean_ulp": 0.00048828125,
+        "relative_rms_error": 4.798492939369974e-7
+      },
+      "cost": {
+        "rounds": 2,
+        "estimated_us": 4.12288,
+        "max_bytes_sent_per_rank": 12288,
+        "max_reduce_bytes_per_rank": 8192,
+        "max_gather_bytes_per_rank": 4096,
+        "total_bytes": 24576
+      }
+    },
+    {
+      "world": 2,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 2,
+        "mismatched_fraction": 0.00048828125,
+        "max_ulp": 1,
+        "mean_ulp": 0.00048828125,
+        "relative_rms_error": 4.798492939369974e-7
+      },
+      "cost": {
+        "rounds": 1,
+        "estimated_us": 2.16384,
+        "max_bytes_sent_per_rank": 16384,
+        "max_reduce_bytes_per_rank": 16384,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 32768
+      }
+    },
+    {
+      "world": 3,
+      "policy": "bf16",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 1856,
+        "mismatched_fraction": 0.453125,
+        "max_ulp": 30350,
+        "mean_ulp": 19.5712890625,
+        "relative_rms_error": 0.0033475474436694963
+      },
+      "cost": {
+        "rounds": 4,
+        "estimated_us": 8.10928,
+        "max_bytes_sent_per_rank": 10924,
+        "max_reduce_bytes_per_rank": 5462,
+        "max_gather_bytes_per_rank": 5462,
+        "total_bytes": 32768
+      }
+    },
+    {
+      "world": 3,
+      "policy": "bf16",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 1605,
+        "mismatched_fraction": 0.391845703125,
+        "max_ulp": 30350,
+        "mean_ulp": 8.470703125,
+        "relative_rms_error": 0.0027741123738692416
+      },
+      "cost": {
+        "rounds": 2,
+        "estimated_us": 4.16384,
+        "max_bytes_sent_per_rank": 16384,
+        "max_reduce_bytes_per_rank": 16384,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 49152
+      }
+    },
+    {
+      "world": 3,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 0,
+        "mismatched_fraction": 0.0,
+        "max_ulp": 0,
+        "mean_ulp": 0.0,
+        "relative_rms_error": 0.0
+      },
+      "cost": {
+        "rounds": 4,
+        "estimated_us": 8.16392,
+        "max_bytes_sent_per_rank": 16386,
+        "max_reduce_bytes_per_rank": 10924,
+        "max_gather_bytes_per_rank": 5462,
+        "total_bytes": 49152
+      }
+    },
+    {
+      "world": 3,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 0,
+        "mismatched_fraction": 0.0,
+        "max_ulp": 0,
+        "mean_ulp": 0.0,
+        "relative_rms_error": 0.0
+      },
+      "cost": {
+        "rounds": 2,
+        "estimated_us": 4.32768,
+        "max_bytes_sent_per_rank": 32768,
+        "max_reduce_bytes_per_rank": 32768,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 98304
+      }
+    },
+    {
+      "world": 4,
+      "policy": "bf16",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 2057,
+        "mismatched_fraction": 0.502197265625,
+        "max_ulp": 15271,
+        "mean_ulp": 12.475830078125,
+        "relative_rms_error": 0.0035290333427211704
+      },
+      "cost": {
+        "rounds": 6,
+        "estimated_us": 12.122879999999999,
+        "max_bytes_sent_per_rank": 12288,
+        "max_reduce_bytes_per_rank": 6144,
+        "max_gather_bytes_per_rank": 6144,
+        "total_bytes": 49152
+      }
+    },
+    {
+      "world": 4,
+      "policy": "bf16",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 1632,
+        "mismatched_fraction": 0.3984375,
+        "max_ulp": 14919,
+        "mean_ulp": 4.8427734375,
+        "relative_rms_error": 0.002637382591485331
+      },
+      "cost": {
+        "rounds": 3,
+        "estimated_us": 6.245760000000001,
+        "max_bytes_sent_per_rank": 24576,
+        "max_reduce_bytes_per_rank": 24576,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 98304
+      }
+    },
+    {
+      "world": 4,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 3,
+        "mismatched_fraction": 0.000732421875,
+        "max_ulp": 1,
+        "mean_ulp": 0.000732421875,
+        "relative_rms_error": 1.5273756272265323e-5
+      },
+      "cost": {
+        "rounds": 6,
+        "estimated_us": 12.18432,
+        "max_bytes_sent_per_rank": 18432,
+        "max_reduce_bytes_per_rank": 12288,
+        "max_gather_bytes_per_rank": 6144,
+        "total_bytes": 73728
+      }
+    },
+    {
+      "world": 4,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 3,
+        "mismatched_fraction": 0.000732421875,
+        "max_ulp": 1,
+        "mean_ulp": 0.000732421875,
+        "relative_rms_error": 1.5273756272265323e-5
+      },
+      "cost": {
+        "rounds": 3,
+        "estimated_us": 6.4915199999999995,
+        "max_bytes_sent_per_rank": 49152,
+        "max_reduce_bytes_per_rank": 49152,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 196608
+      }
+    },
+    {
+      "world": 8,
+      "policy": "bf16",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 2448,
+        "mismatched_fraction": 0.59765625,
+        "max_ulp": 30295,
+        "mean_ulp": 16.7373046875,
+        "relative_rms_error": 0.004275281084544997
+      },
+      "cost": {
+        "rounds": 14,
+        "estimated_us": 28.143359999999998,
+        "max_bytes_sent_per_rank": 14336,
+        "max_reduce_bytes_per_rank": 7168,
+        "max_gather_bytes_per_rank": 7168,
+        "total_bytes": 114688
+      }
+    },
+    {
+      "world": 8,
+      "policy": "bf16",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 1619,
+        "mismatched_fraction": 0.395263671875,
+        "max_ulp": 526,
+        "mean_ulp": 1.361572265625,
+        "relative_rms_error": 0.0025492257019540552
+      },
+      "cost": {
+        "rounds": 7,
+        "estimated_us": 14.573440000000002,
+        "max_bytes_sent_per_rank": 57344,
+        "max_reduce_bytes_per_rank": 57344,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 458752
+      }
+    },
+    {
+      "world": 8,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "ring",
+      "vs_exact": {
+        "mismatched": 1,
+        "mismatched_fraction": 0.000244140625,
+        "max_ulp": 1,
+        "mean_ulp": 0.000244140625,
+        "relative_rms_error": 4.7614383853035637e-7
+      },
+      "cost": {
+        "rounds": 14,
+        "estimated_us": 28.215039999999995,
+        "max_bytes_sent_per_rank": 21504,
+        "max_reduce_bytes_per_rank": 14336,
+        "max_gather_bytes_per_rank": 7168,
+        "total_bytes": 172032
+      }
+    },
+    {
+      "world": 8,
+      "policy": "fp32-rs/bf16-ag",
+      "algorithm": "exact-gather",
+      "vs_exact": {
+        "mismatched": 1,
+        "mismatched_fraction": 0.000244140625,
+        "max_ulp": 1,
+        "mean_ulp": 0.000244140625,
+        "relative_rms_error": 4.7614383853035637e-7
+      },
+      "cost": {
+        "rounds": 7,
+        "estimated_us": 15.146880000000001,
+        "max_bytes_sent_per_rank": 114688,
+        "max_reduce_bytes_per_rank": 114688,
+        "max_gather_bytes_per_rank": 0,
+        "total_bytes": 917504
+      }
+    }
+  ]
+}
