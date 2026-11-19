@@ -1,5 +1,6 @@
 //! Per-site precision levels and policies.
 
+use super::narrow::Narrow;
 use crate::format::Format;
 
 /// A site's storage format (weights and the activations entering its
@@ -16,11 +17,31 @@ pub enum Level {
     Fp16,
     /// FP16 storage, FP16 accumulation.
     Fp16Acc,
+    /// FP8 E4M3 storage with a binary32 scale per weight row and per
+    /// activation vector, FP32 accumulation ([`super::narrow`]).
+    Fp8E4M3,
+    /// FP8 E5M2 storage with scales, FP32 accumulation.
+    Fp8E5M2,
+    /// INT8 storage with scales, exact integer accumulation.
+    Int8,
 }
 
 impl Level {
     pub const ALL: [Level; 5] = [Level::Fp32, Level::Bf16, Level::Bf16Acc, Level::Fp16, Level::Fp16Acc];
     pub const LOW: [Level; 4] = [Level::Bf16, Level::Bf16Acc, Level::Fp16, Level::Fp16Acc];
+    /// The 8-bit levels with explicit scales.
+    pub const SCALED: [Level; 3] = [Level::Fp8E4M3, Level::Fp8E5M2, Level::Int8];
+    /// Every level, FP32 first.
+    pub const EVERY: [Level; 8] = [
+        Level::Fp32,
+        Level::Bf16,
+        Level::Bf16Acc,
+        Level::Fp16,
+        Level::Fp16Acc,
+        Level::Fp8E4M3,
+        Level::Fp8E5M2,
+        Level::Int8,
+    ];
 
     pub const fn name(self) -> &'static str {
         match self {
@@ -29,20 +50,38 @@ impl Level {
             Level::Bf16Acc => "bf16-acc",
             Level::Fp16 => "fp16",
             Level::Fp16Acc => "fp16-acc",
+            Level::Fp8E4M3 => "fp8-e4m3",
+            Level::Fp8E5M2 => "fp8-e5m2",
+            Level::Int8 => "int8",
         }
     }
 
+    /// The 8-bit format of a scaled level.
+    pub const fn narrow(self) -> Option<Narrow> {
+        match self {
+            Level::Fp8E4M3 => Some(Narrow::E4M3),
+            Level::Fp8E5M2 => Some(Narrow::E5M2),
+            Level::Int8 => Some(Narrow::Int8),
+            _ => None,
+        }
+    }
+
+    /// The storage format of a floating-point level. Panics for the scaled
+    /// levels, which store [`Self::narrow`] values with scales.
     pub const fn storage(self) -> Format {
         match self {
             Level::Fp32 => Format::Fp32,
             Level::Bf16 | Level::Bf16Acc => Format::Bf16,
             Level::Fp16 | Level::Fp16Acc => Format::Fp16,
+            Level::Fp8E4M3 | Level::Fp8E5M2 | Level::Int8 => panic!("scaled levels have no float storage format"),
         }
     }
 
+    /// The accumulator format (FP32 for the scaled FP8 levels; INT8
+    /// accumulates exactly in integers and is converted once to FP32).
     pub const fn accumulator(self) -> Format {
         match self {
-            Level::Fp32 | Level::Bf16 | Level::Fp16 => Format::Fp32,
+            Level::Fp32 | Level::Bf16 | Level::Fp16 | Level::Fp8E4M3 | Level::Fp8E5M2 | Level::Int8 => Format::Fp32,
             Level::Bf16Acc => Format::Bf16,
             Level::Fp16Acc => Format::Fp16,
         }

@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 166 tests, including the recorded-artifact checks
+cargo test --release                              # 173 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -347,6 +347,29 @@ tokens); see [`results/r4-precision.md`](results/r4-precision.md).
   level when lowered alone (mean KL 1.32e-3 at `bf16-acc`); the second
   layer's sites and the KV cache are among the least.
 - Every run's logits stayed finite.
+
+### FP8 and INT8 levels with explicit scales
+
+`precision/narrow.rs` adds three levels: FP8 E4M3 (OCP: no infinities,
+NaN `S.1111.111`, largest 448), FP8 E5M2 (IEEE-style, largest 57344) and
+symmetric INT8 (−127…127). Each weight row, each activation vector entering
+a product, and each KV head's K or V of one token gets one binary32 scale
+`fl32(absmax ÷ Qmax)`. An element is quantized from the **exact** quotient
+(integer division of the significands) with one round-to-nearest-even
+onto the format's grid, saturating at ±Qmax. FP8 products accumulate in a
+fused FP32 chain (FP8 products are exact), INT8 products in exact integers
+converted once to binary32, and the scales are applied afterwards
+(`fl32(fl32(acc · s_w) · s_x)`); the KV cache dequantizes to binary32 on
+read.
+
+- Exhaustive: all 256 patterns of each FP8 format decode as an independent
+  table, encode ∘ decode is the identity, ordering and the NaN/∞ counts are
+  checked; every midpoint between adjacent values (and INT8 integers) and
+  its binary32 neighbours rounds correctly in both signs and two scales.
+- `scripts/gen_narrow_vectors.py` (stdlib `Fraction`, brute-force nearest
+  value) gives the 512 decodings, 15,300 quantizations and 480 scaled
+  products; CI regenerates and compares them.
+- Two planted bugs (ties away from zero; an INT8 clamp to −128) are caught.
 
 ### A model trained deterministically in the repo
 

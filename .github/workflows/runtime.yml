@@ -32,7 +32,7 @@ jobs:
       - name: Planted-bug tests (compile-time planted-bugs feature; recording commands refuse to run in this build)
         run: |
           cargo clippy --all-targets --locked --features planted-bugs -- -D warnings
-          cargo test --release --locked --features planted-bugs --test planted_build --test serving_kv --test serving_engine --test serving_faults --test decoder_planted --test precision_planted --test dataflow_planted --test association_planted --test train_planted
+          cargo test --release --locked --features planted-bugs --test planted_build --test serving_kv --test serving_engine --test serving_faults --test decoder_planted --test precision_planted --test dataflow_planted --test association_planted --test train_planted --test narrow_planted
       - name: Independent Python Fraction vectors are current
         run: |
           python3 -I scripts/gen_sum_vectors.py > /tmp/exact-sums.txt
@@ -49,6 +49,10 @@ jobs:
         run: |
           python3 -I scripts/gen_chain_vectors.py > /tmp/chain-dots.txt
           cmp /tmp/chain-dots.txt tests/vectors/chain-dots.txt
+      - name: Independent Python FP8/INT8 vectors are current
+        run: |
+          python3 -I scripts/gen_narrow_vectors.py > /tmp/narrow.txt
+          cmp /tmp/narrow.txt tests/vectors/narrow.txt
       - name: Trained weights match the pinned SHA-256 (independent hashlib check; the tests above retrain and compare)
         run: |
           pinned=$(sed -n 's/^pub const TRAINED_WEIGHTS_SHA256: &str = "\([0-9a-f]*\)";$/\1/p' src/train/mod.rs)
