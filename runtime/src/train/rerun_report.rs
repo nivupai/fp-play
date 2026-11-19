@@ -251,6 +251,7 @@ pub fn r3_to_json(r: &R3Rerun, command: &str) -> Json {
                                             ("world", Json::uint(row.world)),
                                             ("schedule", Json::str(row.schedule.name())),
                                             ("policy", Json::str(row.policy.name())),
+                                            ("predicted_invariant", Json::Bool(row.predicted_invariant())),
                                             (
                                                 "variants",
                                                 Json::Arr(

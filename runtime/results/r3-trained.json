@@ -426,6 +426,7 @@
             "world": 1,
             "schedule": "ring",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -468,6 +469,7 @@
             "world": 1,
             "schedule": "ring",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -510,6 +512,7 @@
             "world": 4,
             "schedule": "sequential",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -552,6 +555,7 @@
             "world": 4,
             "schedule": "ring",
             "policy": "bf16",
+            "predicted_invariant": false,
             "variants": [
               {
                 "variant": "together",
@@ -594,6 +598,7 @@
             "world": 4,
             "schedule": "binomial-tree",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -636,6 +641,7 @@
             "world": 4,
             "schedule": "halving-doubling",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -678,6 +684,7 @@
             "world": 4,
             "schedule": "exact-gather",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -720,6 +727,7 @@
             "world": 4,
             "schedule": "shard-tree (S = 64)",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -762,6 +770,7 @@
             "world": 4,
             "schedule": "sequential",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -804,6 +813,7 @@
             "world": 4,
             "schedule": "ring",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": false,
             "variants": [
               {
                 "variant": "together",
@@ -846,6 +856,7 @@
             "world": 4,
             "schedule": "binomial-tree",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -888,6 +899,7 @@
             "world": 4,
             "schedule": "halving-doubling",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -930,6 +942,7 @@
             "world": 4,
             "schedule": "exact-gather",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -972,6 +985,7 @@
             "world": 4,
             "schedule": "shard-tree (S = 64)",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1427,6 +1441,7 @@
             "world": 1,
             "schedule": "ring",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1469,6 +1484,7 @@
             "world": 1,
             "schedule": "ring",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1511,6 +1527,7 @@
             "world": 4,
             "schedule": "sequential",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1553,6 +1570,7 @@
             "world": 4,
             "schedule": "ring",
             "policy": "bf16",
+            "predicted_invariant": false,
             "variants": [
               {
                 "variant": "together",
@@ -1595,6 +1613,7 @@
             "world": 4,
             "schedule": "binomial-tree",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1637,6 +1656,7 @@
             "world": 4,
             "schedule": "halving-doubling",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1679,6 +1699,7 @@
             "world": 4,
             "schedule": "exact-gather",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1721,6 +1742,7 @@
             "world": 4,
             "schedule": "shard-tree (S = 64)",
             "policy": "bf16",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1763,6 +1785,7 @@
             "world": 4,
             "schedule": "sequential",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1805,6 +1828,7 @@
             "world": 4,
             "schedule": "ring",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": false,
             "variants": [
               {
                 "variant": "together",
@@ -1847,6 +1871,7 @@
             "world": 4,
             "schedule": "binomial-tree",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1889,6 +1914,7 @@
             "world": 4,
             "schedule": "halving-doubling",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1931,6 +1957,7 @@
             "world": 4,
             "schedule": "exact-gather",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
@@ -1973,6 +2000,7 @@
             "world": 4,
             "schedule": "shard-tree (S = 64)",
             "policy": "fp32-rs/bf16-ag",
+            "predicted_invariant": true,
             "variants": [
               {
                 "variant": "together",
