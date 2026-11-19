@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — runtime R6 completion: workspaces, landing refresh, accessibility
+
+- New lazy workspaces `#serving` (R2 scenarios), `#decode` (R3 divergence, margins and batch invariance, random against trained weights), `#precision` (R4 levels including FP8/INT8, the one-site table, the training run) and `#dataflow` (R5 cycle breakdown and ops), each reading committed JSON from `runtime/results/` with an exact table after every chart.
+- Landing refresh: FP Play's two parts on the first screen, with Part 2 linking to the five runtime workspaces; the four original entries and the visual identity are unchanged.
+- Accessibility: `axe-core` (dev dependency) audit in the tests and in headless Chromium, a scripted keyboard-only walkthrough, and 20 screenshots (desktop and phone, light and dark) in `docs/images/verification/`; results in `docs/RELEASE_VERIFICATION.md`. No assistive technology was used.
+
 ## Unreleased — runtime R4 completion: reruns on the trained model
 
 - New recorded artifacts `runtime/results/r3-trained.{json,md}` (R3's divergence grid, top-2 margins and batch-invariance matrix on the trained model beside R3's random-weight model, same copy prompts) and `runtime/results/r4-trained.{json,md}` (R4's precision study at every level including FP8 and INT8, both models). Stale-checked against the committed weights.

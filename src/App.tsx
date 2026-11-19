@@ -14,6 +14,12 @@ import { Roadmap } from './components/Roadmap'
 import { HardwareDatapathEntry } from './components/datapath/HardwareDatapathEntry'
 import { HardwareAnalysisEntry } from './components/hardware/HardwareAnalysisEntry'
 import { CollectivesEntry } from './components/collectives/CollectivesEntry'
+import {
+  DataflowEntry,
+  DecodeEntry,
+  PrecisionEntry,
+  ServingEntry,
+} from './components/runtime/RuntimeEntries'
 
 export default function App() {
   const [theme, setTheme] = useState<ColorTheme>('system')
@@ -35,6 +41,10 @@ export default function App() {
         <HardwareAnalysisEntry />
         <HardwareDatapathEntry />
         <CollectivesEntry />
+        <ServingEntry />
+        <DecodeEntry />
+        <PrecisionEntry />
+        <DataflowEntry />
         <Roadmap />
         <section
           id="about"
@@ -68,6 +78,10 @@ export default function App() {
         <a href="#hardware">Hardware analysis</a>
         <a href="#datapath">Datapath explorer</a>
         <a href="#collectives">Collectives</a>
+        <a href="#serving">Serving</a>
+        <a href="#decode">Decode</a>
+        <a href="#precision">Precision policies</a>
+        <a href="#dataflow">Dataflow</a>
         <a href="#main">Back to top ↑</a>
       </footer>
     </div>

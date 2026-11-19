@@ -218,6 +218,42 @@ with jsdom tests and in headless Chromium (desktop and 390 px wide, light and
 dark themes, no horizontal overflow, no console errors); no screen reader or
 other assistive technology was used.
 
+## Runtime workspaces: serving, decode, precision, dataflow
+
+The landing page shows FP Play's two parts on its first screen; Part 2 links
+to the runtime workspaces, which are also in the footer (`#serving`,
+`#decode`, `#precision`, `#dataflow`). Each loads only on request and reads
+recorded JSON from `runtime/results/`; the browser runs no simulation. Every
+chart is followed by a table of the exact values, and every bar's label and
+value are written out as text.
+
+- **Serving** (`r2-serving.json`): choose a scenario group (load sweep,
+  preemption under memory pressure, swap sensitivity, prefix sharing,
+  collective choice, failures) and a metric; the bars compare scenarios and
+  the table lists every metric of every scenario. Times are simulated with
+  illustrative constants.
+- **Decode** (`r3-decode.json`, `r3-trained.json`): choose the model and
+  prompts (R3's random weights on random prompts, or the rerun's random and
+  trained weights on the same copy prompts) and the wire policy. See which
+  schedule and P changed greedy tokens, the top-2 margins and flips of random
+  against trained weights, and the batch-invariance table, where each cell says
+  how many prompts' logits (and tokens) differ from serving the prompt alone.
+- **Precision** (`r4-precision.json`, `r4-trained.json`, `r4-training.json`):
+  choose the model; see every level's mean KL against FP32 (logarithmic bars
+  and a table with top-1 agreement and greedy divergence), the one-site table
+  (site × level), and the trained model's loss curve (logarithmic axis, with
+  a table every 50 steps) and held-out accuracy.
+- **Dataflow** (`r5-dataflow.json`): choose the machine; each shape's cycles
+  are split by reason (bars distinguished by pattern and named in text) and
+  compared with the roofline bound; choose a shape for its op-by-op cycles.
+  Machine constants are illustrative; the second machine's cycle time is an
+  assumption, not a clock.
+
+Checked with jsdom tests (including an axe-core audit), an axe-core audit and
+a scripted keyboard-only walkthrough in headless Chromium, and screenshots at
+1280 and 390 px in light and dark themes (`docs/RELEASE_VERIFICATION.md`); no
+screen reader or other assistive technology was used.
+
 ## Research showcase
 
 Open **Measured hardware showcase** from the landing page or visit

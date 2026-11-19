@@ -21,9 +21,11 @@ the static app in [`public/THIRD_PARTY_NOTICES.txt`](../public/THIRD_PARTY_NOTIC
 Vite copies that file into `dist/`; release checks verify it and both VCD downloads.
 Preserve upstream legal comments in generated bundles. Review license changes
 whenever the lockfile changes. Developer packages (Vite, TypeScript, Vitest,
-ESLint, Prettier and their transitive tools) retain their own package notices;
+ESLint, Prettier, axe-core and their transitive tools) retain their own package notices;
 inspect installed `LICENSE` files and `npm ls --all`, not this list alone, for a
-complete development dependency inventory.
+complete development dependency inventory. `axe-core` (MPL-2.0) is a
+development-only accessibility-audit dependency used by the tests and
+`scripts/runtime-browser-audit.mjs`; it is not bundled into the app.
 
 ## External reference and hardware tools
 

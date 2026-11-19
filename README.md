@@ -31,7 +31,7 @@ static hosting without server rewrites. Native controls, exact tables and full
 scrollable binary values complement SVGs; light/dark/system themes share labeled
 fields and visible focus states.
 
-## Runtime (Part 2, in progress)
+## Runtime (Part 2)
 
 [`runtime/`](runtime/README.md) is a dependency-free Rust crate that carries the
 same exact-arithmetic discipline to multiple devices. Milestone R1 simulates
@@ -49,8 +49,13 @@ change with P, the schedule, the wire policy and batch composition
 ([recorded result](runtime/results/r3-decode.md)). R4 measures per-layer
 precision policies ([result](runtime/results/r4-precision.md)), R5 maps a
 transformer layer onto a toy accelerator ([result](runtime/results/r5-dataflow.md)),
-and R6 adds a `#collectives` workspace to the app that replays recorded
-AllReduce schedules and associations. The two-page
+and R6 adds app workspaces that read the recorded results: `#collectives`
+(AllReduce schedules and associations), `#serving`, `#decode`, `#precision`
+and `#dataflow`, linked from the landing page's first screen. A tiny model
+trained deterministically in the repo on a copy task
+([training](runtime/results/r4-training.md)) reruns R3 and R4 with confident
+margins ([R3 rerun](runtime/results/r3-trained.md),
+[R4 rerun with FP8 and INT8](runtime/results/r4-trained.md)). The two-page
 [runtime case study](docs/RUNTIME_CASE_STUDY.md) summarizes the results; see
 the [runtime plan](runtime/PLAN.md) for what comes next. Run it with
 `cd runtime && cargo test --release`.

@@ -54,11 +54,36 @@ export function Landing() {
             FP Play<span className="hero-dot">.</span>
           </h1>
           <p className="hero-tagline">Make precision visible.</p>
+          <nav className="landing-parts" aria-label="FP Play in two parts">
+            <a className="landing-part" href="#explorer">
+              <span className="eyebrow">PART 1 / ONE OPERATION</span>
+              <strong>Bits, rounding, FMA and verified RTL</strong>
+              <span className="text-small">
+                Exact FP16, BF16 and FP32 arithmetic, mixed precision,
+                attention, and the hardware that computes it.
+              </span>
+            </a>
+            <div className="landing-part landing-part-runtime">
+              <span className="eyebrow">PART 2 / MANY DEVICES</span>
+              <strong>The inference runtime</strong>
+              <span className="text-small">
+                A deterministic Rust runtime: what sharding, batching and
+                precision do to a model’s numbers, from recorded runs.
+              </span>
+              <span className="landing-part-links">
+                <a href="#collectives">Collectives</a>
+                <a href="#serving">Serving</a>
+                <a href="#decode">Decode</a>
+                <a href="#precision">Precision</a>
+                <a href="#dataflow">Dataflow</a>
+              </span>
+            </div>
+          </nav>
           <p className="hero-description">
             A hands-on laboratory for understanding how bits become numbers, and
             how representation and accumulation precision shape a result. Follow
             exact software calculations into verified RTL and measured synthesis
-            experiments.
+            experiments, then across many devices in the runtime.
           </p>
           <div className="landing-links">
             <a className="primary-button" href="#explorer">
@@ -136,6 +161,16 @@ export function Landing() {
         <a href="#formats">Compare FP16, BF16, and FP32 →</a>
         <a href="#dot-product">Dot Product Precision Lab →</a>
         <a href="#attention">Attention Precision Lab →</a>
+      </nav>
+      <nav className="landing-links" aria-label="Runtime (Part 2)">
+        <a href="#collectives">AllReduce schedules, round by round →</a>
+        <a href="#serving">Serving simulator →</a>
+        <a href="#decode">Does sharding change the tokens? →</a>
+        <a href="#precision">Per-layer precision and a trained model →</a>
+        <a href="#dataflow">A layer on a toy accelerator →</a>
+        <a href={`${repository}/blob/main/docs/RUNTIME_CASE_STUDY.md`}>
+          Runtime case study →
+        </a>
       </nav>
       <nav className="landing-links" aria-label="Hardware and research">
         <a href="#research">Measured hardware showcase →</a>
