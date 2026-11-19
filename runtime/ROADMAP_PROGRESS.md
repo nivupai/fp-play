@@ -33,7 +33,7 @@ removed, and that is noted here.
 | R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | merged (#35) |
 | R4d  | FP8 E4M3 / E5M2 and INT8 levels with scales, Python vectors, exhaustive checks                                                       | merged (#36) |
 | R4e  | R3 and R4 rerun on the trained model: `results/r3-trained.*`, `results/r4-trained.*`                                                 | merged (#37) |
-| R6c  | `#serving`, `#decode`, `#precision`, `#dataflow` workspaces; landing refresh; accessibility audit, keyboard walkthrough, screenshots | in progress  |
+| R6c  | `#serving`, `#decode`, `#precision`, `#dataflow` workspaces; landing refresh; accessibility audit, keyboard walkthrough, screenshots | merged (#38) |
 
 ## Disk checks
 
@@ -124,7 +124,7 @@ and not delivered; none was deferred by the user.
 | SG-5 | R6        | Accessibility verification beyond static and DOM checks                                                   | one headless Chromium check of `#collectives`; no automated audit, no scripted keyboard walkthrough, no saved screenshots | not attempted                                               |
 
 All five are the scope of the next run (R4 completion and R6 completion
-below).
+below). All five were delivered in #35–#38.
 
 ## Completion run plan (R4 completion, R6 completion)
 
