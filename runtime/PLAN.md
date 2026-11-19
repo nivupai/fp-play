@@ -177,8 +177,9 @@ against FP32, reusing FP Play's mixed-precision semantics as the reference.
 Report which layers are sensitive.
 
 Done: `results/r4-precision.*`; plan and decisions in
-[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8/INT8 with scales remain
-future work.
+[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8/INT8 with scales and the
+trained-model rerun were not done (scope-guard deferrals SG-1 and SG-2 in
+ROADMAP_PROGRESS.md).
 
 ## R5 — Dataflow mapping simulator (idea #2) ✅
 
@@ -197,12 +198,15 @@ ops.
 - A `#collectives` workspace that reads the recorded JSON: an
   animated-on-request schedule view (rank × round grid, text alternative),
   per-element association trees, and the error-versus-P chart.
-- Landing and overall UI refresh (deferred by request).
+- Landing and overall UI refresh (not done in the R4–R6 run; it was not
+  deferred by request, see ROADMAP_PROGRESS.md SG-4).
 
 Done: the `#collectives` workspace (schedule view, association trees,
 error-versus-P chart) from `results/r6-collectives.json`; decisions in
 [`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). Still open: the landing
-refresh (deferred) and the optional WebAssembly build.
+refresh, workspaces for R2–R5 and an accessibility audit (scope-guard
+deferrals SG-3 to SG-5 in ROADMAP_PROGRESS.md), and the optional
+WebAssembly build.
 
 - Optional: compile the crate to WebAssembly so the browser runs the real
   simulator rather than a JavaScript copy (once a wasm toolchain is
