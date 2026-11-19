@@ -28,7 +28,8 @@ USAGE:
       The sweep uses its own fixed grid of seeds, sizes and world sizes.
       Also writes r2-serving (R2: the serving scenarios), r3-decode (R3:
       the tensor-parallel decoder), r4-precision (R4: per-layer precision
-      policies) and r5-dataflow (R5: a layer on a toy accelerator), each with its own fixed configuration; the
+      policies), r5-dataflow (R5: a layer on a toy accelerator) and
+      r6-collectives (R6: data for the app's #collectives workspace), each with its own fixed configuration; the
       flags above do not apply to them.
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
@@ -215,6 +216,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r4-precision",
             fp_play_runtime::precision::report::to_json(&precision, &command).to_pretty(),
             fp_play_runtime::precision::report::to_markdown(&precision, &command),
+        ),
+        (
+            "r6-collectives",
+            fp_play_runtime::ui_export::to_json(&result, &command)?.to_pretty(),
+            fp_play_runtime::ui_export::to_markdown(&command),
         ),
         (
             "r5-dataflow",
