@@ -29,7 +29,9 @@ USAGE:
       Also writes r2-serving (R2: the serving scenarios), r3-decode (R3:
       the tensor-parallel decoder), r4-precision (R4: per-layer precision
       policies), r5-dataflow (R5: a layer on a toy accelerator) and
-      r6-collectives (R6: data for the app's #collectives workspace), each with its own fixed configuration; the
+      r6-collectives (R6: data for the app's #collectives workspace) and
+      r4-training (the copy-task model's training run, plus its weights
+      r4-trained-weights.bin), each with its own fixed configuration; the
       flags above do not apply to them.
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
@@ -37,6 +39,11 @@ USAGE:
       Print one AllReduce schedule round by round with its result and cost.
       Algorithms: sequential, ring, binomial-tree, halving-doubling, exact-gather.
       Policies: fp16, bf16, fp32 (uniform), fp32-rs/bf16-ag, bf16-wire/fp32-add.
+
+  fp-play-runtime train [--steps N] [--batch N] [--lr X]
+      Train the copy-task model (R4 completion) and print its loss curve,
+      held-out accuracy and the weights' SHA-256. Writes nothing; the
+      recorded run (default settings) is part of `experiment`.
 
   fp-play-runtime traces [--out DIR]
       Write the golden serving step traces (JSON lines) that
@@ -56,6 +63,7 @@ fn main() -> ExitCode {
         Some("experiment") => experiment(&args[1..]),
         Some("schedule") => schedule(&args[1..]),
         Some("traces") => traces(&args[1..]),
+        Some("train") => train(&args[1..]),
         Some("-h" | "--help") | None => {
             print!("{USAGE}");
             return ExitCode::SUCCESS;
@@ -69,6 +77,36 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn train(args: &[String]) -> Result<(), String> {
+    let flags = Flags(args);
+    flags.check_known(&["--steps", "--batch", "--lr"])?;
+    let d = fp_play_runtime::train::TrainConfig::default();
+
+    let c = fp_play_runtime::train::TrainConfig {
+        steps: flags.parse("--steps", d.steps)?,
+        batch: flags.parse("--batch", d.batch)?,
+        peak_lr: flags.parse("--lr", d.peak_lr)?,
+        ..d
+    };
+    let start = std::time::Instant::now();
+    let r = fp_play_runtime::train::train(&c);
+    for s in r.steps.iter().filter(|s| s.step % 25 == 0 || s.step + 1 == c.steps) {
+        println!(
+            "step {:4}  lr {:.2e}  loss {:.4}  accuracy {:.3}  grad norm {:.3}",
+            s.step, s.lr, s.loss, s.accuracy, s.grad_norm
+        );
+    }
+    println!(
+        "held-out loss {:.5}  accuracy {:.5}  parameters {}  sha256 {}  ({:.1} s)",
+        r.eval_loss,
+        r.eval_accuracy,
+        r.parameters,
+        r.sha256,
+        start.elapsed().as_secs_f64()
+    );
+    Ok(())
 }
 
 struct Flags<'a>(&'a [String]);
@@ -180,6 +218,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
     let decode = fp_play_runtime::decoder::experiment::run(&Default::default())?;
     let precision = fp_play_runtime::precision::experiment::run(&Default::default())?;
     let dataflow = fp_play_runtime::dataflow::experiment::run(&Default::default());
+    let training = fp_play_runtime::train::report::run(&Default::default());
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -227,6 +266,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             fp_play_runtime::dataflow::report::to_json(&dataflow, &command).to_pretty(),
             fp_play_runtime::dataflow::report::to_markdown(&dataflow, &command),
         ),
+        (
+            "r4-training",
+            fp_play_runtime::train::report::to_json(&training, &command).to_pretty(),
+            fp_play_runtime::train::report::to_markdown(&training, &command),
+        ),
     ];
     for (name, json, markdown) in artifacts {
         let json_path = out.join(format!("{name}.json"));
@@ -235,6 +279,16 @@ fn experiment(args: &[String]) -> Result<(), String> {
         fs::write(&md_path, &markdown).map_err(|e| e.to_string())?;
         print!("{markdown}");
         eprintln!("wrote {} and {}", json_path.display(), md_path.display());
+    }
+    let weights_path = out.join("r4-trained-weights.bin");
+    fs::write(
+        &weights_path,
+        fp_play_runtime::train::to_bytes(&training.result.weights),
+    )
+    .map_err(|e| e.to_string())?;
+    eprintln!("wrote {} (SHA-256 {})", weights_path.display(), training.result.sha256);
+    if training.result.sha256 != fp_play_runtime::train::TRAINED_WEIGHTS_SHA256 {
+        eprintln!("note: the trained weights differ from the pinned TRAINED_WEIGHTS_SHA256; update it if the change is intended");
     }
     Ok(())
 }

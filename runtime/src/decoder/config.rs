@@ -43,6 +43,15 @@ impl DecoderConfig {
         logit_scale: 1.0,
     };
 
+    /// The trained model (`crate::train`): the R3 dimensions ([`Self::TINY`])
+    /// with its own seed, which sets the training's initialization, so every
+    /// R3 and R4 comparison between random and trained weights uses the same
+    /// architecture.
+    pub const TRAINED: DecoderConfig = DecoderConfig {
+        seed: 0x00de_c0de_0074,
+        ..DecoderConfig::TINY
+    };
+
     /// A reduced model with the same structure, small enough for the
     /// stdlib-only Python reference (`scripts/gen_decoder_vectors.py`).
     /// Four KV heads, so the reference can run P = 4.

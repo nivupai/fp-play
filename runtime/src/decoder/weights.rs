@@ -137,6 +137,34 @@ impl Weights {
         }
     }
 
+    /// FP32 master weights (for example the trained model's) rounded once to
+    /// BF16 (round to nearest even), norm gains included, as the decoder stores them.
+    pub fn from_master(w: &crate::precision::model::MasterWeights) -> Weights {
+        let m = |x: &crate::precision::model::MasterMatrix| {
+            Matrix::new(x.rows, x.cols, x.w.iter().map(|&v| f32_to_bf16(v)).collect())
+        };
+        let g = |x: &[f32]| x.iter().map(|&v| bf16_to_f32(f32_to_bf16(v))).collect::<Vec<_>>();
+        Weights {
+            embed: m(&w.embed),
+            layers: w
+                .layers
+                .iter()
+                .map(|l| Layer {
+                    attn_norm: g(&l.attn_norm),
+                    wq: m(&l.wq),
+                    wk: m(&l.wk),
+                    wv: m(&l.wv),
+                    wo: m(&l.wo),
+                    mlp_norm: g(&l.mlp_norm),
+                    w_gate: m(&l.w_gate),
+                    w_up: m(&l.w_up),
+                    w_down: m(&l.w_down),
+                })
+                .collect(),
+            final_norm: g(&w.final_norm),
+        }
+    }
+
     /// FNV-1a over every weight's raw bits, in generation order (pinned in tests).
     pub fn checksum(&self) -> u64 {
         let mut h = 0xcbf2_9ce4_8422_2325u64;

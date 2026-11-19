@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — runtime R4 completion: a trained model
+
+- New `runtime/src/train/`: the R3 decoder's architecture trained deterministically in binary32 on a synthetic copy task, with a hand-written backward pass (checked against central finite differences in binary64 for every parameter of a small model) and Adam. The training forward pass is checked against the R4 all-FP32 inference model.
+- New recorded artifact `runtime/results/r4-training.{json,md}` (loss curve, held-out accuracy) and the weights `runtime/results/r4-trained-weights.bin`, SHA-256 pinned in the source; the stale test retrains and compares every byte, and CI checks the hash with Python's `hashlib`.
+- Two planted bugs, each caught by a different check. `runtime/src/sha256.rs` (dependency-free SHA-256, FIPS 180-2 examples).
+
 ## Unreleased — runtime milestone R6
 
 - New `#collectives` workspace in the FP Play app (lazy, native hash link, footer entry): a rank × round schedule table stepped or played on request, element associations as text and trees, the fixed shard tree, and error against the exact sum versus P with an exact data table. Presentation in `src/lib/collectives/`, components in `src/components/collectives/`.

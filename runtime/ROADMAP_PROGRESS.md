@@ -29,13 +29,17 @@ removed, and that is noted here.
 | R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30) |
 | R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31) |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | merged (#32) |
-| S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | in progress  |
+| S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | merged (#34) |
+| R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | in progress  |
 
 ## Disk checks
 
 | Before | Free  | Action |
 | ------ | ----- | ------ |
 | R4     | 34 GB | none   |
+| R5     | 31 GB | none   |
+| R6     | 29 GB | none   |
+| R4c    | 15 GB | none   |
 
 ## R4 plan: per-layer precision policies
 
@@ -250,3 +254,52 @@ Started 2026-11-19 under the same rules and authority. Order and PRs:
   inspected. The round buttons first rendered without button styling; they
   now use the datapath explorer's button style. No screen reader or other
   assistive technology was used.
+
+## Completion run decisions
+
+- **RD-18 The trained model has R3's exact dimensions** (`DecoderConfig::TRAINED`
+  = `TINY` with its own seed, 2,000,128 parameters), not a smaller model:
+  training takes about a minute, and it makes every random-versus-trained
+  comparison use one architecture, with every P of R3 (1, 2, 4, 8). Cost: an
+  8,000,512-byte weights file in git (`results/r4-trained-weights.bin`,
+  marked binary in `.gitattributes`).
+- **RD-19 Task:** copy with a fixed length, `BOS s1 … s24 SEP s1 … s24`,
+  symbols uniform over IDs 2–2047 (0 is BOS, 1 is SEP), scored on the 24
+  tokens after `SEP`. A fixed length makes the source a fixed relative
+  offset, which RoPE attention can represent; prompts are `BOS s1 … s24 SEP`
+  and generate 24 tokens.
+- **RD-20 Training:** initialization from the R4 master-weight generator
+  (seed `0xdec0de0074`); Adam (β1 0.9, β2 0.99, ε 1e-8), 600 steps of 16
+  fresh sequences, linear warm-up to 3e-3 over 50 steps then linear decay
+  to 10%, global-norm clip 1; bias corrections by repeated multiplication;
+  all binary32 basic operations plus `mathf::exp_f32`. Each sequence's
+  gradient is computed on its own (on any thread) and summed in sequence
+  order; matrix products keep each output's sum sequential in the input
+  index (vectorized only across outputs). The loss is reported in binary64
+  with the crate's `exp` and `ln`; it does not feed the gradient.
+- **RD-21 Recording:** training runs inside the experiment command, which
+  writes `results/r4-training.*` and `results/r4-trained-weights.bin`; the
+  stale test retrains (about 110 s locally) and compares every byte and the
+  pinned SHA-256; CI also checks the file's hash with `hashlib`. Later
+  experiments load the committed file through `train::load_trained`, which
+  refuses a file whose hash is not the pinned one.
+- **RD-22 R4c checks and planted bugs:** backward = central finite
+  differences (binary64, every parameter of a 1,064-parameter model, two
+  examples); training forward = the R4 all-FP32 model to 1e-4 of the largest
+  logit (measured worst ≈ 1e-6); threaded batch gradient = in-order sum, bit
+  for bit; SHA-256 against the FIPS 180-2 examples.
+
+  | Bug                                                        | Caught by                                                                         |
+  | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+  | RoPE gradients rotated forward instead of by the transpose | the finite-difference check (the inference-forward check passes)                  |
+  | RoPE pairs adjacent dimensions, consistently in backward   | the inference-forward check (finite differences pass: the gradient is consistent) |
+
+- **RD-23 Greedy accuracy** is measured through the inference code, not the
+  trainer: the R3 decoder (BF16 weights and KV, P = 1) under both R3 wire
+  policies, and the R4 all-FP32 model, on 64 held-out prompts.
+
+## R4c results (results/r4-training.md)
+
+- Batch loss 8.12 → 0.00143 nats per token over 600 steps; first perfect
+  batch at step 144. Held-out: 100.00% teacher-forced (256 sequences); 64 of
+  64 prompts copied exactly by all three inference models.

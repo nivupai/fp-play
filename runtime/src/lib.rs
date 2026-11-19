@@ -14,6 +14,8 @@
 //! * [`decoder`] — R3: a tiny decoder run tensor-parallel through the collectives
 //! * [`precision`] — R4: per-layer precision policies for that decoder
 //! * [`dataflow`] — R5: mapping a transformer layer onto a toy accelerator
+//! * [`train`] — R4 completion: a tiny model trained deterministically on a copy task
+//! * [`sha256`] — SHA-256 for pinning committed binary artifacts
 //! * [`ui_export`] — R6: data for the FP Play `#collectives` workspace
 
 /// Whether this build compiles in the deliberate bugs used by the
@@ -34,8 +36,10 @@ pub mod precision;
 pub mod report;
 pub mod rng;
 pub mod serving;
+pub mod sha256;
 pub mod shard_experiment;
 pub mod shard_tree;
 pub mod sweep;
 pub mod tensor_parallel;
+pub mod train;
 pub mod ui_export;

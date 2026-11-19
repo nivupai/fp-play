@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 157 tests, including the recorded-artifact checks
+cargo test --release                              # 166 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -347,6 +347,34 @@ tokens); see [`results/r4-precision.md`](results/r4-precision.md).
   level when lowered alone (mean KL 1.32e-3 at `bf16-acc`); the second
   layer's sites and the KV cache are among the least.
 - Every run's logits stayed finite.
+
+### A model trained deterministically in the repo
+
+Random weights give near-uniform logits. To rerun R3 and R4 on a model
+with confident predictions, `train/` trains the R3 decoder's exact
+architecture (2,000,128 parameters) on a synthetic copy task
+(`BOS s1 … s24 SEP s1 … s24`, scored on the 24 tokens after `SEP`), with a
+hand-written backward pass and Adam, all in binary32 basic operations and
+the crate's deterministic `exp`, in a fixed order. Each sequence's gradient
+is computed on its own and the batch gradient is their sum in sequence
+order, so the weights do not depend on the thread count. See
+[`results/r4-training.md`](results/r4-training.md).
+
+- 600 steps of 16 sequences (about a minute). Batch loss falls from
+  8.12 to 0.00143 nats per token; held-out teacher-forced accuracy is
+  100.00% on 256 sequences, and greedy decoding copies 64 of 64 held-out
+  prompts exactly through the R3 decoder (BF16 weights and KV) and the R4
+  all-FP32 model.
+- The weights are committed as `results/r4-trained-weights.bin` (binary32
+  little-endian) with their SHA-256 pinned in `train::TRAINED_WEIGHTS_SHA256`;
+  the stale test retrains and compares every byte, and CI also checks the
+  file's hash with Python's `hashlib`.
+- Checks (`tests/train.rs`): the backward pass equals central finite
+  differences in binary64 for every parameter of a small model; the
+  binary32 training forward pass matches the R4 all-FP32 inference model on
+  the same weights to rounding (so the trained model is the model the
+  experiments run); the multi-threaded batch gradient equals the in-order
+  single-thread sum bit for bit.
 
 ## R5: a transformer layer on a toy accelerator
 
