@@ -6,7 +6,7 @@
 //! reference, and also decodes greedily on its own to count divergence.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use super::metrics::{compare, Drift};
 use super::model::{MasterWeights, PolicyModel};
@@ -21,6 +21,12 @@ pub struct PrecisionConfig {
     pub prompts: usize,
     pub prompt_len: usize,
     pub continuation: usize,
+    /// Master weights; `None` generates them from `model` (R4's random weights).
+    pub weights: Option<Arc<MasterWeights>>,
+    /// Prompts (each `prompt_len` tokens); `None` draws `prompts` random ones from `prompt_seed`.
+    pub prompt_set: Option<Vec<Vec<u32>>>,
+    /// The levels below FP32 that the uniform and one-site policies use.
+    pub lower_levels: Vec<Level>,
 }
 
 impl Default for PrecisionConfig {
@@ -31,6 +37,9 @@ impl Default for PrecisionConfig {
             prompts: 8,
             prompt_len: 16,
             continuation: 32,
+            weights: None,
+            prompt_set: None,
+            lower_levels: Level::LOW.to_vec(),
         }
     }
 }
@@ -48,12 +57,12 @@ impl PrecisionConfig {
     /// level (the KV cache at its two storage levels only), and two mixed policies.
     pub fn policies(&self) -> Vec<(Kind, Policy)> {
         let layers = self.model.layers;
-        let mut out: Vec<(Kind, Policy)> = Level::ALL
-            .iter()
-            .map(|&l| (Kind::Uniform(l), Policy::uniform(layers, l)))
+        let mut out: Vec<(Kind, Policy)> = std::iter::once(Level::Fp32)
+            .chain(self.lower_levels.iter().copied())
+            .map(|l| (Kind::Uniform(l), Policy::uniform(layers, l)))
             .collect();
         for site in Site::all(layers) {
-            for level in Level::LOW {
+            for &level in &self.lower_levels {
                 // The KV cache only stores values: its -acc levels equal its storage levels.
                 if site == Site::KvCache && level.accumulator() != Level::Fp32.accumulator() {
                     continue;
@@ -134,8 +143,17 @@ fn scored(rows: &[Vec<f32>], prompt_len: usize) -> &[Vec<f32>] {
 pub fn run(config: &PrecisionConfig) -> Result<PrecisionResult, String> {
     let c = config.model;
     c.validate()?;
-    let w = MasterWeights::generate(&c);
-    let ps = prompts(config.prompt_seed, config.prompts, config.prompt_len, c.vocab);
+    let w = match &config.weights {
+        Some(w) => (**w).clone(),
+        None => MasterWeights::generate(&c),
+    };
+    let ps = match &config.prompt_set {
+        Some(p) => p.clone(),
+        None => prompts(config.prompt_seed, config.prompts, config.prompt_len, c.vocab),
+    };
+    if ps.iter().any(|p| p.len() != config.prompt_len) {
+        return Err("every prompt must have prompt_len tokens".into());
+    }
     let mut reference = PolicyModel::new(c, &w, Policy::uniform(c.layers, Level::Fp32));
     let continuations: Vec<Vec<u32>> = ps.iter().map(|p| reference.greedy(p, config.continuation)).collect();
     let sequences: Vec<Vec<u32>> = ps

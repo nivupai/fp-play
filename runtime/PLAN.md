@@ -161,11 +161,9 @@ tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md). Recorded in
 
 ### R3 future work
 
-- Realistic, confident margins: train a tiny model deterministically in
-  the repo on a synthetic task (copy or count), with fixed-order binary32
-  training steps so the weights are bit-identical on every platform, then
-  rerun r3-decode on it. A logit scale cannot do this: a positive scale
-  preserves the argmax.
+- ✅ Realistic, confident margins: a tiny model trained deterministically
+  in the repo on a copy task (`results/r4-training.*`), with r3-decode
+  rerun on it (`results/r3-trained.*`).
 - Batch-shape-dependent local kernels (tiling, split-K) to model GPU-style
   local batch variance.
 
@@ -177,9 +175,10 @@ against FP32, reusing FP Play's mixed-precision semantics as the reference.
 Report which layers are sensitive.
 
 Done: `results/r4-precision.*`; plan and decisions in
-[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8/INT8 with scales and the
-trained-model rerun were not done (scope-guard deferrals SG-1 and SG-2 in
-ROADMAP_PROGRESS.md).
+[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8 (E4M3, E5M2) and INT8 levels with
+explicit scales, a deterministically trained model and the precision study
+rerun on it (`results/r4-training.*`, `results/r4-trained.*`) were added in
+the completion run (scope-guard deferrals SG-1 and SG-2, now done).
 
 ## R5 — Dataflow mapping simulator (idea #2) ✅
 

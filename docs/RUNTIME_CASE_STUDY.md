@@ -185,6 +185,39 @@ teacher-forced on 8 prompts × 32 tokens. Every number is from
   chains, and two planted bugs, each caught. Random weights and two layers
   limit how far the ranking transfers.
 
+## R4 completion: a trained model, FP8 and INT8
+
+Random weights give near-uniform logits, so R3's flips and R4's drift say
+as much about the weights as about the arithmetic. The runtime now trains
+R3's exact architecture deterministically on a copy task
+([r4-training](../runtime/results/r4-training.md): 100% held-out
+accuracy, weights pinned by SHA-256 and reproduced bit for bit by CI on a
+second platform) and reruns both experiments on it beside the original
+random-weight models, on the same copy prompts.
+
+- **Margins.** The median top-2 margin at P = 1 is 9.3781 logits with
+  trained weights against 0.2447 with random weights; the trained model's
+  smallest margin is 5.5726
+  ([r3-trained](../runtime/results/r3-trained.md)).
+- **Flip rates dropped to zero.** With a BF16 wire, random weights flip 160
+  of 12,527 at-risk tokens across the grid and trained weights 0 of
+  14,592; with FP32 reduce-scatter, 6 of 14,484 and 0 of 14,592. The logits
+  still change (no prompt's logits match the P = 1 baseline bit for bit in
+  any run), but no trained at-risk token is within reach of a flip. The
+  batch-invariance prediction held again for the trained model.
+- **FP8 and INT8** (per-row and per-vector absmax scales, exact-quotient
+  quantization; [r4-trained](../runtime/results/r4-trained.md)). Every
+  site at `fp8-e5m2`: mean KL 4.51e-2 with random weights, 9.24e-5 with
+  trained weights; `fp8-e4m3` 1.13e-2 and 2.04e-5; `int8` 9.98e-4 and
+  1.34e-6. The trained model kept all 192 top-1 tokens and every greedy
+  continuation at every level; random weights changed up to 8 of 8. With
+  random weights the first layer's attention is the most sensitive site
+  at each 8-bit level; with trained weights it is the embedding and head.
+- **Verified** by a finite-difference check of the backward pass, a check
+  that the training forward pass is the inference model, exhaustive
+  256-pattern and midpoint checks of each 8-bit format, 16,292 independent
+  Python `Fraction` vectors, and four planted bugs, each caught.
+
 ## R5: where a layer's cycles go
 
 R5 maps one 8B-class layer onto an illustrative accelerator (128 × 128 MAC
@@ -214,8 +247,7 @@ index once P > 2.
 
 ## What is next
 
-- A tiny model trained deterministically in the repo on a synthetic task,
-  for realistic margins; a mapping built for matrix–vector products in R5;
+- A mapping built for matrix–vector products in R5;
   the landing refresh. These, FP8/INT8 levels and workspaces for R2–R5 were
   asked for in the R4–R6 run and not done (recorded as scope-guard deferrals
   in `runtime/ROADMAP_PROGRESS.md`).

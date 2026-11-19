@@ -18,7 +18,7 @@
 //! and the tensor invariant after every step.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use super::config::DecoderConfig;
 use super::decode::Generation;
@@ -43,6 +43,11 @@ pub struct DecodeConfig {
     pub matrix_world: usize,
     /// Upper edges of the margin bins, in ulps of the top logit (the last bin is open).
     pub margin_bins: Vec<f64>,
+    /// BF16 weights; `None` generates R3's random weights from `model`.
+    pub weights: Option<Arc<Weights>>,
+    /// Prompts; `None` draws them from the workload (each group sharing
+    /// `workload.shared` tokens).
+    pub prompts: Option<Vec<Vec<u32>>>,
 }
 
 impl Default for DecodeConfig {
@@ -58,6 +63,8 @@ impl Default for DecodeConfig {
             scales: vec![1.0, 8.0],
             matrix_world: 4,
             margin_bins: (12..=22).step_by(2).map(|k| f64::from(1u32 << k)).collect(),
+            weights: None,
+            prompts: None,
         }
     }
 }
@@ -255,8 +262,17 @@ fn compare(run: &[Generation], base: &[Generation]) -> (Vec<Option<usize>>, usiz
 
 pub fn run(config: &DecodeConfig) -> Result<DecodeResult, String> {
     config.model.validate()?;
-    let weights = Weights::generate(&config.model);
-    let prompts = config.workload.prompts(config.model.vocab);
+    let weights = match &config.weights {
+        Some(w) => (**w).clone(),
+        None => Weights::generate(&config.model),
+    };
+    let prompts = match &config.prompts {
+        Some(p) => p.clone(),
+        None => config.workload.prompts(config.model.vocab),
+    };
+    if prompts.len() != config.workload.count() {
+        return Err("one prompt per workload slot".into());
+    }
     let model_at = |scale: f32| {
         Model::with_weights(
             DecoderConfig {

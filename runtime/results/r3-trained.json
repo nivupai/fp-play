@@ -1,0 +1,2018 @@
+{
+  "command": "fp-play-runtime experiment --out results",
+  "workload": {
+    "task": "copy: BOS s1 … s24 SEP, 24 greedy tokens",
+    "prompts": 32,
+    "prompt_tokens": 26,
+    "groups": 4,
+    "shared_prefix_tokens": 8,
+    "generated_tokens": 24,
+    "block_size": 4
+  },
+  "worlds": [2, 4, 8],
+  "matrix_world": 4,
+  "models": [
+    {
+      "model": "random",
+      "weights_checksum": "a77eb64e8be2d81b",
+      "policies": [
+        {
+          "policy": "bf16",
+          "baseline": {
+            "tokens": 768,
+            "copy_tokens_correct": 1,
+            "margin_min": 0.0003383159637451172,
+            "margin_p10": 0.04078531265258789,
+            "margin_p50": 0.24466228485107422,
+            "margin_p90": 0.8822109699249268,
+            "margin_ulps_p10": 171066.0,
+            "margin_ulps_p50": 970549.0
+          },
+          "divergence": {
+            "runs": 19,
+            "runs_with_divergence": 19,
+            "prompts": 608,
+            "prompts_diverged": 160,
+            "prompts_logits_identical": 0,
+            "at_risk_tokens": 12527,
+            "flips": 160,
+            "flip_rate": 0.012772411590963519,
+            "within_reach": 1602,
+            "perturbation_ulps_p50": 95274.5,
+            "perturbation_ulps_p90": 144185.0
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "baseline": {
+            "tokens": 768,
+            "copy_tokens_correct": 1,
+            "margin_min": 0.0003383159637451172,
+            "margin_p10": 0.04078531265258789,
+            "margin_p50": 0.24466228485107422,
+            "margin_p90": 0.8822109699249268,
+            "margin_ulps_p10": 171066.0,
+            "margin_ulps_p50": 970549.0
+          },
+          "divergence": {
+            "runs": 19,
+            "runs_with_divergence": 6,
+            "prompts": 608,
+            "prompts_diverged": 6,
+            "prompts_logits_identical": 0,
+            "at_risk_tokens": 14484,
+            "flips": 6,
+            "flip_rate": 0.00041425020712510354,
+            "within_reach": 182,
+            "perturbation_ulps_p50": 9650.5,
+            "perturbation_ulps_p90": 17950.0
+          }
+        }
+      ],
+      "grid": [
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 2,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 662,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 4,
+          "prompts_diverged": 11,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 639,
+          "flips": 11
+        },
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 8,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 619,
+          "flips": 9
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 2,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 662,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 4,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 667,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 8,
+          "prompts_diverged": 11,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 606,
+          "flips": 11
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 2,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 662,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 4,
+          "prompts_diverged": 10,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 624,
+          "flips": 10
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 8,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 657,
+          "flips": 9
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 2,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 662,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 4,
+          "prompts_diverged": 4,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 710,
+          "flips": 4
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 8,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 668,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 2,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 662,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 4,
+          "prompts_diverged": 8,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 649,
+          "flips": 8
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 8,
+          "prompts_diverged": 6,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 694,
+          "flips": 6
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 1,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 671,
+          "flips": 9
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 2,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 671,
+          "flips": 9
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 4,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 671,
+          "flips": 9
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 8,
+          "prompts_diverged": 9,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 671,
+          "flips": 9
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 4,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 8,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 4,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 4,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 8,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 4,
+          "prompts_diverged": 1,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 750,
+          "flips": 1
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 1,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        }
+      ],
+      "batch_invariance": {
+        "rows": 14,
+        "prediction_held": true,
+        "predicted_invariant_rows": 12,
+        "predicted_invariant_rows_differing": 0,
+        "ring_rows": 2,
+        "ring_rows_differing": 2,
+        "token_cells_differing": 52,
+        "rows_detail": [
+          {
+            "world": 1,
+            "schedule": "ring",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 1,
+            "schedule": "ring",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "sequential",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "ring",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 7
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 6
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 9
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 10
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 7
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 6
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 7
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "binomial-tree",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "halving-doubling",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "exact-gather",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "shard-tree (S = 64)",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "sequential",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "ring",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 16,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 21,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 14,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 18,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 15,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 17,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 16,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "binomial-tree",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "halving-doubling",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "exact-gather",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "shard-tree (S = 64)",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "model": "trained",
+      "weights_checksum": "a1cf5b4453b7bcb9",
+      "policies": [
+        {
+          "policy": "bf16",
+          "baseline": {
+            "tokens": 768,
+            "copy_tokens_correct": 768,
+            "margin_min": 5.5726118087768555,
+            "margin_p10": 8.661904335021973,
+            "margin_p50": 9.378122329711914,
+            "margin_p90": 10.006325721740723,
+            "margin_ulps_p10": 4561860.5,
+            "margin_ulps_p50": 4924328.25
+          },
+          "divergence": {
+            "runs": 19,
+            "runs_with_divergence": 0,
+            "prompts": 608,
+            "prompts_diverged": 0,
+            "prompts_logits_identical": 0,
+            "at_risk_tokens": 14592,
+            "flips": 0,
+            "flip_rate": 0.0,
+            "within_reach": 0,
+            "perturbation_ulps_p50": 14777.0,
+            "perturbation_ulps_p90": 19474.8125
+          }
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "baseline": {
+            "tokens": 768,
+            "copy_tokens_correct": 768,
+            "margin_min": 5.5726118087768555,
+            "margin_p10": 8.661904335021973,
+            "margin_p50": 9.378122329711914,
+            "margin_p90": 10.006325721740723,
+            "margin_ulps_p10": 4561860.5,
+            "margin_ulps_p50": 4924328.25
+          },
+          "divergence": {
+            "runs": 19,
+            "runs_with_divergence": 0,
+            "prompts": 608,
+            "prompts_diverged": 0,
+            "prompts_logits_identical": 0,
+            "at_risk_tokens": 14592,
+            "flips": 0,
+            "flip_rate": 0.0,
+            "within_reach": 0,
+            "perturbation_ulps_p50": 0.0,
+            "perturbation_ulps_p90": 22.625
+          }
+        }
+      ],
+      "grid": [
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "sequential",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "ring",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "binomial-tree",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "halving-doubling",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "exact-gather",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 1,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "bf16",
+          "schedule": "shard-tree (S = 64)",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "sequential",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "ring",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "binomial-tree",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "halving-doubling",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "exact-gather",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 1,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 2,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 4,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        },
+        {
+          "policy": "fp32-rs/bf16-ag",
+          "schedule": "shard-tree (S = 64)",
+          "world": 8,
+          "prompts_diverged": 0,
+          "prompts_logits_identical": 0,
+          "at_risk_tokens": 768,
+          "flips": 0
+        }
+      ],
+      "batch_invariance": {
+        "rows": 14,
+        "prediction_held": true,
+        "predicted_invariant_rows": 12,
+        "predicted_invariant_rows_differing": 0,
+        "ring_rows": 2,
+        "ring_rows_differing": 2,
+        "token_cells_differing": 0,
+        "rows_detail": [
+          {
+            "world": 1,
+            "schedule": "ring",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 1,
+            "schedule": "ring",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "sequential",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "ring",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 32,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "binomial-tree",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "halving-doubling",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "exact-gather",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "shard-tree (S = 64)",
+            "policy": "bf16",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "sequential",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "ring",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 12,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 10,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 10,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 13,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 11,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 13,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 12,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "binomial-tree",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "halving-doubling",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "exact-gather",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          },
+          {
+            "world": 4,
+            "schedule": "shard-tree (S = 64)",
+            "policy": "fp32-rs/bf16-ag",
+            "variants": [
+              {
+                "variant": "together",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "reversed arrival",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 8",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "chunk 64",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "prefix cache",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "recompute preemption",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              },
+              {
+                "variant": "failure + retry",
+                "prompts_logits_differ": 0,
+                "prompts_tokens_differ": 0
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

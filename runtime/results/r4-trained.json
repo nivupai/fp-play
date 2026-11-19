@@ -1,0 +1,4026 @@
+{
+  "command": "fp-play-runtime experiment --out results",
+  "prompts": {
+    "task": "copy: BOS s1 … s24 SEP",
+    "count": 8,
+    "prompt_tokens": 26,
+    "continuation": 24
+  },
+  "levels": ["fp32", "bf16", "bf16-acc", "fp16", "fp16-acc", "fp8-e4m3", "fp8-e5m2", "int8"],
+  "models": [
+    {
+      "model": "random",
+      "reference_copy_tokens_correct": 0,
+      "reference_perplexity": 84.17439932861919,
+      "runs": [
+        {
+          "policy": "all fp32",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0,
+          "mean_rms_logit_difference": 0.0,
+          "mean_kl": 0.0,
+          "top1_agreement": 192,
+          "perplexity": 84.17439932861919,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all bf16",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.054493069648742676,
+          "mean_rms_logit_difference": 0.00993165349655867,
+          "mean_kl": 4.9832120597164857e-5,
+          "top1_agreement": 190,
+          "perplexity": 84.03584472605573,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, 16, null, null, null, null, null]
+        },
+        {
+          "policy": "all bf16-acc",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.402148962020874,
+          "mean_rms_logit_difference": 0.07236068472331136,
+          "mean_kl": 0.002743275581585424,
+          "top1_agreement": 171,
+          "perplexity": 84.53295528803413,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [1, 1, 13, 5, 5, 12, 13, 11]
+        },
+        {
+          "policy": "all fp16",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.006611824035644531,
+          "mean_rms_logit_difference": 0.0012354432700368311,
+          "mean_kl": 7.75388445855841e-7,
+          "top1_agreement": 192,
+          "perplexity": 84.16993117072728,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp16-acc",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.05255329608917236,
+          "mean_rms_logit_difference": 0.00928345640901085,
+          "mean_kl": 4.575123539712857e-5,
+          "top1_agreement": 190,
+          "perplexity": 84.17530604972055,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, 16, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp8-e4m3",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e4m3"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.7510409355163574,
+          "mean_rms_logit_difference": 0.14970531163294126,
+          "mean_kl": 0.011312063338439685,
+          "top1_agreement": 160,
+          "perplexity": 87.15145839236516,
+          "greedy_diverged": 7,
+          "greedy_first_divergence": [11, 5, 0, 0, 9, 11, null, 1]
+        },
+        {
+          "policy": "all fp8-e5m2",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e5m2"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 1.7186143100261688,
+          "mean_rms_logit_difference": 0.29763217630115885,
+          "mean_kl": 0.04509282290750238,
+          "top1_agreement": 124,
+          "perplexity": 97.26938459394779,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [1, 0, 1, 0, 7, 8, 0, 2]
+        },
+        {
+          "policy": "all int8",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "KV cache",
+              "level": "int8"
+            },
+            {
+              "site": "embedding and head",
+              "level": "int8"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.2697036527097225,
+          "mean_rms_logit_difference": 0.0443849011323671,
+          "mean_kl": 0.000998004814422454,
+          "top1_agreement": 187,
+          "perplexity": 83.99602343815266,
+          "greedy_diverged": 3,
+          "greedy_first_divergence": [19, null, 13, 20, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.03815901279449463,
+          "mean_rms_logit_difference": 0.006344877895485347,
+          "mean_kl": 2.034177467750223e-5,
+          "top1_agreement": 192,
+          "perplexity": 84.19513999938685,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.2865478992462158,
+          "mean_rms_logit_difference": 0.05103284955879019,
+          "mean_kl": 0.0013245667117830762,
+          "top1_agreement": 181,
+          "perplexity": 84.82484633100718,
+          "greedy_diverged": 6,
+          "greedy_first_divergence": [14, 4, 14, 16, 7, null, null, 14]
+        },
+        {
+          "policy": "layer 0 attention at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.004798956215381622,
+          "mean_rms_logit_difference": 0.0007882981494004628,
+          "mean_kl": 3.1873756358604876e-7,
+          "top1_agreement": 192,
+          "perplexity": 84.16281655802777,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.034410953521728516,
+          "mean_rms_logit_difference": 0.006389426934820963,
+          "mean_kl": 2.0804500478729548e-5,
+          "top1_agreement": 190,
+          "perplexity": 84.11402876436632,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, 16, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.5346839725971222,
+          "mean_rms_logit_difference": 0.10057782967214819,
+          "mean_kl": 0.005156689245025897,
+          "top1_agreement": 165,
+          "perplexity": 84.59240472723428,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [0, 4, 13, 0, 5, 12, 0, 2]
+        },
+        {
+          "policy": "layer 0 attention at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 1.0006594955921173,
+          "mean_rms_logit_difference": 0.19779665750349115,
+          "mean_kl": 0.019877281585934648,
+          "top1_agreement": 138,
+          "perplexity": 89.92888294170001,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [11, 3, 10, 0, 0, 8, 0, 2]
+        },
+        {
+          "policy": "layer 0 attention at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.1481008529663086,
+          "mean_rms_logit_difference": 0.026848856492802053,
+          "mean_kl": 0.00037168802014681115,
+          "top1_agreement": 185,
+          "perplexity": 83.86658914392905,
+          "greedy_diverged": 5,
+          "greedy_first_divergence": [19, null, 13, 21, null, null, 0, 20]
+        },
+        {
+          "policy": "layer 0 MLP at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.021572470664978027,
+          "mean_rms_logit_difference": 0.004098318415024563,
+          "mean_kl": 8.519764613689879e-6,
+          "top1_agreement": 191,
+          "perplexity": 84.16568776046338,
+          "greedy_diverged": 1,
+          "greedy_first_divergence": [19, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.2701326608657837,
+          "mean_rms_logit_difference": 0.03871874661910051,
+          "mean_kl": 0.0007602184194295097,
+          "top1_agreement": 186,
+          "perplexity": 84.3044894588054,
+          "greedy_diverged": 3,
+          "greedy_first_divergence": [23, null, 13, null, 7, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.002736330032348633,
+          "mean_rms_logit_difference": 0.0005083653362900833,
+          "mean_kl": 1.3102025531310866e-7,
+          "top1_agreement": 192,
+          "perplexity": 84.17650452987488,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.02576175332069397,
+          "mean_rms_logit_difference": 0.005028739410186059,
+          "mean_kl": 1.296725370844682e-5,
+          "top1_agreement": 192,
+          "perplexity": 84.19547186026756,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3790415171533823,
+          "mean_rms_logit_difference": 0.0647480476300593,
+          "mean_kl": 0.0021045708514833756,
+          "top1_agreement": 171,
+          "perplexity": 84.18381358435099,
+          "greedy_diverged": 6,
+          "greedy_first_divergence": [11, 3, 22, 0, 0, null, null, 8]
+        },
+        {
+          "policy": "layer 0 MLP at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.7029977142810822,
+          "mean_rms_logit_difference": 0.12691197332321638,
+          "mean_kl": 0.008169812114725492,
+          "top1_agreement": 163,
+          "perplexity": 86.08756533299191,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [1, 0, 2, 0, 7, 12, 3, 2]
+        },
+        {
+          "policy": "layer 0 MLP at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.1422901749610901,
+          "mean_rms_logit_difference": 0.023802624944356605,
+          "mean_kl": 0.00028845924732352,
+          "top1_agreement": 189,
+          "perplexity": 84.06761884641215,
+          "greedy_diverged": 3,
+          "greedy_first_divergence": [23, null, null, 0, 20, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.012052208185195923,
+          "mean_rms_logit_difference": 0.002210943575648969,
+          "mean_kl": 2.4502745860723006e-6,
+          "top1_agreement": 192,
+          "perplexity": 84.13014930426863,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.08591657131910324,
+          "mean_rms_logit_difference": 0.016192309590162667,
+          "mean_kl": 0.00013283802078952798,
+          "top1_agreement": 187,
+          "perplexity": 84.09990485842295,
+          "greedy_diverged": 5,
+          "greedy_first_divergence": [19, 4, null, 0, null, 12, null, 14]
+        },
+        {
+          "policy": "layer 1 attention at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0015287399291992188,
+          "mean_rms_logit_difference": 0.0002798137354381662,
+          "mean_kl": 3.9653727999604004e-8,
+          "top1_agreement": 192,
+          "perplexity": 84.17720750753527,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.01037508249282837,
+          "mean_rms_logit_difference": 0.002030288313913184,
+          "mean_kl": 2.086043522194519e-6,
+          "top1_agreement": 192,
+          "perplexity": 84.1568410264644,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.20315074920654297,
+          "mean_rms_logit_difference": 0.03471747156561616,
+          "mean_kl": 0.0006070939462975469,
+          "top1_agreement": 182,
+          "perplexity": 84.10104057404993,
+          "greedy_diverged": 4,
+          "greedy_first_divergence": [11, null, 13, 0, null, null, null, 18]
+        },
+        {
+          "policy": "layer 1 attention at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3575669601559639,
+          "mean_rms_logit_difference": 0.06950027812903915,
+          "mean_kl": 0.0024416382831494734,
+          "top1_agreement": 174,
+          "perplexity": 85.23968020058538,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [0, 1, 13, 2, 7, 8, 0, 14]
+        },
+        {
+          "policy": "layer 1 attention at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.046941518783569336,
+          "mean_rms_logit_difference": 0.00929488175660048,
+          "mean_kl": 4.351132623743473e-5,
+          "top1_agreement": 190,
+          "perplexity": 84.10072033414944,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, 13, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.011918067932128906,
+          "mean_rms_logit_difference": 0.0022739272653883903,
+          "mean_kl": 2.6209292199282625e-6,
+          "top1_agreement": 192,
+          "perplexity": 84.15435836015484,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.12424397468566895,
+          "mean_rms_logit_difference": 0.022957384396512067,
+          "mean_kl": 0.00026737656371276326,
+          "top1_agreement": 188,
+          "perplexity": 84.00562352278641,
+          "greedy_diverged": 4,
+          "greedy_first_divergence": [19, null, 19, null, 20, null, null, 18]
+        },
+        {
+          "policy": "layer 1 MLP at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0014646053314208984,
+          "mean_rms_logit_difference": 0.00028621897119778146,
+          "mean_kl": 4.1587648253078974e-8,
+          "top1_agreement": 192,
+          "perplexity": 84.17274707497256,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.015981197357177734,
+          "mean_rms_logit_difference": 0.002982251485913076,
+          "mean_kl": 4.5024773894950684e-6,
+          "top1_agreement": 190,
+          "perplexity": 84.17352947912896,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, null, null, 20, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.18004903197288513,
+          "mean_rms_logit_difference": 0.035881898718047665,
+          "mean_kl": 0.0006478630026772904,
+          "top1_agreement": 183,
+          "perplexity": 84.7511753430936,
+          "greedy_diverged": 5,
+          "greedy_first_divergence": [11, 4, 16, 0, null, null, null, 18]
+        },
+        {
+          "policy": "layer 1 MLP at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3527686595916748,
+          "mean_rms_logit_difference": 0.07197885893118806,
+          "mean_kl": 0.002600684755247358,
+          "top1_agreement": 173,
+          "perplexity": 84.6558422497248,
+          "greedy_diverged": 7,
+          "greedy_first_divergence": [0, 4, 13, 0, 5, 12, null, 14]
+        },
+        {
+          "policy": "layer 1 MLP at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.10229897499084473,
+          "mean_rms_logit_difference": 0.014127665192068756,
+          "mean_kl": 0.00010310726882195043,
+          "top1_agreement": 189,
+          "perplexity": 84.33025861029631,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, null, null, 7, null, null, null]
+        },
+        {
+          "policy": "KV cache at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.018544964492321014,
+          "mean_rms_logit_difference": 0.0032549385667389164,
+          "mean_kl": 5.417635473343863e-6,
+          "top1_agreement": 192,
+          "perplexity": 84.15980649826462,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0022602081298828125,
+          "mean_rms_logit_difference": 0.00041687400076879125,
+          "mean_kl": 8.764827281902555e-8,
+          "top1_agreement": 191,
+          "perplexity": 84.16925758203524,
+          "greedy_diverged": 1,
+          "greedy_first_divergence": [19, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.30317312479019165,
+          "mean_rms_logit_difference": 0.045533233648025716,
+          "mean_kl": 0.00105619739839859,
+          "top1_agreement": 180,
+          "perplexity": 84.53313183722507,
+          "greedy_diverged": 6,
+          "greedy_first_divergence": [11, 4, 13, 0, 14, null, null, 7]
+        },
+        {
+          "policy": "KV cache at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.47770535945892334,
+          "mean_rms_logit_difference": 0.09088201819354208,
+          "mean_kl": 0.004195810571993951,
+          "top1_agreement": 166,
+          "perplexity": 85.45758452950025,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [11, 20, 0, 0, 5, 12, 13, 2]
+        },
+        {
+          "policy": "KV cache at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "int8"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.06085705757141113,
+          "mean_rms_logit_difference": 0.00952045215533066,
+          "mean_kl": 4.654270073915708e-5,
+          "top1_agreement": 189,
+          "perplexity": 84.06750049919896,
+          "greedy_diverged": 3,
+          "greedy_first_divergence": [11, null, 16, null, 20, null, null, null]
+        },
+        {
+          "policy": "embedding and head at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.026539504528045654,
+          "mean_rms_logit_difference": 0.004455187933812465,
+          "mean_kl": 9.981380095751716e-6,
+          "top1_agreement": 190,
+          "perplexity": 84.206370583885,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, null, null, 20, null, null, null]
+        },
+        {
+          "policy": "embedding and head at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.175262451171875,
+          "mean_rms_logit_difference": 0.01923602865134631,
+          "mean_kl": 0.0003127192659574914,
+          "top1_agreement": 181,
+          "perplexity": 84.4437494691289,
+          "greedy_diverged": 6,
+          "greedy_first_divergence": [19, 4, 19, 16, 20, null, 13, null]
+        },
+        {
+          "policy": "embedding and head at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0032629668712615967,
+          "mean_rms_logit_difference": 0.0005598961813622021,
+          "mean_kl": 1.584815724400903e-7,
+          "top1_agreement": 192,
+          "perplexity": 84.16548423666052,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.029612064361572266,
+          "mean_rms_logit_difference": 0.002427374486276099,
+          "mean_kl": 4.92317440262774e-6,
+          "top1_agreement": 191,
+          "perplexity": 84.13486793081948,
+          "greedy_diverged": 1,
+          "greedy_first_divergence": [null, null, null, null, 20, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e4m3"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3628982603549957,
+          "mean_rms_logit_difference": 0.0700491581647431,
+          "mean_kl": 0.0024878457304056633,
+          "top1_agreement": 167,
+          "perplexity": 85.27259839366086,
+          "greedy_diverged": 7,
+          "greedy_first_divergence": [12, 4, 0, 0, 7, 12, null, 2]
+        },
+        {
+          "policy": "embedding and head at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e5m2"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.730246365070343,
+          "mean_rms_logit_difference": 0.141153830164006,
+          "mean_kl": 0.010099610033599939,
+          "top1_agreement": 152,
+          "perplexity": 87.31046458540615,
+          "greedy_diverged": 8,
+          "greedy_first_divergence": [2, 0, 0, 1, 5, 8, 13, 7]
+        },
+        {
+          "policy": "embedding and head at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "int8"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.10002314299345016,
+          "mean_rms_logit_difference": 0.018170244866662515,
+          "mean_kl": 0.0001657483567205267,
+          "top1_agreement": 190,
+          "perplexity": 84.46587269982355,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [19, null, 13, null, null, null, null, null]
+        },
+        {
+          "policy": "BF16 storage, BF16 accumulation in the MLPs only",
+          "kind": "mixed",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.23263651132583618,
+          "mean_rms_logit_difference": 0.04541463255174149,
+          "mean_kl": 0.0010502512121092187,
+          "top1_agreement": 178,
+          "perplexity": 84.53977766552237,
+          "greedy_diverged": 5,
+          "greedy_first_divergence": [14, null, 2, 0, 7, 12, null, null]
+        },
+        {
+          "policy": "FP16 storage, FP16 accumulation except the head",
+          "kind": "mixed",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.05220901966094971,
+          "mean_rms_logit_difference": 0.008976743341043958,
+          "mean_kl": 4.106510228773073e-5,
+          "top1_agreement": 190,
+          "perplexity": 84.19149147268914,
+          "greedy_diverged": 2,
+          "greedy_first_divergence": [null, null, 16, null, 20, null, null, null]
+        }
+      ]
+    },
+    {
+      "model": "trained",
+      "reference_copy_tokens_correct": 192,
+      "reference_perplexity": 1.0014156996342494,
+      "runs": [
+        {
+          "policy": "all fp32",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0,
+          "mean_rms_logit_difference": 0.0,
+          "mean_kl": 0.0,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156996342494,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all bf16",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.06210547685623169,
+          "mean_rms_logit_difference": 0.00874777157041718,
+          "mean_kl": 7.851093204127853e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014168258233087,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all bf16-acc",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.671905517578125,
+          "mean_rms_logit_difference": 0.07288056740621603,
+          "mean_kl": 5.7009389210574295e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0016384702075274,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp16",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.005316495895385742,
+          "mean_rms_logit_difference": 0.0010738958709448816,
+          "mean_kl": 1.220227038843155e-9,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156084221126,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp16-acc",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.08699798583984375,
+          "mean_rms_logit_difference": 0.009257840340485218,
+          "mean_kl": 8.236858467956815e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014150774462043,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp8-e4m3",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e4m3"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.6379632949829102,
+          "mean_rms_logit_difference": 0.13388566356553003,
+          "mean_kl": 2.039359549093671e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0014946992228286,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all fp8-e5m2",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e5m2"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 1.6166691184043884,
+          "mean_rms_logit_difference": 0.2712690422860942,
+          "mean_kl": 9.23805766425287e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0016741731331533,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "all int8",
+          "kind": "uniform",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "KV cache",
+              "level": "int8"
+            },
+            {
+              "site": "embedding and head",
+              "level": "int8"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.18117566406726837,
+          "mean_rms_logit_difference": 0.037811996190805934,
+          "mean_kl": 1.3363387282740756e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014232335216173,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.026236027479171753,
+          "mean_rms_logit_difference": 0.004625516476058322,
+          "mean_kl": 2.0493760894183206e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156972298394,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.24248802661895752,
+          "mean_rms_logit_difference": 0.04248569218787553,
+          "mean_kl": 1.6592737627343221e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014155567546426,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0031332969665527344,
+          "mean_rms_logit_difference": 0.0005671760940188816,
+          "mean_kl": 2.9813623662202627e-10,
+          "top1_agreement": 192,
+          "perplexity": 1.001415714909774,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.03175884485244751,
+          "mean_rms_logit_difference": 0.00532703555933908,
+          "mean_kl": 2.604482735674816e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014151154204551,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3784937858581543,
+          "mean_rms_logit_difference": 0.07348622342569375,
+          "mean_kl": 5.065252250880832e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.001428734958507,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.9055631458759308,
+          "mean_rms_logit_difference": 0.14536738723305356,
+          "mean_kl": 2.0363004069600635e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0014720972909674,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 attention at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.10061931610107422,
+          "mean_rms_logit_difference": 0.019446868372743453,
+          "mean_kl": 3.3549048330380917e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.00141779566796,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.007825613021850586,
+          "mean_rms_logit_difference": 0.0013356150938370198,
+          "mean_kl": 1.7070765748316307e-9,
+          "top1_agreement": 192,
+          "perplexity": 1.001415588998007,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.15030646324157715,
+          "mean_rms_logit_difference": 0.01797321589660728,
+          "mean_kl": 3.0907471638595e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014139568519909,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0010688304901123047,
+          "mean_rms_logit_difference": 0.00017089924411759427,
+          "mean_kl": 2.7250262925070063e-11,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156991976582,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.020108580589294434,
+          "mean_rms_logit_difference": 0.002328275685281748,
+          "mean_kl": 5.442690916831581e-9,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156334943654,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.14518845081329346,
+          "mean_rms_logit_difference": 0.021087148598221837,
+          "mean_kl": 4.1484514332232266e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.001416554997559,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.2432938665151596,
+          "mean_rms_logit_difference": 0.041992626795803366,
+          "mean_kl": 1.683905692327978e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014223826686681,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 0 MLP at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.07692933082580566,
+          "mean_rms_logit_difference": 0.009571390293058842,
+          "mean_kl": 9.3771661265681e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014151977077044,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.020679235458374023,
+          "mean_rms_logit_difference": 0.004345591963174692,
+          "mean_kl": 1.6885287246935284e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156710085846,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.5966908931732178,
+          "mean_rms_logit_difference": 0.03561014666792317,
+          "mean_kl": 1.4463891257297941e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014184374650836,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0027222037315368652,
+          "mean_rms_logit_difference": 0.0005506542050210584,
+          "mean_kl": 2.736573769893639e-10,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156934405394,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.10825665295124054,
+          "mean_rms_logit_difference": 0.004545254843703268,
+          "mean_kl": 3.118274964243072e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014168816473796,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3256860375404358,
+          "mean_rms_logit_difference": 0.06802171942030706,
+          "mean_kl": 4.2927546052032085e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.001439277716481,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.696315348148346,
+          "mean_rms_logit_difference": 0.13586748990427336,
+          "mean_kl": 1.736142631046926e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0014789217059286,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 attention at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "int8"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0953068733215332,
+          "mean_rms_logit_difference": 0.018806276594486623,
+          "mean_kl": 3.075283143033756e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014155256433723,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.008933067321777344,
+          "mean_rms_logit_difference": 0.001692613877529922,
+          "mean_kl": 3.070740206783192e-9,
+          "top1_agreement": 192,
+          "perplexity": 1.0014156550424387,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.10584044456481934,
+          "mean_rms_logit_difference": 0.019989309862437233,
+          "mean_kl": 4.2531257980074516e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014194915053394,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0011032819747924805,
+          "mean_rms_logit_difference": 0.00021407175474801802,
+          "mean_kl": 4.6369023621835406e-11,
+          "top1_agreement": 192,
+          "perplexity": 1.0014157220063304,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.015506267547607422,
+          "mean_rms_logit_difference": 0.0026845669891627532,
+          "mean_kl": 7.509728926858054e-9,
+          "top1_agreement": 192,
+          "perplexity": 1.001415771518181,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.15183481574058533,
+          "mean_rms_logit_difference": 0.026702156842871246,
+          "mean_kl": 8.149781510881235e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.001421652639586,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.28753745555877686,
+          "mean_rms_logit_difference": 0.05341455599712019,
+          "mean_kl": 3.293118462172244e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014412564333273,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "layer 1 MLP at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "int8"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.07680177688598633,
+          "mean_rms_logit_difference": 0.011557380557168014,
+          "mean_kl": 1.4215654963413413e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014168651477293,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.038911640644073486,
+          "mean_rms_logit_difference": 0.0039177372888844625,
+          "mean_kl": 1.4868841281676766e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.001415737621,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.009682893753051758,
+          "mean_rms_logit_difference": 0.0004979870734102488,
+          "mean_kl": 3.091345762160851e-10,
+          "top1_agreement": 192,
+          "perplexity": 1.0014157453258108,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e4m3"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.3079482913017273,
+          "mean_rms_logit_difference": 0.050782756299982384,
+          "mean_kl": 2.3920308753507636e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014210793849407,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp8-e5m2"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 1.438765048980713,
+          "mean_rms_logit_difference": 0.10528189302200087,
+          "mean_kl": 1.2480261034498373e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0014488719908645,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "KV cache at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "int8"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp32"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.14548873901367188,
+          "mean_rms_logit_difference": 0.011000097277790243,
+          "mean_kl": 1.1071835838133393e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.001415606017441,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at bf16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.023563265800476074,
+          "mean_rms_logit_difference": 0.004465126209385112,
+          "mean_kl": 3.087983216529645e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.001415952246957,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at bf16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.671905517578125,
+          "mean_rms_logit_difference": 0.039295208368015234,
+          "mean_kl": 5.217160801485274e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0016448903332973,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp16",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.0027998685836791992,
+          "mean_rms_logit_difference": 0.0005589284177375985,
+          "mean_kl": 4.396045097105423e-10,
+          "top1_agreement": 192,
+          "perplexity": 1.0014155940573979,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp16-acc",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16-acc"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.11824798583984375,
+          "mean_rms_logit_difference": 0.004988611317490998,
+          "mean_kl": 8.019260618236857e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014173250225635,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp8-e4m3",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e4m3"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.35174083709716797,
+          "mean_rms_logit_difference": 0.07007547610372965,
+          "mean_kl": 7.818339586955043e-6,
+          "top1_agreement": 192,
+          "perplexity": 1.0014478206518984,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at fp8-e5m2",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp8-e5m2"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.6822009086608887,
+          "mean_rms_logit_difference": 0.14040460360483023,
+          "mean_kl": 2.8967795482898393e-5,
+          "top1_agreement": 192,
+          "perplexity": 1.0015108875354475,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "embedding and head at int8",
+          "kind": "one site",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp32"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp32"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp32"
+            },
+            {
+              "site": "embedding and head",
+              "level": "int8"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.09052467346191406,
+          "mean_rms_logit_difference": 0.018738875449056832,
+          "mean_kl": 3.666242448134949e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.0014183068776166,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "BF16 storage, BF16 accumulation in the MLPs only",
+          "kind": "mixed",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "bf16"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "bf16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "bf16"
+            },
+            {
+              "site": "embedding and head",
+              "level": "bf16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.18423348665237427,
+          "mean_rms_logit_difference": 0.028713978201952758,
+          "mean_kl": 7.979707902163249e-7,
+          "top1_agreement": 192,
+          "perplexity": 1.001421434312452,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        },
+        {
+          "policy": "FP16 storage, FP16 accumulation except the head",
+          "kind": "mixed",
+          "levels": [
+            {
+              "site": "layer 0 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 0 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 attention",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "layer 1 MLP",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "KV cache",
+              "level": "fp16-acc"
+            },
+            {
+              "site": "embedding and head",
+              "level": "fp16"
+            }
+          ],
+          "tokens": 192,
+          "scored_tokens": 192,
+          "nonfinite_logits": 0,
+          "max_abs_logit_difference": 0.03670859336853027,
+          "mean_rms_logit_difference": 0.007817000198056546,
+          "mean_kl": 5.665056481020788e-8,
+          "top1_agreement": 192,
+          "perplexity": 1.0014153763823317,
+          "greedy_diverged": 0,
+          "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+        }
+      ]
+    }
+  ]
+}

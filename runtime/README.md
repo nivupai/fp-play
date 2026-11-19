@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 173 tests, including the recorded-artifact checks
+cargo test --release                              # 178 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -398,6 +398,25 @@ order, so the weights do not depend on the thread count. See
   the same weights to rounding (so the trained model is the model the
   experiments run); the multi-threaded batch gradient equals the in-order
   single-thread sum bit for bit.
+
+### R3 and R4 rerun on the trained model
+
+`results/r3-trained.*` and `results/r4-trained.*` rerun R3's divergence and
+batch-invariance experiment and R4's precision study (every level,
+including FP8 and INT8) on the trained model beside the original
+random-weight models, on the same copy prompts (`train/rerun.rs`).
+
+- Median top-2 margin at P = 1: 9.3781 logits trained, 0.2447 random.
+- Flips over the divergence grid: BF16 wire 160 of 12,527 at-risk tokens
+  (random) and 0 of 14,592 (trained); FP32 reduce-scatter 6 of 14,484 and 0
+  of 14,592. No prompt's logits are bit-identical to the baseline in any
+  run for either model; 0 of 29,184 trained at-risk tokens are within reach
+  of a flip (margin ≤ 2 × perturbation). The batch-invariance prediction
+  held for both models.
+- Every site at one level, mean KL against FP32 (random / trained):
+  `fp8-e4m3` 1.13e-2 / 2.04e-5, `fp8-e5m2` 4.51e-2 / 9.24e-5, `int8`
+  9.98e-4 / 1.34e-6, `bf16-acc` 2.74e-3 / 5.70e-5. The trained model keeps
+  192 of 192 top-1 tokens and every greedy continuation at every level.
 
 ## R5: a transformer layer on a toy accelerator
 
