@@ -32,7 +32,7 @@ jobs:
       - name: Planted-bug tests (compile-time planted-bugs feature; recording commands refuse to run in this build)
         run: |
           cargo clippy --all-targets --locked --features planted-bugs -- -D warnings
-          cargo test --release --locked --features planted-bugs --test planted_build --test serving_kv --test serving_engine --test serving_faults --test decoder_planted
+          cargo test --release --locked --features planted-bugs --test planted_build --test serving_kv --test serving_engine --test serving_faults --test decoder_planted --test precision_planted
       - name: Independent Python Fraction vectors are current
         run: |
           python3 -I scripts/gen_sum_vectors.py > /tmp/exact-sums.txt
@@ -45,3 +45,7 @@ jobs:
         run: |
           python3 -I scripts/gen_decoder_vectors.py > /tmp/decoder.txt
           cmp /tmp/decoder.txt tests/vectors/decoder.txt
+      - name: Independent Python fused-chain vectors are current
+        run: |
+          python3 -I scripts/gen_chain_vectors.py > /tmp/chain-dots.txt
+          cmp /tmp/chain-dots.txt tests/vectors/chain-dots.txt

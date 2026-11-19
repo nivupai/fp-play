@@ -138,7 +138,7 @@ impl Top2 {
 /// `θ_i = base^(−2i/d)` are computed in binary64 with [`super::mathf`] and
 /// rounded once to binary32.
 #[derive(Clone, Debug)]
-struct Rope {
+pub(crate) struct Rope {
     half: usize,
     theta: Vec<f64>,
     cos: Vec<f32>,
@@ -146,7 +146,7 @@ struct Rope {
 }
 
 impl Rope {
-    fn new(config: &DecoderConfig) -> Rope {
+    pub(crate) fn new(config: &DecoderConfig) -> Rope {
         let half = config.head_dim / 2;
         let ln_base = ln(config.rope_base);
         let theta = (0..half)
@@ -160,7 +160,7 @@ impl Rope {
         }
     }
 
-    fn ensure(&mut self, positions: usize) {
+    pub(crate) fn ensure(&mut self, positions: usize) {
         while self.cos.len() < positions * self.half {
             let pos = self.cos.len() / self.half;
             for i in 0..self.half {
@@ -172,7 +172,7 @@ impl Rope {
     }
 
     /// Rotate each head of `x` in place (rotate-half pairing: i with i + d/2).
-    fn apply(&self, x: &mut [f32], pos: usize, head_dim: usize) {
+    pub(crate) fn apply(&self, x: &mut [f32], pos: usize, head_dim: usize) {
         let cos = &self.cos[pos * self.half..(pos + 1) * self.half];
         let sin = &self.sin[pos * self.half..(pos + 1) * self.half];
         for head in x.chunks_mut(head_dim) {
