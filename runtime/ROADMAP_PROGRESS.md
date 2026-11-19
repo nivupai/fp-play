@@ -31,7 +31,8 @@ removed, and that is noted here.
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | merged (#32) |
 | S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | merged (#34) |
 | R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | merged (#35) |
-| R4d  | FP8 E4M3 / E5M2 and INT8 levels with scales, Python vectors, exhaustive checks                                                       | in progress  |
+| R4d  | FP8 E4M3 / E5M2 and INT8 levels with scales, Python vectors, exhaustive checks                                                       | merged (#36) |
+| R4e  | R3 and R4 rerun on the trained model: `results/r3-trained.*`, `results/r4-trained.*`                                                 | in progress  |
 
 ## Disk checks
 
@@ -331,3 +332,35 @@ Started 2026-11-19 under the same rules and authority. Order and PRs:
 - Batch loss 8.12 → 0.00143 nats per token over 600 steps; first perfect
   batch at step 144. Held-out: 100.00% teacher-forced (256 sequences); 64 of
   64 prompts copied exactly by all three inference models.
+
+- **RD-26 Rerun comparisons use the original experiments' random-weight
+  models** (R3's BF16 weights, checksum `a77eb64e8be2d81b`; R4's FP32
+  master weights) on the same copy prompts as the trained model, rather
+  than the training's own initialization: the random rows are then the
+  r3-decode/r4-precision models on new prompts. Prompts: R3's workload
+  shape (32 prompts, 4 groups sharing 8 tokens, block size 4) with
+  `BOS s1 … s24 SEP` prompts and 24 generated tokens; R4: 8 copy prompts,
+  24-token continuation.
+- **RD-27 One logit scale** (1) in the R3 rerun: R3 showed a positive scale
+  cannot change greedy tokens. P ∈ {2, 4, 8}, every schedule, the shard
+  tree at P = 1, both wire policies, batch invariance at P = 4 and P = 1.
+- **RD-28 R4 rerun levels:** all eight levels uniform, each of the six
+  sites alone at the seven lower levels (the KV cache at its five storage
+  levels), and R4's two mixed policies: 50 policies per model.
+- **RD-29 Report wording is data-driven** for every comparative sentence
+  (margins, flips, within-reach counts, bit-identical counts, the most
+  sensitive site per level); the stale test (`tests/trained_experiment.rs`,
+  about 75 s locally) loads the committed weights through `load_trained`.
+
+## R4e results (results/r3-trained.md, results/r4-trained.md)
+
+- Median top-2 margin at P = 1: 9.3781 (trained) vs 0.2447 (random) logits;
+  smallest trained margin 5.5726.
+- Flips: BF16 wire 160/12,527 (random) vs 0/14,592 (trained); FP32
+  reduce-scatter 6/14,484 vs 0/14,592. No bit-identical prompt logits in any
+  run. Within reach: 1,784/27,011 (random) vs 0/29,184 (trained). The
+  batch-invariance prediction held for both.
+- Uniform mean KL, random / trained: fp8-e4m3 1.13e-2 / 2.04e-5, fp8-e5m2
+  4.51e-2 / 9.24e-5, int8 9.98e-4 / 1.34e-6. Trained: 192/192 top-1 and no
+  greedy change at every level. Most sensitive site at each 8-bit level:
+  layer 0 attention (random), embedding and head (trained).

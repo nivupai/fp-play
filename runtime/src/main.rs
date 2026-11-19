@@ -31,7 +31,9 @@ USAGE:
       policies), r5-dataflow (R5: a layer on a toy accelerator) and
       r6-collectives (R6: data for the app's #collectives workspace) and
       r4-training (the copy-task model's training run, plus its weights
-      r4-trained-weights.bin), each with its own fixed configuration; the
+      r4-trained-weights.bin), r3-trained and r4-trained (R3 and R4 rerun
+      on the trained model beside the random-weight model), each with its
+      own fixed configuration; the
       flags above do not apply to them.
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
@@ -219,6 +221,9 @@ fn experiment(args: &[String]) -> Result<(), String> {
     let precision = fp_play_runtime::precision::experiment::run(&Default::default())?;
     let dataflow = fp_play_runtime::dataflow::experiment::run(&Default::default());
     let training = fp_play_runtime::train::report::run(&Default::default());
+    let trained = training.result.master();
+    let r3_trained = fp_play_runtime::train::rerun::run_r3(&trained)?;
+    let r4_trained = fp_play_runtime::train::rerun::run_r4(&trained)?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -270,6 +275,16 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r4-training",
             fp_play_runtime::train::report::to_json(&training, &command).to_pretty(),
             fp_play_runtime::train::report::to_markdown(&training, &command),
+        ),
+        (
+            "r3-trained",
+            fp_play_runtime::train::rerun_report::r3_to_json(&r3_trained, &command).to_pretty(),
+            fp_play_runtime::train::rerun_report::r3_to_markdown(&r3_trained, &command),
+        ),
+        (
+            "r4-trained",
+            fp_play_runtime::train::rerun_report::r4_to_json(&r4_trained, &command).to_pretty(),
+            fp_play_runtime::train::rerun_report::r4_to_markdown(&r4_trained, &command),
         ),
     ];
     for (name, json, markdown) in artifacts {

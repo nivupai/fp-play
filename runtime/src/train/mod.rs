@@ -22,6 +22,8 @@ pub mod checks;
 pub mod net;
 pub mod real;
 pub mod report;
+pub mod rerun;
+pub mod rerun_report;
 pub mod task;
 
 use std::sync::atomic::{AtomicUsize, Ordering};

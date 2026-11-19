@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — runtime R4 completion: reruns on the trained model
+
+- New recorded artifacts `runtime/results/r3-trained.{json,md}` (R3's divergence grid, top-2 margins and batch-invariance matrix on the trained model beside R3's random-weight model, same copy prompts) and `runtime/results/r4-trained.{json,md}` (R4's precision study at every level including FP8 and INT8, both models). Stale-checked against the committed weights.
+- The precision and decode experiments accept given weights and prompts; their defaults and recorded artifacts are unchanged.
+
 ## Unreleased — runtime R4 completion: FP8 and INT8 levels
 
 - New `runtime/src/precision/narrow.rs`: FP8 E4M3 and E5M2 (OCP) and symmetric INT8 with one binary32 scale per weight row, activation vector and KV slice; exact-quotient quantization with one round-to-nearest-even and saturation. New levels `fp8-e4m3`, `fp8-e5m2` and `int8` for every site, including the KV cache.

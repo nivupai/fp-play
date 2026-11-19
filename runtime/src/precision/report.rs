@@ -17,7 +17,7 @@ fn kind_name(k: Kind) -> String {
     }
 }
 
-fn run_json(r: &PolicyRun) -> Json {
+pub(crate) fn run_json(r: &PolicyRun) -> Json {
     let d = &r.drift;
     Json::obj(vec![
         ("policy", Json::str(&r.policy.name)),
