@@ -13,6 +13,7 @@
 //! * [`serving`] — R2: the deterministic serving simulator
 //! * [`decoder`] — R3: a tiny decoder run tensor-parallel through the collectives
 //! * [`precision`] — R4: per-layer precision policies for that decoder
+//! * [`dataflow`] — R5: mapping a transformer layer onto a toy accelerator
 
 /// Whether this build compiles in the deliberate bugs used by the
 /// planted-bug tests (the `planted-bugs` Cargo feature). The `experiment`
@@ -21,6 +22,7 @@ pub const PLANTED_BUGS: bool = cfg!(feature = "planted-bugs");
 
 pub mod collectives;
 pub mod cost;
+pub mod dataflow;
 pub mod decoder;
 pub mod exact;
 pub mod format;

@@ -24,8 +24,8 @@ removed, and that is noted here.
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
 | 0    | R3 follow-up                                                                                                                         | merged (#26)                   |
 | R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27)                   |
-| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | PR open (branch `runtime-r4b`) |
-| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | not started                    |
+| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28)                   |
+| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | PR open (branch `runtime-r5a`) |
 | R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | not started                    |
 | R6a  | `#collectives` data export and presentation library                                                                                  | not started                    |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | not started                    |
@@ -141,3 +141,28 @@ landing refresh stays deferred.
   256 top-1; with BF16 accumulation: 2.78e-3, 227 of 256, 7 of 8 greedy
   continuations change. FP16: 7.98e-7 / 4.45e-5.
 - The first layer's attention is the most sensitive site at every level.
+- **RD-8 R5 machine and mapping** (`dataflow/`; illustrative, not a named
+  device): a 128 × 128 BF16 MAC array, 256 vector lanes, 16 MiB SRAM, 1.5
+  TB/s HBM, one DMA engine, two chunk buffers. An activation stays in SRAM
+  if it fits in half of it. Matrix products run in output passes sized to a
+  quarter of SRAM, column blocks of the array width and reduction chunks
+  sized so two fit a quarter of SRAM; causal tiles above the diagonal are
+  skipped, partly masked tiles are computed in full. Vector ops cost
+  illustrative per-element operation counts (RMSNorm 4, RoPE 6, softmax 5,
+  SiLU × up 4, add 1). Ops run strictly in sequence (no inter-op overlap).
+- **RD-9 Results in cycles.** A second machine takes the recorded Nangate45
+  FP16 FMA path delay (4.179512 ns, M12 artifact, ideal interconnect) as an
+  _assumed_ cycle time, which only changes HBM bytes per cycle; it is
+  labeled an assumption and implies no frequency or timing result.
+- **RD-10 R5 checks:** the timing recurrence equals an independent
+  cycle-by-cycle simulation (3,000 random chunk lists and every op of five
+  small layers); mapped useful MACs equal the analytic count for every op;
+  cycles lie between max(compute, DMA) and their sum; weights and the KV
+  cache are read at least once; a hand-derived product (80 cycles); the
+  delay constant matches the hardware artifact.
+- **RD-11 R5 planted bugs:**
+
+  | Bug                            | Caught by                                                         |
+  | ------------------------------ | ----------------------------------------------------------------- |
+  | A buffer freed one chunk early | the cycle-by-cycle reference (2,587 of 3,000 random lists differ) |
+  | Decode attention reads no K/V  | the KV-traffic check                                              |
