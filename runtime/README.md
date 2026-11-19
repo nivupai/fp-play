@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 153 tests, including the recorded-artifact checks
+cargo test --release                              # 157 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -367,6 +367,18 @@ simulation; see [`results/r5-dataflow.md`](results/r5-dataflow.md).
 - **The assumed slower cycle** (FP Play's recorded FP16 FMA path delay,
   4.179512 ns, an assumption, not a clock) moves the ridge to 5.2 FLOPs per
   byte and puts batch-1 decode at 24.53× its bound.
+
+## R6: the `#collectives` workspace
+
+The FP Play app's lazily loaded `#collectives` workspace replays recorded
+schedules: a rank × round table stepped (or played on request) round by
+round, each element's association as text and a tree, the fixed shard tree,
+and error against the exact sum versus P with an exact table. Its data,
+[`results/r6-collectives.json`](results/r6-collectives.json), comes from
+`collectives::trace_association`, which traces each transfer's element
+range and each element's association beside the executed R1 simulator. The
+trace confirms R3's corrected prediction directly: up to commutativity,
+only the ring's association depends on the element's index (P > 2).
 
 ## Evidence
 

@@ -46,7 +46,11 @@ times that include the simulated AllReduce schedules
 ([recorded scenarios](runtime/results/r2-serving.md)). R3 runs a tiny
 decoder tensor-parallel through that engine and asks whether greedy tokens
 change with P, the schedule, the wire policy and batch composition
-([recorded result](runtime/results/r3-decode.md)). The two-page
+([recorded result](runtime/results/r3-decode.md)). R4 measures per-layer
+precision policies ([result](runtime/results/r4-precision.md)), R5 maps a
+transformer layer onto a toy accelerator ([result](runtime/results/r5-dataflow.md)),
+and R6 adds a `#collectives` workspace to the app that replays recorded
+AllReduce schedules and associations. The two-page
 [runtime case study](docs/RUNTIME_CASE_STUDY.md) summarizes the results; see
 the [runtime plan](runtime/PLAN.md) for what comes next. Run it with
 `cd runtime && cargo test --release`.

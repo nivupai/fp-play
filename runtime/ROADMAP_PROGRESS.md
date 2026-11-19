@@ -27,8 +27,8 @@ removed, and that is noted here.
 | R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28)                   |
 | R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | merged (#29)                   |
 | R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30)                   |
-| R6a  | `#collectives` data export and presentation library                                                                                  | PR open (branch `runtime-r6a`) |
-| R6b  | `#collectives` workspace UI, tests, docs                                                                                             | not started                    |
+| R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31)                   |
+| R6b  | `#collectives` workspace UI, tests, docs                                                                                             | PR open (branch `runtime-r6b`) |
 
 ## Disk checks
 
@@ -199,3 +199,20 @@ landing refresh stays deferred.
 - **RD-15** The executed-simulator trace confirms R3's corrected
   prediction directly: up to commutativity, only the ring's association
   depends on the element index (P > 2); `tests/association.rs`.
+- **RD-16 R6 UI.** A lazily loaded `#collectives` `<details>` entry like
+  `#research` and `#datapath`, a footer link, and no change to the four
+  landing entries or other hashes. Native selects and buttons; a rank ×
+  round table that is itself the text alternative of the schedule view;
+  Left/Right/Home/End on the round controls; **Play rounds** only on request
+  (slower with reduced motion), stopping at the last round; the current
+  round marked by text and `aria-current`, not only by outline; trees as
+  SVG with the expression as text and as the accessible name; the error
+  chart distinguishes schedules by marker shape and dash, with an exact
+  table. Malformed data throws rather than rendering a guess.
+- **RD-17 Browser check (actual):** headless Chromium via the
+  browser-automation skill on the production build (`vite preview`):
+  stepping and selection worked, no console errors or failed requests, no
+  horizontal overflow at 390 px; screenshots in light and dark themes were
+  inspected. The round buttons first rendered without button styling; they
+  now use the datapath explorer's button style. No screen reader or other
+  assistive technology was used.
