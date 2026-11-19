@@ -216,4 +216,6 @@ index once P > 2.
 
 - A tiny model trained deterministically in the repo on a synthetic task,
   for realistic margins; a mapping built for matrix–vector products in R5;
-  the deferred landing refresh.
+  the landing refresh. These, FP8/INT8 levels and workspaces for R2–R5 were
+  asked for in the R4–R6 run and not done (recorded as scope-guard deferrals
+  in `runtime/ROADMAP_PROGRESS.md`).

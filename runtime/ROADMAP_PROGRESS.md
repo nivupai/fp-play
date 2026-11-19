@@ -29,6 +29,7 @@ removed, and that is noted here.
 | R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30) |
 | R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31) |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | merged (#32) |
+| S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | in progress  |
 
 ## Disk checks
 
@@ -97,6 +98,39 @@ request with a text table alternative, per-element association trees, and
 an error-versus-P chart with an exact data table. The four landing entries
 stay as they are; the workspace is linked from the research showcase. The
 landing refresh stays deferred.
+
+## Scope-guard deferrals (recorded after the fact, 2026-11-19)
+
+The scope-guard rule says anything the run was asked for and did not do is
+recorded here as a deferral. The R4–R6 run merged (#27–#33) without recording
+these; they are recorded now, as the user pointed out. Each was asked for
+and not delivered; none was deferred by the user.
+
+| #    | Milestone | Asked for                                                                                                 | State after #33                                                                                                           | Why it was not done                                         |
+| ---- | --------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| SG-1 | R4        | FP8 and INT8 levels with explicit scales                                                                  | missing; `PLAN.md` called them "later" and the R4 plan put them out of scope                                              | scoped out by me, not by the user                           |
+| SG-2 | R4        | A tiny model trained deterministically in the repo (the R3 follow-up's PLAN item), with R3/R4 rerun on it | missing; only listed as future work                                                                                       | scoped out by me                                            |
+| SG-3 | R6        | App workspaces for the other runtime results (serving R2, decode R3, precision R4, dataflow R5)           | only `#collectives` was built                                                                                             | I scoped R6 to the one workspace PLAN.md named              |
+| SG-4 | R6        | The landing-page refresh                                                                                  | not done; recorded wrongly as "deferred by request" here, in `PLAN.md` and in `docs/RUNTIME_CASE_STUDY.md`                | misread as deferred; the user's R6 instructions included it |
+| SG-5 | R6        | Accessibility verification beyond static and DOM checks                                                   | one headless Chromium check of `#collectives`; no automated audit, no scripted keyboard walkthrough, no saved screenshots | not attempted                                               |
+
+All five are the scope of the next run (R4 completion and R6 completion
+below).
+
+## Completion run plan (R4 completion, R6 completion)
+
+Started 2026-11-19 under the same rules and authority. Order and PRs:
+
+| Step | Scope                                                                                                                                                                                                                |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S0   | This correction                                                                                                                                                                                                      |
+| R4c  | `train/`: a tiny Llama-style model trained deterministically in binary32 on a copy task, hand-written backprop, finite-difference gradient check, committed weights with a pinned SHA-256, CI retrains and compares  |
+| R4d  | FP8 E4M3 / E5M2 and INT8 levels with explicit scales; Python `Fraction` vectors; exhaustive 256-pattern checks                                                                                                       |
+| R4e  | Recorded reruns on the trained model: `results/r4-training.*` (loss curve, accuracy), `results/r4-trained.*` (precision study with every level), `results/r3-trained.*` (divergence, margins, batch invariance)      |
+| R6c  | `#serving` (R2) and `#dataflow` (R5) workspaces                                                                                                                                                                      |
+| R6d  | `#decode` (R3) and `#precision` (R4, trained model included) workspaces                                                                                                                                              |
+| R6e  | Landing refresh: Part 2 (the runtime) visible from the first screen, FP Play's visual identity kept                                                                                                                  |
+| R6f  | Automated accessibility audit, scripted keyboard walkthrough of every new workspace, headless screenshots (desktop and phone, light and dark) in the verification folder, recorded in `docs/RELEASE_VERIFICATION.md` |
 
 ## Decisions (made without approval)
 
