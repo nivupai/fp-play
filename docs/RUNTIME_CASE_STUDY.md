@@ -203,6 +203,17 @@ an independent cycle-by-cycle simulation. Every number is from
   delay (4.179512 ns) as the cycle time moves the ridge to 5.2 FLOPs per
   byte.
 
+## R6: seeing the schedules
+
+The FP Play app's `#collectives` workspace replays the recorded schedules
+round by round and shows each element's association as a tree, plus the
+error against the exact sum versus P. Its data is traced beside the
+executed simulator, and the trace confirms R3's corrected prediction:
+up to commutativity, only the ring's association depends on an element's
+index once P > 2.
+
 ## What is next
 
-- **R6, the `#collectives` workspace** in the FP Play app.
+- A tiny model trained deterministically in the repo on a synthetic task,
+  for realistic margins; a mapping built for matrix–vector products in R5;
+  the deferred landing refresh.

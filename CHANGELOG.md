@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — runtime milestone R6
+
+- New `#collectives` workspace in the FP Play app (lazy, native hash link, footer entry): a rank × round schedule table stepped or played on request, element associations as text and trees, the fixed shard tree, and error against the exact sum versus P with an exact data table. Presentation in `src/lib/collectives/`, components in `src/components/collectives/`.
+- `collectives::trace_association` traces transfer ranges and element associations beside the executed R1 simulator; `runtime/results/r6-collectives.json` is written by the documented experiment command, stale-checked, and imported by the app directly.
+- One planted bug (swapped operands in the trace), caught. Checked with jsdom tests and in headless Chromium; no assistive-technology check.
+
 ## Unreleased — runtime milestone R5
 
 - New `runtime/src/dataflow/`: a static graph of one 8B-class transformer layer (prefill and decode) mapped onto an illustrative accelerator (MAC array, vector unit, SRAM, HBM, one DMA engine, double buffering), timed in cycles with stall reasons and a roofline.

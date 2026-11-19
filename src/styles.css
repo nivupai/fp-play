@@ -2413,3 +2413,82 @@
 .research-plot svg text {
   font-size: 14px;
 }
+
+/* Collectives workspace (runtime R6) */
+.collectives-entry > summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding-block: 0.6rem;
+}
+.collectives {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.collectives > * {
+  min-width: 0;
+}
+.collectives .control-grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 14rem);
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+.collectives select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  min-height: 2.5rem;
+  width: 100%;
+  max-width: 14rem;
+}
+.collectives .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.collectives button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  min-height: 44px;
+}
+.collectives button:disabled {
+  opacity: 0.55;
+}
+.collectives button[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  font-weight: 700;
+}
+.collectives-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.collectives-table th,
+.collectives-table td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.collectives-table caption {
+  text-align: left;
+  padding-block: 0.75rem;
+}
+.collectives-current,
+.collectives-table th[aria-current='step'] {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  font-weight: 650;
+}
+.collectives svg {
+  max-width: none;
+}
+@media (max-width: 40rem) {
+  .collectives .control-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

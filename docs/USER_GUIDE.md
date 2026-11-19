@@ -190,6 +190,34 @@ Use the footer link or `/fp-play/#datapath`. Choose an operation and recorded ex
 
 True FMA rounds once; nonfused shows a rounded product and second-rounding adder, with final flag union. Expand full software trace/provenance, inspect source-linked whole-unit synthesis, or open recorded waveforms for signal selection, zoom/pan, exact values and genuine raw VCD downloads. These are logical functions and recorded observations, not physical placement, hardware clocks or live HDL execution. See the [datapath guide](HARDWARE_DATAPATH.md) for examples, evidence layers, supported signals, reproduction and the pending real-browser checklist.
 
+## Collectives workspace
+
+Use the footer link or `/fp-play/#collectives`. The workspace loads only on
+request and replays data recorded by the Rust runtime
+(`runtime/results/r6-collectives.json`); the browser runs no collective.
+
+- **Schedule:** choose the number of ranks (P = 2, 3, 4 or 8) and a schedule.
+  The rank × round table says what every rank sends, adds or copies in every
+  round, over 8 elements. Step with **First / Previous / Next / Last round** or
+  Left/Right/Home/End on the round controls; **Play rounds** advances one round
+  at a time only when pressed (more slowly with reduced motion) and stops at
+  the last round. The current round is marked “current” in its column heading,
+  not only by its outline, and announced politely.
+- **Association:** choose an element to see how its value was formed, as text,
+  for example `(x2 + (x1 + x0))`, and as a tree. Each “+” is one rounded
+  addition; x<sub>r</sub> is rank r's partial sum.
+- **Shard tree:** the fixed tree over 8 shards, with each shard's owner at
+  P = 1, 2, 4 or 8. The tree does not change with P.
+- **Error:** relative RMS error against the exact sum versus P for each
+  schedule (BF16 or FP32 wire). The chart has a logarithmic axis with rounded
+  labels, distinguishes schedules by marker shape and line style, and is
+  followed by a table of the exact recorded values.
+
+Rounds are synchronous steps of a simulation, not hardware timing. Checked
+with jsdom tests and in headless Chromium (desktop and 390 px wide, light and
+dark themes, no horizontal overflow, no console errors); no screen reader or
+other assistive technology was used.
+
 ## Research showcase
 
 Open **Measured hardware showcase** from the landing page or visit
