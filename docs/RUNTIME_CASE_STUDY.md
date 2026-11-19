@@ -245,6 +245,16 @@ executed simulator, and the trace confirms R3's corrected prediction:
 up to commutativity, only the ring's association depends on an element's
 index once P > 2.
 
+## R6 completion: every result in the app
+
+The app now has a workspace for each runtime milestone (`#serving`,
+`#decode`, `#precision`, `#dataflow`, beside `#collectives`), linked from
+the landing page's first screen. Each reads the committed JSON directly and
+pairs every chart with an exact table. An axe-core audit found no violations
+in any workspace in either color scheme, and a scripted keyboard-only
+walkthrough reached, opened and operated every control; the details and the
+limits (no assistive technology) are in `docs/RELEASE_VERIFICATION.md`.
+
 ## What is next
 
 - A mapping built for matrix–vector products in R5;

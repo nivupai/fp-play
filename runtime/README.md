@@ -438,7 +438,7 @@ simulation; see [`results/r5-dataflow.md`](results/r5-dataflow.md).
   4.179512 ns, an assumption, not a clock) moves the ridge to 5.2 FLOPs per
   byte and puts batch-1 decode at 24.53× its bound.
 
-## R6: the `#collectives` workspace
+## R6: the app workspaces
 
 The FP Play app's lazily loaded `#collectives` workspace replays recorded
 schedules: a rank × round table stepped (or played on request) round by
@@ -449,6 +449,11 @@ and error against the exact sum versus P with an exact table. Its data,
 range and each element's association beside the executed R1 simulator. The
 trace confirms R3's corrected prediction directly: up to commutativity,
 only the ring's association depends on the element's index (P > 2).
+
+`#serving`, `#decode`, `#precision` and `#dataflow` present R2–R5 (and the
+trained-model reruns) the same way: each reads its committed JSON directly,
+validates it, and pairs every chart with an exact table; the landing page
+links to all five workspaces from its first screen.
 
 ## Evidence
 

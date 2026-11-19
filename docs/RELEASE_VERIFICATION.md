@@ -238,3 +238,81 @@ after the approved merge. Maintainer review, merge, Pages enablement/workflow
 dispatch, candidate tag and GitHub prerelease all remain separate explicitly
 authorized steps. Nothing was pushed, merged, deployed, published or tagged by
 this milestone. See [the release procedure](RELEASING.md).
+
+## Runtime workspaces and landing refresh (runtime R6 completion)
+
+Scope: the `#serving`, `#decode`, `#precision` and `#dataflow` workspaces,
+the refreshed landing page (FP Play's two parts on the first screen) and, for
+comparison, the existing `#collectives` workspace. All checks below actually
+ran on 2026-11-19 against the production build served by `vite preview`, in
+headless Chromium driven by Playwright-compatible automation on macOS.
+
+### Automated audit (axe-core 4.14.0)
+
+- **In CI (jsdom):** `src/tests/accessibilityAudit.test.tsx` runs axe-core on
+  the whole app and on each runtime workspace. jsdom does no layout, so color
+  contrast is excluded there. Result: no violations.
+- **In headless Chromium:** `scripts/runtime-browser-audit.mjs` runs axe-core
+  with every rule (including color contrast) on `main` with the landing page,
+  and on each workspace, in the light and dark color schemes. The full report
+  is [`experiments/runtime-browser-audit.json`](experiments/runtime-browser-audit.json).
+
+| Page                 | Violations (light / dark) | Needs review (axe "incomplete")                                         |
+| -------------------- | ------------------------- | ----------------------------------------------------------------------- |
+| `#serving`           | 0 / 0                     | link-in-text-block (1 node)                                             |
+| `#decode`            | 0 / 0                     | link-in-text-block (2)                                                  |
+| `#precision`         | 0 / 0                     | color-contrast (18: SVG text of the loss chart), link-in-text-block (3) |
+| `#dataflow`          | 0 / 0                     | link-in-text-block (1)                                                  |
+| `#collectives`       | 0 / 0                     | color-contrast (37)                                                     |
+| Landing (whole main) | 1 rule, 19 nodes / same   | aria-prohibited-attr (56), color-contrast (45)                          |
+
+The landing violation is `label-content-name-mismatch` (serious) on elements
+that predate this milestone: the four original experience cards (their
+accessible name is the card title, their visible text is longer) and the Bit
+Explorer's bit buttons (`Sign bit 15`, …). None is in the new two-part block.
+They were not changed here because the four landing entries are kept as they
+are; this is open for the maintainer. "Needs review" items are cases axe could
+not decide (for example text over an SVG or a link distinguished by an
+underline axe cannot measure); they were not reviewed further.
+
+### Keyboard-only walkthrough
+
+The same script tabs from the top of the page to each new workspace's
+summary, opens it with Enter, then tabs through every control, recording the
+focused element and whether a focus indicator (outline or box shadow) is
+drawn; for each select it types the start of the next option (type-ahead:
+on macOS Chromium, ArrowDown on a closed select opens its popup instead of
+changing the value) and checks that the value and the workspace's content
+changed, then restores it.
+
+| Workspace    | Tabs to the summary | Opened with Enter | Focus stops | Focus visible at every stop | Selects changed by keyboard (content updated) |
+| ------------ | ------------------- | ----------------- | ----------- | --------------------------- | --------------------------------------------- |
+| `#serving`   | 224                 | yes               | 5           | yes                         | 2 of 2 (2)                                    |
+| `#decode`    | 225                 | yes               | 7           | yes                         | 2 of 2 (2)                                    |
+| `#precision` | 226                 | yes               | 9           | yes                         | 1 of 1 (1)                                    |
+| `#dataflow`  | 227                 | yes               | 5           | yes                         | 2 of 2 (2)                                    |
+
+Every scrollable table and the loss chart is a focus stop (so it can be
+scrolled by keyboard). The workspaces are far down the page by Tab order; the
+landing page's Part 2 links reach them in a few stops.
+
+### Screenshots
+
+Twenty screenshots were captured by the script: each new workspace (the
+whole workspace element) and the landing page's first screen, at 1280 × 900
+and 390 × 844, in the light and dark color schemes, under
+[`images/verification/`](images/verification/) (`<page>-<desktop|phone>-<light|dark>.jpg`).
+Six of the committed files were inspected by eye (landing desktop light and
+phone dark, decode desktop dark, serving phone light, precision phone dark,
+dataflow phone dark); during development every workspace was also inspected
+at 1280 px in the light scheme, and layout faults found there (bar tracks of
+unequal length, squeezed stacked bars, literal backticks) were fixed before
+these captures. The script measured, for all twenty, that the page has no
+horizontal overflow. Wide tables scroll inside their own box. No console errors or failed requests
+occurred.
+
+### Not verified
+
+No screen reader or other assistive technology, no physical touch device, no
+other browser engine, no 200% zoom review and no manual contrast review of
+axe's "needs review" items. Automated checks do not establish WCAG conformance.

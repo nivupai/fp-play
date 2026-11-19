@@ -2492,3 +2492,208 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Runtime workspaces (Part 2): serving, decode, precision, dataflow */
+.runtime-entry > summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding-block: 0.6rem;
+}
+.runtime-ws {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.runtime-ws > * {
+  min-width: 0;
+}
+.runtime-ws .control-grid {
+  display: grid;
+  justify-content: start;
+  grid-template-columns: auto minmax(0, 22rem);
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+.runtime-ws select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  min-height: 2.75rem;
+  width: 100%;
+  max-width: 22rem;
+}
+.runtime-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.runtime-table th,
+.runtime-table td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.runtime-table caption {
+  text-align: left;
+  padding-block: 0.75rem;
+}
+.runtime-table td.runtime-differs {
+  background: var(--sign-bg);
+  font-weight: 650;
+}
+.runtime-bars ul,
+.runtime-stacked ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.runtime-bars li,
+.runtime-stacked > ul:last-of-type > li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 16rem) minmax(6rem, 1fr) minmax(
+      6rem,
+      auto
+    );
+  gap: 0.75rem;
+  align-items: center;
+}
+.runtime-bar-label {
+  overflow-wrap: anywhere;
+}
+.runtime-bar-value {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.runtime-bar-track,
+.runtime-stack {
+  display: flex;
+  height: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--subtle);
+  overflow: hidden;
+}
+.runtime-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.runtime-segment {
+  display: block;
+  height: 100%;
+  border-right: 1px solid var(--surface);
+}
+.runtime-legend {
+  grid-auto-flow: row;
+  margin-bottom: 0.75rem !important;
+}
+.runtime-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.runtime-swatch {
+  display: inline-block;
+  width: 1.6rem;
+  height: 1rem;
+  border: 1px solid var(--text);
+}
+.runtime-pattern-solid {
+  background: var(--accent);
+}
+.runtime-pattern-hatch {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--text) 0 2px,
+    transparent 2px 6px
+  );
+}
+.runtime-pattern-dots {
+  background: radial-gradient(var(--fraction) 1.5px, transparent 1.6px) 0 0 /
+    5px 5px;
+}
+.runtime-pattern-cross {
+  background:
+    repeating-linear-gradient(0deg, var(--sign) 0 1.5px, transparent 1.5px 5px),
+    repeating-linear-gradient(90deg, var(--sign) 0 1.5px, transparent 1.5px 5px);
+}
+.runtime-pattern-outline {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--muted);
+}
+.runtime-hash {
+  overflow-wrap: anywhere;
+}
+.runtime-ws svg {
+  max-width: none;
+}
+@media (max-width: 40rem) {
+  .runtime-ws .control-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .runtime-bars li,
+  .runtime-stacked > ul:last-of-type > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+  .runtime-stacked > ul:last-of-type > li > .runtime-bar-value {
+    grid-column: 1;
+  }
+}
+
+/* Landing: the two parts of FP Play, visible from the first screen */
+.landing-parts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-block: 1rem 1.25rem;
+  max-width: 44rem;
+}
+.landing-part {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+}
+a.landing-part:hover,
+a.landing-part:focus-visible {
+  border-color: var(--accent);
+}
+.landing-part-runtime {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+.landing-part .text-small {
+  color: var(--muted);
+}
+.landing-part-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin-top: 0.15rem;
+}
+.landing-part-links a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  font-size: 0.95rem;
+  font-weight: 650;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+@media (max-width: 40rem) {
+  .landing-parts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    margin-block: 0.75rem 1rem;
+  }
+}

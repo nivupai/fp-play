@@ -32,7 +32,8 @@ removed, and that is noted here.
 | S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | merged (#34) |
 | R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | merged (#35) |
 | R4d  | FP8 E4M3 / E5M2 and INT8 levels with scales, Python vectors, exhaustive checks                                                       | merged (#36) |
-| R4e  | R3 and R4 rerun on the trained model: `results/r3-trained.*`, `results/r4-trained.*`                                                 | in progress  |
+| R4e  | R3 and R4 rerun on the trained model: `results/r3-trained.*`, `results/r4-trained.*`                                                 | merged (#37) |
+| R6c  | `#serving`, `#decode`, `#precision`, `#dataflow` workspaces; landing refresh; accessibility audit, keyboard walkthrough, screenshots | in progress  |
 
 ## Disk checks
 
@@ -42,6 +43,8 @@ removed, and that is noted here.
 | R5     | 31 GB | none   |
 | R6     | 29 GB | none   |
 | R4c    | 15 GB | none   |
+| R4d    | 22 GB | none   |
+| R6c    | 23 GB | none   |
 
 ## R4 plan: per-layer precision policies
 
@@ -364,3 +367,41 @@ Started 2026-11-19 under the same rules and authority. Order and PRs:
   4.51e-2 / 9.24e-5, int8 9.98e-4 / 1.34e-6. Trained: 192/192 top-1 and no
   greedy change at every level. Most sensitive site at each 8-bit level:
   layer 0 attention (random), embedding and head (trained).
+
+- **RD-30 One PR for the R6 completion** (planned as R6c–R6f): the four
+  workspaces share their entry, chart and validation code, the landing
+  refresh links to them, and the audit covers all of them, so splitting
+  would have meant PRs that reference pages not yet merged.
+- **RD-31 Workspace design.** Each workspace is a lazy `<details>` entry
+  with a native hash (`#serving`, `#decode`, `#precision`, `#dataflow`; all
+  free ids), reads committed JSON directly from `runtime/results/` (no
+  copies), validates every field it uses and throws on malformed data
+  (`src/lib/runtime/`). Bar charts are HTML lists whose labels and values are
+  text; stacked shares are told apart by pattern and named in text; the one
+  line chart (training loss) has a logarithmic axis, marker glyphs and an
+  `aria-label`. Every chart is followed by a table of the exact values.
+  Selects are native. The decode workspace reads each batch-invariance row's
+  `predicted_invariant` from the JSON (added to `r3-trained.json` in #37)
+  instead of re-deriving the rule.
+- **RD-32 Landing refresh.** A two-part navigation directly under the
+  tagline: Part 1 (one operation, linking to the Bit Explorer) and Part 2
+  (the runtime, linking to its five workspaces), plus a Part 2 link row with
+  the hardware links. The eyebrow, wordmark, tagline, colors, release card,
+  proof strip and the four original landing entries are unchanged. Part 2
+  is on the first screen at 1280 × 900 and at 390 × 844.
+- **RD-33 Accessibility tooling.** `axe-core` 4.14.0 (exact, MPL-2.0, dev
+  only; 4.14.1 was three days old) runs in Vitest (jsdom, contrast excluded)
+  and in `scripts/runtime-browser-audit.mjs` (headless Chromium, every
+  rule), which also does the keyboard walkthrough and screenshots. On macOS
+  Chromium ArrowDown opens a closed select instead of changing it, so the
+  walkthrough changes selects by type-ahead. The landing page's
+  `label-content-name-mismatch` violations are on pre-existing elements (the
+  four original cards, the Bit Explorer's bit buttons) and are left for the
+  maintainer.
+- **RD-34 Screenshots** are JPEG (quality 80, 5.3 MB for 20) under
+  `docs/images/verification/`, a new folder beside the existing
+  `docs/images/` screenshots (the repo had no verification folder).
+- **RD-35 CI time limit.** The runtime job's limit went from 15 to 40
+  minutes (#37): with retraining and the two trained-model reruns, the
+  hosted runner needed more than 15 minutes, and the first run was
+  cancelled at the limit with every completed step passing.

@@ -192,20 +192,19 @@ Done: `results/r5-dataflow.*`; decisions in
 for matrix–vector products (decode), operator fusion and overlap between
 ops.
 
-## R6 — FP Play UI integration ✅ (the `#collectives` workspace)
+## R6 — FP Play UI integration ✅
 
 - A `#collectives` workspace that reads the recorded JSON: an
   animated-on-request schedule view (rank × round grid, text alternative),
   per-element association trees, and the error-versus-P chart.
-- Landing and overall UI refresh (not done in the R4–R6 run; it was not
-  deferred by request, see ROADMAP_PROGRESS.md SG-4).
+- ✅ Workspaces for R2–R5 (`#serving`, `#decode`, `#precision`,
+  `#dataflow`) and the landing refresh with Part 2 on the first screen,
+  with an axe-core audit, a keyboard walkthrough and screenshots
+  (scope-guard deferrals SG-3 to SG-5, done in the completion run).
 
 Done: the `#collectives` workspace (schedule view, association trees,
 error-versus-P chart) from `results/r6-collectives.json`; decisions in
-[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). Still open: the landing
-refresh, workspaces for R2–R5 and an accessibility audit (scope-guard
-deferrals SG-3 to SG-5 in ROADMAP_PROGRESS.md), and the optional
-WebAssembly build.
+[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). Still open: the optional WebAssembly build.
 
 - Optional: compile the crate to WebAssembly so the browser runs the real
   simulator rather than a JavaScript copy (once a wasm toolchain is
