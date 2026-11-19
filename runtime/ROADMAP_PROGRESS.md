@@ -25,8 +25,8 @@ removed, and that is noted here.
 | 0    | R3 follow-up                                                                                                                         | merged (#26)                   |
 | R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27)                   |
 | R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28)                   |
-| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | PR open (branch `runtime-r5a`) |
-| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | not started                    |
+| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | merged (#29)                   |
+| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | PR open (branch `runtime-r5b`) |
 | R6a  | `#collectives` data export and presentation library                                                                                  | not started                    |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | not started                    |
 
@@ -166,3 +166,19 @@ landing refresh stays deferred.
   | ------------------------------ | ----------------------------------------------------------------- |
   | A buffer freed one chunk early | the cycle-by-cycle reference (2,587 of 3,000 random lists differ) |
   | Decode attention reads no K/V  | the KV-traffic check                                              |
+
+- **RD-12 R5 experiment:** prefill 128, 512, 2048 tokens and decode batch
+  1, 8, 32, 128 at context 1024, on the 1 ns machine and the assumed
+  4.179512 ns machine. A roofline-bound column (max of useful MACs ÷ peak
+  and this mapping's HBM bytes ÷ bytes per cycle) shows each run's distance
+  from what the machine allows. Finding, stated as a property of this
+  mapping: decode is limited by padding (tokens on array rows), not by HBM,
+  even where its intensity is below the ridge point; a GEMV-oriented
+  mapping is future work.
+
+## R5 results (results/r5-dataflow.md)
+
+- Prefill: 95.7% / 94.3% / 89.2% array utilization (128 / 512 / 2048
+  tokens), 1.05–1.12× the roofline bound.
+- Decode: 0.8% / 6.0% / 19.2% / 43.3% (batch 1 / 8 / 32 / 128), 5.88× to
+  2.31× the bound; padding takes 98.9% of batch-1 cycles.

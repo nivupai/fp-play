@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — runtime milestone R5
+
+- New `runtime/src/dataflow/`: a static graph of one 8B-class transformer layer (prefill and decode) mapped onto an illustrative accelerator (MAC array, vector unit, SRAM, HBM, one DMA engine, double buffering), timed in cycles with stall reasons and a roofline.
+- The timing recurrence is checked against an independent cycle-by-cycle simulation; mapped work and HBM traffic are checked against analytic counts; two planted bugs, each caught.
+- New recorded artifact `runtime/results/r5-dataflow.{json,md}`. One machine variant takes FP Play's recorded FP16 FMA path delay as an assumed cycle time, labeled as an assumption.
+
 ## Unreleased — runtime milestone R4
 
 - New `runtime/src/precision/`: per-site precision policies (storage and accumulator format for each layer's attention and MLP, the KV cache and the embedding/head) for the R3 decoder with FP32 master weights.

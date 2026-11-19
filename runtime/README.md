@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 145 tests, including the recorded-artifact checks
+cargo test --release                              # 153 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -348,6 +348,26 @@ tokens); see [`results/r4-precision.md`](results/r4-precision.md).
   layer's sites and the KV cache are among the least.
 - Every run's logits stayed finite.
 
+## R5: a transformer layer on a toy accelerator
+
+One 8B-class layer as a static graph (prefill and decode), mapped onto an
+illustrative accelerator (128 × 128 MAC array, 256 vector lanes, 16 MiB
+SRAM, 1.5 TB/s HBM, one DMA engine, double buffering) and timed in cycles.
+The timing recurrence is checked against an independent cycle-by-cycle
+simulation; see [`results/r5-dataflow.md`](results/r5-dataflow.md).
+
+- **Prefill fills the array:** 95.7%, 94.3% and 89.2% utilization at 128,
+  512 and 2048 tokens (1 ns cycle), within 1.05–1.12× of the roofline
+  bound. The gate/up projection alone takes 50.3% of prefill-512 cycles.
+- **Decode does not, in this mapping:** 0.8%, 6.0%, 19.2% and 43.3%
+  utilization at batch 1, 8, 32 and 128 (context 1024), 5.88× to 2.31×
+  its roofline bound. Decode at batch 1 and 8 is below the ridge point
+  (21.8 FLOPs per HBM byte), yet the array, not HBM, is the limit: tokens
+  map to array rows, so padding takes 98.9% of batch-1 cycles.
+- **The assumed slower cycle** (FP Play's recorded FP16 FMA path delay,
+  4.179512 ns, an assumption, not a clock) moves the ridge to 5.2 FLOPs per
+  byte and puts batch-1 decode at 24.53× its bound.
+
 ## Evidence
 
 - **Independent oracles** — Python `Fraction` reference vectors
@@ -412,4 +432,7 @@ kernels (real GPU kernels can also break batch invariance locally), and
 deterministic but not correctly rounded `exp`, `sin` and `cos`. R4 changes
 only matrix products, their inputs and the KV cache (element-wise work,
 the residual stream and the attention core stay binary32), uses one
-sequential summation order and has no FP8 or INT8.
+sequential summation order and has no FP8 or INT8. R5's machine is
+illustrative: one simple tiling with tokens on the array rows, no operator
+fusion, no overlap between ops, no SRAM-bandwidth, NoC, power or area
+model; the recorded FMA delay is used only as an assumed cycle time.

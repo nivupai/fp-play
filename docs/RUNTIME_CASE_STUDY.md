@@ -185,6 +185,24 @@ teacher-forced on 8 prompts × 32 tokens. Every number is from
   chains, and two planted bugs, each caught. Random weights and two layers
   limit how far the ranking transfers.
 
+## R5: where a layer's cycles go
+
+R5 maps one 8B-class layer onto an illustrative accelerator (128 × 128 MAC
+array, 16 MiB SRAM, 1.5 TB/s HBM) and times it in cycles, checked against
+an independent cycle-by-cycle simulation. Every number is from
+[r5-dataflow](../runtime/results/r5-dataflow.md).
+
+- **Prefill** uses 89.2–95.7% of the array (128–2048 tokens), within
+  1.05–1.12× of the roofline bound.
+- **Decode** uses 0.8% at batch 1 and 43.3% at batch 128 (context 1024).
+  Batch 1 and 8 sit below the ridge point (21.8 FLOPs per HBM byte), but in
+  this mapping the array is the limit: tokens occupy array rows, so
+  padding takes 98.9% of batch-1 cycles, 5.88× the roofline bound. A
+  mapping built for matrix–vector products was not modeled.
+- **Assumption, not a clock:** taking FP Play's recorded FP16 FMA path
+  delay (4.179512 ns) as the cycle time moves the ridge to 5.2 FLOPs per
+  byte.
+
 ## What is next
 
-- **R5, a dataflow mapping simulator.**
+- **R6, the `#collectives` workspace** in the FP Play app.

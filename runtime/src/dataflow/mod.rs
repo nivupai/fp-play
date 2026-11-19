@@ -5,10 +5,13 @@
 //! * [`machine`] — the illustrative machine (MAC array, vector unit, SRAM, HBM)
 //! * [`sim`] — tiling, chunking and the double-buffered timing recurrence
 //! * [`reference`] — a cycle-by-cycle simulation that checks the recurrence
+//! * [`experiment`] / [`report`] — the recorded experiment (results/r5-dataflow.*)
 
+pub mod experiment;
 pub mod graph;
 pub mod machine;
 pub mod reference;
+pub mod report;
 pub mod sim;
 
 /// Deliberate bugs for the planted-bug tests (`planted-bugs` builds only).
