@@ -21,7 +21,7 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 133 tests, including the recorded-artifact checks
+cargo test --release                              # 145 tests, including the recorded-artifact checks
 cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
@@ -327,6 +327,27 @@ is current and its stated properties hold). Three planted bugs (skipped
 tensor copy-on-write, RoPE off by one on recompute, a batch-dependent shard
 order) are each caught by a named check; see [R3_PROGRESS.md](R3_PROGRESS.md).
 
+## R4: per-layer precision policies
+
+The R3 decoder with FP32 master weights, where each site (each layer's
+attention projections and MLP, the KV cache, the tied embedding and head)
+gets a storage format and an accumulator format. Every matrix product is a
+fused chain (exact product, one rounding per term) computed by a fast
+multiply–accumulate that is tested bit-identical to `ops::fused_chain_dot`
+and to independent Python `Fraction` vectors
+(`scripts/gen_chain_vectors.py`). Policies are compared with the all-FP32
+policy teacher-forced on its own greedy continuation (8 prompts × 32
+tokens); see [`results/r4-precision.md`](results/r4-precision.md).
+
+- **Accumulation width matters more than storage.** All sites at BF16
+  storage with FP32 accumulation: mean KL 5.05e-5, top-1 agreement 253 of 256. With BF16 accumulation as well: mean KL 2.78e-3, 227 of 256, and 7
+  of 8 prompts' greedy continuations change. FP16: 7.98e-7 (255 of 256)
+  with FP32 accumulation, 4.45e-5 (252 of 256) with FP16 accumulation.
+- **The first layer's attention is the most sensitive site** at every
+  level when lowered alone (mean KL 1.32e-3 at `bf16-acc`); the second
+  layer's sites and the KV cache are among the least.
+- Every run's logits stayed finite.
+
 ## Evidence
 
 - **Independent oracles** — Python `Fraction` reference vectors
@@ -388,4 +409,7 @@ it has no speculative decoding, LoRA or quantized KV. The R3 decoder has
 random weights (its margins do not transfer to trained models), 2 layers,
 synthetic prompts, greedy decoding with fixed lengths, sequential local
 kernels (real GPU kernels can also break batch invariance locally), and
-deterministic but not correctly rounded `exp`, `sin` and `cos`.
+deterministic but not correctly rounded `exp`, `sin` and `cos`. R4 changes
+only matrix products, their inputs and the KV cache (element-wise work,
+the residual stream and the attention core stay binary32), uses one
+sequential summation order and has no FP8 or INT8.

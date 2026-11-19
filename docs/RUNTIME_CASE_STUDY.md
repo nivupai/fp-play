@@ -165,6 +165,26 @@ prompts, 48 tokens each).
   planted bugs, each caught. The weights are random, so the divergence rates
   do not transfer to trained models, whose margins differ.
 
+## R4: which layers need precision?
+
+R4 gives each site of the same decoder (FP32 master weights) a storage and
+an accumulator format and compares it with the all-FP32 policy,
+teacher-forced on 8 prompts × 32 tokens. Every number is from
+[r4-precision](../runtime/results/r4-precision.md).
+
+- **Accumulation width matters more than storage format.** BF16 storage
+  everywhere with FP32 accumulation gives a mean KL of 5.05e-5 and 253 of
+  256 top-1 agreements; adding BF16 accumulation gives 2.78e-3 and 227,
+  and 7 of 8 greedy continuations change. FP16 storage gives 7.98e-7, FP16
+  accumulation 4.45e-5.
+- **The first layer's attention is the most sensitive site** at every
+  level when lowered alone (mean KL 1.32e-3 at BF16 accumulation); the
+  second layer's sites and the KV cache are among the least.
+- **Verified** by a fast fused multiply–accumulate tested bit-identical to
+  the exact superaccumulator and to 3,600 independent Python `Fraction`
+  chains, and two planted bugs, each caught. Random weights and two layers
+  limit how far the ranking transfers.
+
 ## What is next
 
-- **R4, per-layer precision policies.**
+- **R5, a dataflow mapping simulator.**

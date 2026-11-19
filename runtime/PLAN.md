@@ -169,12 +169,16 @@ tracked in [`R3_PROGRESS.md`](R3_PROGRESS.md). Recorded in
 - Batch-shape-dependent local kernels (tiling, split-K) to model GPU-style
   local batch variance.
 
-## R4 — Per-layer precision policies (idea #5)
+## R4 — Per-layer precision policies (idea #5) ✅
 
 Choose a storage format and accumulation width per layer (FP32 / BF16 /
 FP16, later FP8 / INT8 with scales). Measure logit drift and perplexity
 against FP32, reusing FP Play's mixed-precision semantics as the reference.
 Report which layers are sensitive.
+
+Done: `results/r4-precision.*`; plan and decisions in
+[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8/INT8 with scales remain
+future work.
 
 ## R5 — Dataflow mapping simulator (idea #2)
 
