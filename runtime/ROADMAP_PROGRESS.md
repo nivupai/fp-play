@@ -26,8 +26,8 @@ removed, and that is noted here.
 | R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27)                   |
 | R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28)                   |
 | R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | merged (#29)                   |
-| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | PR open (branch `runtime-r5b`) |
-| R6a  | `#collectives` data export and presentation library                                                                                  | not started                    |
+| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30)                   |
+| R6a  | `#collectives` data export and presentation library                                                                                  | PR open (branch `runtime-r6a`) |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | not started                    |
 
 ## Disk checks
@@ -182,3 +182,20 @@ landing refresh stays deferred.
   tokens), 1.05–1.12× the roofline bound.
 - Decode: 0.8% / 6.0% / 19.2% / 43.3% (batch 1 / 8 / 32 / 128), 5.88× to
   2.31× the bound; padding takes 98.9% of batch-1 cycles.
+- **RD-13 R6 data path.** The schedule view needs each transfer's element
+  range and each element's association, which the simulator did not
+  record. `collectives::trace_association` adds an optional tracker to the
+  R1 simulator that follows the same messages as its rounding-count
+  tracker (never touching values); its rounds equal the dry run's, and the
+  R1 regression against the frozen simulator still passes. The shard
+  tree's association comes from `shard_tree::tree`, the list its executor
+  iterates. `results/r6-collectives.json` (schedules for P = 2, 3, 4, 8 on 8
+  elements, the S = 8 shard tree at P = 1, 2, 4, 8, and each schedule's
+  error from the tp-allreduce run of the same command) is stale-checked.
+  The app imports it directly from `runtime/results/`, so there is no copy
+  to drift.
+- **RD-14 R6 planted bug:** the trace records an addition's operands
+  swapped; caught by the hand-derived association check (ring, P = 3).
+- **RD-15** The executed-simulator trace confirms R3's corrected
+  prediction directly: up to commutativity, only the ring's association
+  depends on the element index (P > 2); `tests/association.rs`.

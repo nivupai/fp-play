@@ -432,12 +432,27 @@ impl Track {
     }
 }
 
+/// The association of one output value: which ranks' inputs were combined
+/// in what order. Tracked beside the value by [`trace_association`] and
+/// never affecting it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Assoc {
+    /// Rank r's input.
+    Leaf(usize),
+    /// One accumulator-format addition, `left + right` (the receiver's value
+    /// on the left).
+    Add(Box<Assoc>, Box<Assoc>),
+    /// The exact sum of these ranks' inputs, rounded once.
+    Exact(Vec<usize>),
+}
+
 struct Message {
     src: usize,
     dst: usize,
     range: Range<usize>,
     data: Vec<u32>,
     tracks: Vec<Track>,
+    assoc: Vec<Assoc>,
 }
 
 struct Simulator {
@@ -455,6 +470,13 @@ struct Simulator {
     additions: usize,
     /// Set by exact-gather, which rounds straight to the output format.
     final_output: bool,
+    /// Association of every buffered value, when tracing.
+    assoc: Option<Vec<Vec<Assoc>>>,
+    /// Element range of every transfer of every round, when tracing.
+    ranges: Vec<Vec<Range<usize>>>,
+    /// Planted bug (`planted-bugs` builds only): record additions' operands swapped.
+    #[cfg(feature = "planted-bugs")]
+    swap_assoc: bool,
 }
 
 impl Simulator {
@@ -473,6 +495,10 @@ impl Simulator {
             rounds: Vec::new(),
             additions: 0,
             final_output: false,
+            assoc: None,
+            ranges: Vec::new(),
+            #[cfg(feature = "planted-bugs")]
+            swap_assoc: false,
         }
     }
 
@@ -488,6 +514,10 @@ impl Simulator {
             rounds: Vec::new(),
             additions: 0,
             final_output: false,
+            assoc: None,
+            ranges: Vec::new(),
+            #[cfg(feature = "planted-bugs")]
+            swap_assoc: false,
         }
     }
 
@@ -541,8 +571,15 @@ impl Simulator {
                     .iter()
                     .map(|t| t.converted(wire))
                     .collect(),
+                assoc: self
+                    .assoc
+                    .as_ref()
+                    .map_or_else(Vec::new, |a| a[*src][range.clone()].to_vec()),
             })
             .collect();
+        if self.assoc.is_some() {
+            self.ranges.push(messages.iter().map(|m| m.range.clone()).collect());
+        }
         for m in &messages {
             let target = &mut self.buffers[m.dst][m.range.clone()];
             let target_tracks = &mut self.tracks[m.dst][m.range.clone()];
@@ -560,6 +597,21 @@ impl Simulator {
                         };
                     }
                     self.additions += m.data.len();
+                    #[cfg(feature = "planted-bugs")]
+                    let swap = self.swap_assoc;
+                    #[cfg(not(feature = "planted-bugs"))]
+                    let swap = false;
+                    if let Some(a) = self.assoc.as_mut() {
+                        for (local, incoming) in a[m.dst][m.range.clone()].iter_mut().zip(&m.assoc) {
+                            let left = Box::new(std::mem::replace(local, Assoc::Leaf(0)));
+                            let right = Box::new(incoming.clone());
+                            *local = if swap {
+                                Assoc::Add(right, left)
+                            } else {
+                                Assoc::Add(left, right)
+                            };
+                        }
+                    }
                 }
                 TransferKind::Gather => {
                     for (local, &incoming) in target.iter_mut().zip(&m.data) {
@@ -567,6 +619,9 @@ impl Simulator {
                     }
                     for (local, incoming) in target_tracks.iter_mut().zip(&m.tracks) {
                         *local = incoming.converted(acc);
+                    }
+                    if let Some(a) = self.assoc.as_mut() {
+                        a[m.dst][m.range.clone()].clone_from_slice(&m.assoc);
                     }
                 }
             }
@@ -727,6 +782,9 @@ impl Simulator {
                     bytes_per_element: wire.bytes(),
                 });
             }
+            if self.assoc.is_some() {
+                self.ranges.push(vec![0..len; transfers.len()]);
+            }
             self.rounds.push(Round {
                 phase: "all-gather-inputs",
                 kind: TransferKind::Reduce,
@@ -755,6 +813,11 @@ impl Simulator {
                 self.buffers[r][e] = sum.round(output);
             }
             self.tracks[r].clone_from(&summed);
+        }
+        if let Some(a) = self.assoc.as_mut() {
+            for row in a.iter_mut() {
+                row.fill(Assoc::Exact((0..n).collect()));
+            }
         }
         self.final_output = true;
     }
@@ -865,6 +928,65 @@ pub fn schedule_rounds(
         }
     }
     Ok(sim.rounds)
+}
+
+/// The executed schedule of `algorithm` on `world` ranks and `len`
+/// elements, with every transfer's element range and every output value's
+/// association, traced beside the real simulation (on zero inputs; the
+/// association does not depend on the values).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AssociationTrace {
+    pub rounds: Vec<Round>,
+    /// `ranges[i][j]`: element range of round i's transfer j.
+    pub ranges: Vec<Vec<Range<usize>>>,
+    /// Association of every element on every rank at the end.
+    pub per_rank: Vec<Vec<Assoc>>,
+}
+
+pub fn trace_association(algorithm: Algorithm, world: usize, len: usize) -> Result<AssociationTrace, CollectiveError> {
+    trace_inner(algorithm, world, len, false)
+}
+
+/// [`trace_association`] with its planted bug (`planted-bugs` builds only).
+#[cfg(feature = "planted-bugs")]
+#[doc(hidden)]
+pub fn trace_association_planted(
+    algorithm: Algorithm,
+    world: usize,
+    len: usize,
+) -> Result<AssociationTrace, CollectiveError> {
+    trace_inner(algorithm, world, len, true)
+}
+
+fn trace_inner(
+    algorithm: Algorithm,
+    world: usize,
+    len: usize,
+    swap: bool,
+) -> Result<AssociationTrace, CollectiveError> {
+    let _ = swap;
+    let inputs = vec![vec![0u32; len]; world];
+    validate(algorithm, Format::Fp32, &inputs)?;
+    let mut sim = Simulator::new(WirePolicy::uniform(Format::Fp32), &inputs);
+    #[cfg(feature = "planted-bugs")]
+    {
+        sim.swap_assoc = swap;
+    }
+    sim.assoc = Some((0..world).map(|r| vec![Assoc::Leaf(r); len]).collect());
+    if world > 1 {
+        match algorithm {
+            Algorithm::Sequential => sim.sequential(),
+            Algorithm::Ring => sim.ring(),
+            Algorithm::BinomialTree => sim.binomial_tree(),
+            Algorithm::HalvingDoubling => sim.halving_doubling(),
+            Algorithm::ExactGather => sim.exact_gather(),
+        }
+    }
+    Ok(AssociationTrace {
+        rounds: sim.rounds,
+        ranges: sim.ranges,
+        per_rank: sim.assoc.unwrap_or_default(),
+    })
 }
 
 /// Result of a reduce-scatter: each rank holds only the fully reduced range it owns.

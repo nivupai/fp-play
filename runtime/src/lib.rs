@@ -14,6 +14,7 @@
 //! * [`decoder`] — R3: a tiny decoder run tensor-parallel through the collectives
 //! * [`precision`] — R4: per-layer precision policies for that decoder
 //! * [`dataflow`] — R5: mapping a transformer layer onto a toy accelerator
+//! * [`ui_export`] — R6: data for the FP Play `#collectives` workspace
 
 /// Whether this build compiles in the deliberate bugs used by the
 /// planted-bug tests (the `planted-bugs` Cargo feature). The `experiment`
@@ -37,3 +38,4 @@ pub mod shard_experiment;
 pub mod shard_tree;
 pub mod sweep;
 pub mod tensor_parallel;
+pub mod ui_export;
