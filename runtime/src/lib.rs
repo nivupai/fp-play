@@ -12,6 +12,7 @@
 //! * [`report`] / [`json`] — deterministic artifacts
 //! * [`serving`] — R2: the deterministic serving simulator
 //! * [`decoder`] — R3: a tiny decoder run tensor-parallel through the collectives
+//! * [`precision`] — R4: per-layer precision policies for that decoder
 
 /// Whether this build compiles in the deliberate bugs used by the
 /// planted-bug tests (the `planted-bugs` Cargo feature). The `experiment`
@@ -26,6 +27,7 @@ pub mod format;
 pub mod json;
 pub mod ops;
 pub mod policies;
+pub mod precision;
 pub mod report;
 pub mod rng;
 pub mod serving;
