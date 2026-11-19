@@ -20,15 +20,15 @@ removed, and that is noted here.
 
 ## Status
 
-| Step | Scope                                                                                                                                | State                          |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| 0    | R3 follow-up                                                                                                                         | merged (#26)                   |
-| R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27)                   |
-| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28)                   |
-| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | merged (#29)                   |
-| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30)                   |
-| R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31)                   |
-| R6b  | `#collectives` workspace UI, tests, docs                                                                                             | PR open (branch `runtime-r6b`) |
+| Step | Scope                                                                                                                                | State        |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| 0    | R3 follow-up                                                                                                                         | merged (#26) |
+| R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27) |
+| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | merged (#28) |
+| R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | merged (#29) |
+| R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | merged (#30) |
+| R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31) |
+| R6b  | `#collectives` workspace UI, tests, docs                                                                                             | merged (#32) |
 
 ## Disk checks
 
