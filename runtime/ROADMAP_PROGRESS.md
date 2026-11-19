@@ -23,8 +23,8 @@ removed, and that is noted here.
 | Step | Scope                                                                                                                                | State                          |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
 | 0    | R3 follow-up                                                                                                                         | merged (#26)                   |
-| R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | PR open (branch `runtime-r4a`) |
-| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | not started                    |
+| R4a  | Fused multiply–accumulate in any format, FP32 master weights, per-site precision policies, policy forward pass, Python chain vectors | merged (#27)                   |
+| R4b  | Experiment `results/r4-precision.*`, stale test, docs                                                                                | PR open (branch `runtime-r4b`) |
 | R5a  | Dataflow graph of a transformer block, toy pipeline model, simulator, reference model, tests                                         | not started                    |
 | R5b  | Experiment `results/r5-dataflow.*`, docs                                                                                             | not started                    |
 | R6a  | `#collectives` data export and presentation library                                                                                  | not started                    |
@@ -128,3 +128,16 @@ landing refresh stays deferred.
   | ---------------------------------------------- | --------------------------------------------------------- |
   | BF16-accumulating sites accumulate in FP32     | the per-level exact-chain check (33 of 48 outputs differ) |
   | The KV cache keeps binary32 whatever its level | the every-site-affects-the-logits check                   |
+
+- **RD-7 R4 experiment:** 8 prompts × 16 tokens, 32-token reference
+  continuation; 5 uniform policies, 22 one-site policies (the KV cache's
+  `-acc` levels are dropped: it only stores values), 2 mixed policies.
+  Teacher-forced comparison at every continuation token plus free-running
+  greedy divergence. The stale test takes about 18 s locally.
+
+## R4 results (results/r4-precision.md)
+
+- BF16 storage with FP32 accumulation everywhere: mean KL 5.05e-5, 253 of
+  256 top-1; with BF16 accumulation: 2.78e-3, 227 of 256, 7 of 8 greedy
+  continuations change. FP16: 7.98e-7 / 4.45e-5.
+- The first layer's attention is the most sensitive site at every level.

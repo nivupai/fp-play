@@ -1,0 +1,1179 @@
+{
+  "command": "fp-play-runtime experiment --out results",
+  "model": {
+    "hidden": 256,
+    "layers": 2,
+    "vocab": 2048,
+    "parameters": 2000128,
+    "seed": 956718514179
+  },
+  "workload": {
+    "prompts": 8,
+    "prompt_tokens": 16,
+    "continuation_tokens": 32,
+    "seed": 19831521281
+  },
+  "reference_perplexity": 82.509301109753,
+  "runs": [
+    {
+      "policy": "all fp32",
+      "kind": "uniform",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.0,
+      "mean_rms_logit_difference": 0.0,
+      "mean_kl": 0.0,
+      "top1_agreement": 256,
+      "perplexity": 82.509301109753,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "all bf16",
+      "kind": "uniform",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "bf16"
+        },
+        {
+          "site": "KV cache",
+          "level": "bf16"
+        },
+        {
+          "site": "embedding and head",
+          "level": "bf16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.054930537939071655,
+      "mean_rms_logit_difference": 0.009955788640307153,
+      "mean_kl": 5.052064309228518e-5,
+      "top1_agreement": 253,
+      "perplexity": 82.60053030028602,
+      "greedy_diverged": 2,
+      "greedy_first_divergence": [15, null, null, null, null, 10, null, null]
+    },
+    {
+      "policy": "all bf16-acc",
+      "kind": "uniform",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "embedding and head",
+          "level": "bf16-acc"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.37838515639305115,
+      "mean_rms_logit_difference": 0.07220048799056962,
+      "mean_kl": 0.002782443781340128,
+      "top1_agreement": 227,
+      "perplexity": 83.67746070138645,
+      "greedy_diverged": 7,
+      "greedy_first_divergence": [5, 8, null, 5, 2, 10, 0, 4]
+    },
+    {
+      "policy": "all fp16",
+      "kind": "uniform",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp16"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp16"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.00781935453414917,
+      "mean_rms_logit_difference": 0.001251596014289872,
+      "mean_kl": 7.984362417231422e-7,
+      "top1_agreement": 255,
+      "perplexity": 82.49907554073694,
+      "greedy_diverged": 1,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, 11]
+    },
+    {
+      "policy": "all fp16-acc",
+      "kind": "uniform",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp16-acc"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.04642176628112793,
+      "mean_rms_logit_difference": 0.009121200770800513,
+      "mean_kl": 4.44653423415658e-5,
+      "top1_agreement": 252,
+      "perplexity": 82.6365531472608,
+      "greedy_diverged": 4,
+      "greedy_first_divergence": [null, null, null, 15, 14, 10, null, 11]
+    },
+    {
+      "policy": "layer 0 attention at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.03516973555088043,
+      "mean_rms_logit_difference": 0.00641349238694017,
+      "mean_kl": 2.116534170258776e-5,
+      "top1_agreement": 253,
+      "perplexity": 82.47517018371673,
+      "greedy_diverged": 3,
+      "greedy_first_divergence": [null, null, null, 15, 14, 10, null, null]
+    },
+    {
+      "policy": "layer 0 attention at bf16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.3355894535779953,
+      "mean_rms_logit_difference": 0.05074336146784023,
+      "mean_kl": 0.0013242642648849466,
+      "top1_agreement": 236,
+      "perplexity": 82.59915185072737,
+      "greedy_diverged": 7,
+      "greedy_first_divergence": [13, 6, null, 22, 2, 3, 0, 11]
+    },
+    {
+      "policy": "layer 0 attention at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.005060732364654541,
+      "mean_rms_logit_difference": 0.0007980041541938976,
+      "mean_kl": 3.247870628816523e-7,
+      "top1_agreement": 256,
+      "perplexity": 82.50769780080122,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "layer 0 attention at fp16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.03654608130455017,
+      "mean_rms_logit_difference": 0.006146728673927485,
+      "mean_kl": 1.9654163493413396e-5,
+      "top1_agreement": 254,
+      "perplexity": 82.55457227501007,
+      "greedy_diverged": 2,
+      "greedy_first_divergence": [null, null, null, null, 14, 10, null, null]
+    },
+    {
+      "policy": "layer 0 MLP at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.023883342742919922,
+      "mean_rms_logit_difference": 0.004064034328023449,
+      "mean_kl": 8.441446990504573e-6,
+      "top1_agreement": 253,
+      "perplexity": 82.55539294835238,
+      "greedy_diverged": 3,
+      "greedy_first_divergence": [null, null, null, null, 14, 10, 24, null]
+    },
+    {
+      "policy": "layer 0 MLP at bf16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.2372397482395172,
+      "mean_rms_logit_difference": 0.03837043102337849,
+      "mean_kl": 0.0007569653159638768,
+      "top1_agreement": 243,
+      "perplexity": 82.9466114820068,
+      "greedy_diverged": 5,
+      "greedy_first_divergence": [null, null, null, 15, 4, 10, 0, 6]
+    },
+    {
+      "policy": "layer 0 MLP at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.002842545509338379,
+      "mean_rms_logit_difference": 0.0005140828585510521,
+      "mean_kl": 1.3455281262509203e-7,
+      "top1_agreement": 255,
+      "perplexity": 82.50836716055332,
+      "greedy_diverged": 1,
+      "greedy_first_divergence": [null, null, null, null, 14, null, null, null]
+    },
+    {
+      "policy": "layer 0 MLP at fp16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.028378427028656006,
+      "mean_rms_logit_difference": 0.004999414166606163,
+      "mean_kl": 1.2788140689223823e-5,
+      "top1_agreement": 250,
+      "perplexity": 82.5496367103384,
+      "greedy_diverged": 4,
+      "greedy_first_divergence": [15, null, null, 15, null, 10, null, 5]
+    },
+    {
+      "policy": "layer 1 attention at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.013416528701782227,
+      "mean_rms_logit_difference": 0.002347706205104404,
+      "mean_kl": 2.791820705223168e-6,
+      "top1_agreement": 255,
+      "perplexity": 82.53432938004761,
+      "greedy_diverged": 1,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, 11]
+    },
+    {
+      "policy": "layer 1 attention at bf16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.09213125705718994,
+      "mean_rms_logit_difference": 0.016937606899697966,
+      "mean_kl": 0.00014533433925670137,
+      "top1_agreement": 251,
+      "perplexity": 82.49848379373663,
+      "greedy_diverged": 4,
+      "greedy_first_divergence": [null, null, null, 4, 4, null, 16, 11]
+    },
+    {
+      "policy": "layer 1 attention at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp16"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.0015732049942016602,
+      "mean_rms_logit_difference": 0.0002909761139899787,
+      "mean_kl": 4.307426540143755e-8,
+      "top1_agreement": 255,
+      "perplexity": 82.50874934703023,
+      "greedy_diverged": 1,
+      "greedy_first_divergence": [null, null, null, null, 14, null, null, null]
+    },
+    {
+      "policy": "layer 1 attention at fp16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.013415694236755371,
+      "mean_rms_logit_difference": 0.002177414250409784,
+      "mean_kl": 2.4190085027172757e-6,
+      "top1_agreement": 256,
+      "perplexity": 82.51050484237841,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "layer 1 MLP at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "bf16"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.011980175971984863,
+      "mean_rms_logit_difference": 0.002292140903381077,
+      "mean_kl": 2.638048727920809e-6,
+      "top1_agreement": 255,
+      "perplexity": 82.50587760659909,
+      "greedy_diverged": 1,
+      "greedy_first_divergence": [null, null, null, null, 14, null, null, null]
+    },
+    {
+      "policy": "layer 1 MLP at bf16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.13035574555397034,
+      "mean_rms_logit_difference": 0.022491317789470305,
+      "mean_kl": 0.0002582909249873322,
+      "top1_agreement": 249,
+      "perplexity": 82.40384596829993,
+      "greedy_diverged": 5,
+      "greedy_first_divergence": [12, null, null, 4, 14, 3, null, 6]
+    },
+    {
+      "policy": "layer 1 MLP at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp16"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.0015295743942260742,
+      "mean_rms_logit_difference": 0.00028328363158314457,
+      "mean_kl": 4.0754595526673655e-8,
+      "top1_agreement": 256,
+      "perplexity": 82.51150071716614,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "layer 1 MLP at fp16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.01687157154083252,
+      "mean_rms_logit_difference": 0.0029202149879638773,
+      "mean_kl": 4.337620175880221e-6,
+      "top1_agreement": 254,
+      "perplexity": 82.48581778209906,
+      "greedy_diverged": 2,
+      "greedy_first_divergence": [null, null, null, null, 14, 3, null, null]
+    },
+    {
+      "policy": "KV cache at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "bf16"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.020141124725341797,
+      "mean_rms_logit_difference": 0.0034229725149639957,
+      "mean_kl": 6.019906189518404e-6,
+      "top1_agreement": 256,
+      "perplexity": 82.49811366894306,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "KV cache at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp16"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp32"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.0027867555618286133,
+      "mean_rms_logit_difference": 0.0004234836606118232,
+      "mean_kl": 9.282293755274499e-8,
+      "top1_agreement": 256,
+      "perplexity": 82.51015646994718,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "embedding and head at bf16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "bf16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.02411152422428131,
+      "mean_rms_logit_difference": 0.004461579897108395,
+      "mean_kl": 1.0083548049712657e-5,
+      "top1_agreement": 254,
+      "perplexity": 82.54373333125038,
+      "greedy_diverged": 2,
+      "greedy_first_divergence": [null, null, null, null, 14, 10, null, null]
+    },
+    {
+      "policy": "embedding and head at bf16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "bf16-acc"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.21422243118286133,
+      "mean_rms_logit_difference": 0.01945631737697179,
+      "mean_kl": 0.00033295222505016857,
+      "top1_agreement": 243,
+      "perplexity": 82.31797920307584,
+      "greedy_diverged": 6,
+      "greedy_first_divergence": [5, null, null, 24, 4, 0, 0, 21]
+    },
+    {
+      "policy": "embedding and head at fp16",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.0031527578830718994,
+      "mean_rms_logit_difference": 0.000551705823444222,
+      "mean_kl": 1.5555840477709267e-7,
+      "top1_agreement": 256,
+      "perplexity": 82.5055716386295,
+      "greedy_diverged": 0,
+      "greedy_first_divergence": [null, null, null, null, null, null, null, null]
+    },
+    {
+      "policy": "embedding and head at fp16-acc",
+      "kind": "one site",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp32"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp32"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp32"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp16-acc"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.024871110916137695,
+      "mean_rms_logit_difference": 0.0024487437333352876,
+      "mean_kl": 5.259066118750194e-6,
+      "top1_agreement": 252,
+      "perplexity": 82.5168458030387,
+      "greedy_diverged": 4,
+      "greedy_first_divergence": [null, null, null, 15, null, 10, 24, 7]
+    },
+    {
+      "policy": "BF16 storage, BF16 accumulation in the MLPs only",
+      "kind": "mixed",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "bf16"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "bf16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "bf16"
+        },
+        {
+          "site": "embedding and head",
+          "level": "bf16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.2445683479309082,
+      "mean_rms_logit_difference": 0.045215257940484976,
+      "mean_kl": 0.0010400156417731195,
+      "top1_agreement": 236,
+      "perplexity": 82.97429994759716,
+      "greedy_diverged": 7,
+      "greedy_first_divergence": [12, 6, null, 5, 4, 10, 0, 6]
+    },
+    {
+      "policy": "FP16 storage, FP16 accumulation except the head",
+      "kind": "mixed",
+      "levels": [
+        {
+          "site": "layer 0 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 0 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 attention",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "layer 1 MLP",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "KV cache",
+          "level": "fp16-acc"
+        },
+        {
+          "site": "embedding and head",
+          "level": "fp16"
+        }
+      ],
+      "tokens": 256,
+      "scored_tokens": 256,
+      "nonfinite_logits": 0,
+      "max_abs_logit_difference": 0.04956376552581787,
+      "mean_rms_logit_difference": 0.008799091530490927,
+      "mean_kl": 3.9481245254465144e-5,
+      "top1_agreement": 252,
+      "perplexity": 82.5944940682497,
+      "greedy_diverged": 4,
+      "greedy_first_divergence": [null, null, null, 15, 14, 10, null, 11]
+    }
+  ]
+}

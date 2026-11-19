@@ -26,9 +26,10 @@ USAGE:
       (R1), and r1.1-policies, r1.1-shard-tree (S logical shards, default
       64) and r1.1-sweep (.json and .md each, R1.1) to DIR (default: results).
       The sweep uses its own fixed grid of seeds, sizes and world sizes.
-      Also writes r2-serving (R2: the serving scenarios) and r3-decode (R3:
-      the tensor-parallel decoder), each with its own fixed configuration;
-      the flags above do not apply to them.
+      Also writes r2-serving (R2: the serving scenarios), r3-decode (R3:
+      the tensor-parallel decoder) and r4-precision (R4: per-layer
+      precision policies), each with its own fixed configuration; the
+      flags above do not apply to them.
 
   fp-play-runtime schedule --algorithm NAME --world N [--format bf16 | --policy NAME]
                            [--len N] [--seed N]
@@ -176,6 +177,7 @@ fn experiment(args: &[String]) -> Result<(), String> {
     })?;
     let serving = fp_play_runtime::serving::experiment::run_all(&Default::default())?;
     let decode = fp_play_runtime::decoder::experiment::run(&Default::default())?;
+    let precision = fp_play_runtime::precision::experiment::run(&Default::default())?;
     fs::create_dir_all(&out).map_err(|e| format!("cannot create {}: {e}", out.display()))?;
     let artifacts = [
         (
@@ -207,6 +209,11 @@ fn experiment(args: &[String]) -> Result<(), String> {
             "r3-decode",
             fp_play_runtime::decoder::report::to_json(&decode, &command).to_pretty(),
             fp_play_runtime::decoder::report::to_markdown(&decode, &command),
+        ),
+        (
+            "r4-precision",
+            fp_play_runtime::precision::report::to_json(&precision, &command).to_pretty(),
+            fp_play_runtime::precision::report::to_markdown(&precision, &command),
         ),
     ];
     for (name, json, markdown) in artifacts {

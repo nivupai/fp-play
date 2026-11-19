@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — runtime milestone R4
+
+- New `runtime/src/precision/`: per-site precision policies (storage and accumulator format for each layer's attention and MLP, the KV cache and the embedding/head) for the R3 decoder with FP32 master weights.
+- A fast fused multiply–accumulate in FP32, BF16 or FP16, tested bit-identical to `ops::fused_chain_dot` and to 3,600 independent Python `Fraction` chain vectors (`runtime/scripts/gen_chain_vectors.py`, compared in CI).
+- New recorded artifact `runtime/results/r4-precision.{json,md}`: logit drift, KL, top-1 agreement and perplexity against FP32 for uniform, one-site-at-a-time and mixed policies.
+- Two planted bugs, each caught (listed in `runtime/ROADMAP_PROGRESS.md`).
+
 ## Unreleased — runtime milestone R3
 
 - New `runtime/src/decoder/`: a tiny Llama-style decoder (RMSNorm, RoPE, grouped-query attention, SwiGLU, tied embeddings; deterministic random BF16 weights) with native binary32 local kernels in a written order and `exp`/`sin`/`cos` from binary64 basic operations.
