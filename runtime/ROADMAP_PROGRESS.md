@@ -30,7 +30,8 @@ removed, and that is noted here.
 | R6a  | `#collectives` data export and presentation library                                                                                  | merged (#31) |
 | R6b  | `#collectives` workspace UI, tests, docs                                                                                             | merged (#32) |
 | S0   | Scope corrections: the landing refresh was not deferred; SG-1…SG-5 recorded                                                          | merged (#34) |
-| R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | in progress  |
+| R4c  | Deterministic training on the copy task, committed weights, `results/r4-training.*`                                                  | merged (#35) |
+| R4d  | FP8 E4M3 / E5M2 and INT8 levels with scales, Python vectors, exhaustive checks                                                       | in progress  |
 
 ## Disk checks
 
@@ -298,8 +299,35 @@ Started 2026-11-19 under the same rules and authority. Order and PRs:
   trainer: the R3 decoder (BF16 weights and KV, P = 1) under both R3 wire
   policies, and the R4 all-FP32 model, on 64 held-out prompts.
 
+- **RD-24 FP8/INT8 semantics** (`precision/narrow.rs`): E4M3 and E5M2 as
+  in the OCP FP8 specification; conversion saturates to ±max (E4M3 has no
+  ∞; for E5M2 saturation rather than ∞ is chosen so a rounding overflow
+  cannot create ∞); INT8 symmetric −127…127. One binary32 scale per
+  weight row, per activation vector and per (token, KV head) slice of K and
+  V: `fl32(absmax ÷ Qmax)`, 1 for an all-zero slice, and a non-finite
+  element makes the product NaN. The quotient is exact (integer division),
+  so there is one rounding. FP8 accumulates in a fused FP32 chain, INT8 in
+  exact integers converted once to binary32; output
+  `fl32(fl32(acc · s_w) · s_x)`. The KV cache dequantizes to binary32
+  (`fl32(q · s)`) on write, which the FP32 attention core reads. Existing
+  levels and `results/r4-precision.*` are unchanged (`Level::ALL` keeps the
+  five float levels; `Level::SCALED` and `Level::EVERY` are new).
+- **RD-25 R4d checks and planted bugs:** the 512 FP8 decodings against the
+  Python table; round trips, ordering, NaN/∞ counts for all 256 patterns;
+  every midpoint and neighbour; 15,300 quantizations and 480 scaled
+  products against `scripts/gen_narrow_vectors.py`; every site at every
+  scaled level changes the logits; the site product equals the scaled
+  product.
+
+  | Bug                                 | Caught by                                                      |
+  | ----------------------------------- | -------------------------------------------------------------- |
+  | Ties round away from zero           | the exhaustive midpoint check                                  |
+  | INT8 clamps to −128 instead of −127 | the Python vectors (and the midpoint check's saturation cases) |
+
 ## R4c results (results/r4-training.md)
 
+- CI on Linux x86-64 retrained the model and reproduced the SHA-256 first
+  recorded on macOS arm64 (PR #35).
 - Batch loss 8.12 → 0.00143 nats per token over 600 steps; first perfect
   batch at step 144. Held-out: 100.00% teacher-forced (256 sequences); 64 of
   64 prompts copied exactly by all three inference models.

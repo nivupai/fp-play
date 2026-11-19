@@ -9,6 +9,7 @@ use fp_play_runtime::ops::{exact_product, fused_chain_dot};
 use fp_play_runtime::precision::mac::{encode, fused_dot, mac, round_value, round_value_reference};
 use fp_play_runtime::precision::metrics::{compare, drift, kl, log_softmax};
 use fp_play_runtime::precision::model::{site_product, MasterWeights, PolicyModel};
+use fp_play_runtime::precision::narrow::ScaledMatrix;
 use fp_play_runtime::precision::policy::{Level, Policy, Site};
 use fp_play_runtime::rng::SplitMix64;
 
@@ -205,11 +206,29 @@ fn every_site_affects_the_logits() {
     let mut reference = PolicyModel::new(c, &w, Policy::uniform(c.layers, Level::Fp32));
     let base = reference.teacher_forced(p);
     for site in Site::all(c.layers) {
-        for level in Level::LOW {
+        for level in Level::LOW.into_iter().chain(Level::SCALED) {
             let mut m = PolicyModel::new(c, &w, Policy::only(c.layers, site, level));
             assert_ne!(m.teacher_forced(p), base, "{} at {}", site.name(), level.name());
         }
     }
+}
+
+/// A scaled level's site product is the scaled product of `narrow`
+/// (itself checked against the Python vectors) on the site's master weights.
+#[test]
+fn scaled_levels_compute_their_site_as_the_scaled_product() {
+    let (c, w) = tiny();
+    let m = &w.layers[1].w_up;
+    let mut rng = SplitMix64::new(0x5ca1e);
+    let x: Vec<f32> = (0..m.cols).map(|_| rng.next_normalish() as f32).collect();
+    for level in Level::SCALED {
+        let f = level.narrow().unwrap();
+        let got = site_product(&Policy::uniform(c.layers, level), m, level, &x);
+        let want = ScaledMatrix::new(f, m.rows, m.cols, &m.w).apply(&x);
+        assert_eq!(got, want, "{}", level.name());
+        assert_eq!(level.accumulator(), Format::Fp32);
+    }
+    assert_eq!(Level::EVERY.len(), Level::ALL.len() + Level::SCALED.len());
 }
 
 #[test]

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — runtime R4 completion: FP8 and INT8 levels
+
+- New `runtime/src/precision/narrow.rs`: FP8 E4M3 and E5M2 (OCP) and symmetric INT8 with one binary32 scale per weight row, activation vector and KV slice; exact-quotient quantization with one round-to-nearest-even and saturation. New levels `fp8-e4m3`, `fp8-e5m2` and `int8` for every site, including the KV cache.
+- Exhaustive checks over all 256 patterns and every midpoint; independent Python `Fraction` vectors (`runtime/scripts/gen_narrow_vectors.py`, compared in CI). Two planted bugs, each caught. `results/r4-precision.*` is unchanged.
+
 ## Unreleased — runtime R4 completion: a trained model
 
 - New `runtime/src/train/`: the R3 decoder's architecture trained deterministically in binary32 on a synthetic copy task, with a hand-written backward pass (checked against central finite differences in binary64 for every parameter of a small model) and Adam. The training forward pass is checked against the R4 all-FP32 inference model.

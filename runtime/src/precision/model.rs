@@ -9,6 +9,7 @@
 //! in [`crate::decoder::forward`]; the residual stream is binary32.
 
 use super::mac::{fused_dot, mac, round_value};
+use super::narrow::{self, Narrow, ScaledMatrix};
 use super::policy::{Level, Policy, Site};
 use crate::decoder::config::DecoderConfig;
 use crate::decoder::forward::{rms_norm, Rope};
@@ -141,41 +142,90 @@ impl QMatrix {
     }
 }
 
+/// A site's weights under its level: rounded to a float storage format, or
+/// quantized with per-row scales.
+#[derive(Clone, Debug)]
+enum SiteMatrix {
+    Float(QMatrix),
+    Scaled(ScaledMatrix),
+}
+
+impl SiteMatrix {
+    fn apply(&self, x: &[f32]) -> Vec<f32> {
+        match self {
+            SiteMatrix::Float(m) => m.apply(x),
+            SiteMatrix::Scaled(m) => m.apply(x),
+        }
+    }
+}
+
 /// One site's matrix product under `level`, as the model computes it:
 /// `m` rounded to the level's storage format, `x` likewise, fused chains in
-/// its accumulator format. Exposed for tests.
+/// its accumulator format; or, for a scaled level, both quantized with
+/// their scales ([`ScaledMatrix::apply`]). Exposed for tests.
 pub fn site_product(policy: &Policy, m: &MasterMatrix, level: Level, x: &[f32]) -> Vec<f32> {
     qmatrix(policy, m, level).apply(x)
 }
 
-fn qmatrix(policy: &Policy, m: &MasterMatrix, level: Level) -> QMatrix {
+fn qmatrix(policy: &Policy, m: &MasterMatrix, level: Level) -> SiteMatrix {
     #[cfg(feature = "planted-bugs")]
     if policy.planted == Some(super::policy::PrecisionMutation::Bf16AccumulatesInFp32) && level == Level::Bf16Acc {
-        return QMatrix::with_acc(m, level, Format::Fp32);
+        return SiteMatrix::Float(QMatrix::with_acc(m, level, Format::Fp32));
     }
     let _ = policy;
-    QMatrix::new(m, level)
+    match level.narrow() {
+        Some(f) => SiteMatrix::Scaled(ScaledMatrix::new(f, m.rows, m.cols, &m.w)),
+        None => SiteMatrix::Float(QMatrix::new(m, level)),
+    }
 }
 
-fn kv_storage(policy: &Policy) -> Format {
+/// How the KV cache stores K and V.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum KvFormat {
+    /// Each value rounded to a float format.
+    Float(Format),
+    /// Each KV head's K (or V) of one token quantized with its own scale,
+    /// dequantized to binary32 on read ([`narrow::store`]).
+    Scaled(Narrow),
+}
+
+fn kv_storage(policy: &Policy) -> KvFormat {
     #[cfg(feature = "planted-bugs")]
     if policy.planted == Some(super::policy::PrecisionMutation::SkipKvRounding) {
-        return Format::Fp32;
+        return KvFormat::Float(Format::Fp32);
     }
-    policy.level(Site::KvCache).storage()
+    let level = policy.level(Site::KvCache);
+    match level.narrow() {
+        Some(f) => KvFormat::Scaled(f),
+        None => KvFormat::Float(level.storage()),
+    }
+}
+
+impl KvFormat {
+    /// One token's K or V (all KV heads, `d` values each) as stored.
+    fn store(self, x: &[f32], d: usize) -> Vec<f64> {
+        match self {
+            KvFormat::Float(f) => x.iter().map(|&a| round_value(f, f64::from(a), 0.0)).collect(),
+            KvFormat::Scaled(f) => x
+                .chunks(d)
+                .flat_map(|head| narrow::store(f, head))
+                .map(f64::from)
+                .collect(),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 struct QLayer {
     attn_norm: Vec<f32>,
-    wq: QMatrix,
-    wk: QMatrix,
-    wv: QMatrix,
-    wo: QMatrix,
+    wq: SiteMatrix,
+    wk: SiteMatrix,
+    wv: SiteMatrix,
+    wo: SiteMatrix,
     mlp_norm: Vec<f32>,
-    w_gate: QMatrix,
-    w_up: QMatrix,
-    w_down: QMatrix,
+    w_gate: SiteMatrix,
+    w_up: SiteMatrix,
+    w_down: SiteMatrix,
 }
 
 /// The decoder under one precision policy.
@@ -183,10 +233,11 @@ struct QLayer {
 pub struct PolicyModel {
     pub config: DecoderConfig,
     pub policy: Policy,
-    kv_format: Format,
-    /// Embedding rows rounded to the head's storage format (row-major).
+    kv_format: KvFormat,
+    /// Embedding rows as the head stores them (row-major): rounded to its
+    /// storage format, or dequantized from its scaled format.
     embed_rows: Vec<f32>,
-    head: QMatrix,
+    head: SiteMatrix,
     layers: Vec<QLayer>,
     final_norm: Vec<f32>,
     rope: Rope,
@@ -224,16 +275,20 @@ impl PolicyModel {
                 }
             })
             .collect();
-        let embed_rows = w
-            .embed
-            .w
-            .iter()
-            .map(|&x| round_value(head.storage(), f64::from(x), 0.0) as f32)
-            .collect();
+        let head_matrix = qm(&w.embed, head);
+        let embed_rows = match &head_matrix {
+            SiteMatrix::Scaled(m) => (0..m.rows).flat_map(|o| m.row(o)).collect(),
+            SiteMatrix::Float(_) => w
+                .embed
+                .w
+                .iter()
+                .map(|&x| round_value(head.storage(), f64::from(x), 0.0) as f32)
+                .collect(),
+        };
         let kv_format = kv_storage(&policy);
         PolicyModel {
             kv_format,
-            head: qm(&w.embed, head),
+            head: head_matrix,
             embed_rows,
             layers,
             final_norm: w.final_norm.clone(),
@@ -270,8 +325,8 @@ impl PolicyModel {
                 let v = layer.wv.apply(&n);
                 self.rope.apply(&mut q, pos, d);
                 self.rope.apply(&mut k, pos, d);
-                seq.k[l].extend(k.iter().map(|&a| round_value(self.kv_format, f64::from(a), 0.0)));
-                seq.v[l].extend(v.iter().map(|&a| round_value(self.kv_format, f64::from(a), 0.0)));
+                seq.k[l].extend(self.kv_format.store(&k, d));
+                seq.v[l].extend(self.kv_format.store(&v, d));
                 let mut attn = vec![0.0f32; h];
                 for head in 0..c.q_heads {
                     let kvh = head / c.group();
