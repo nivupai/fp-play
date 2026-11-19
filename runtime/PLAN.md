@@ -180,12 +180,17 @@ Done: `results/r4-precision.*`; plan and decisions in
 [`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). FP8/INT8 with scales remain
 future work.
 
-## R5 — Dataflow mapping simulator (idea #2)
+## R5 — Dataflow mapping simulator (idea #2) ✅
 
 Describe a transformer block as a static graph and map it onto a toy
 fixed-function pipeline (compute units, SRAM, HBM bandwidth). Report
 utilization, stall reasons and a roofline for prefill versus decode. FP Play's
 Nangate45 delays can feed one unit model, clearly labeled as an assumption.
+
+Done: `results/r5-dataflow.*`; decisions in
+[`ROADMAP_PROGRESS.md`](ROADMAP_PROGRESS.md). Future work: a mapping built
+for matrix–vector products (decode), operator fusion and overlap between
+ops.
 
 ## R6 — FP Play UI integration
 
