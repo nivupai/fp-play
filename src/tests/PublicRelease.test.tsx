@@ -20,7 +20,9 @@ describe('public release entry points and accessibility', () => {
       ['Arithmetic Pipeline', 'arithmetic'],
       ['FMA Comparison', 'fma'],
     ]) {
-      const link = within(navigation).getByRole('link', { name: title })
+      const link = within(navigation).getByRole('link', {
+        name: new RegExp(`\\b${title}\\b`),
+      })
       expect(link).toHaveAttribute('href', `#${target}`)
       expect(document.getElementById(target)).toHaveAccessibleName()
     }
@@ -48,7 +50,9 @@ describe('public release entry points and accessibility', () => {
     const arithmetic = within(
       screen.getByRole('region', { name: 'FP16 Arithmetic Explorer' }),
     )
-    await user.click(explorer.getByRole('button', { name: 'Sign bit 15' }))
+    await user.click(
+      explorer.getByRole('button', { name: /^[01], Sign bit 15$/ }),
+    )
     act(() => {
       window.history.replaceState(null, '', '#fma')
       fireEvent(window, new Event('hashchange'))
@@ -68,7 +72,7 @@ describe('public release entry points and accessibility', () => {
       name: 'Four ways to see the same sixteen bits',
     })
     await user.click(
-      within(landing).getByRole('link', { name: 'FMA Comparison' }),
+      within(landing).getByRole('link', { name: /FMA Comparison/ }),
     )
     expect(arithmetic.getByLabelText('Fused output hex')).toHaveTextContent(
       '0x0010',

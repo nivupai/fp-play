@@ -1,3 +1,7 @@
+//! Slow: retrains the model; run by the trained-model workflow, not the
+//! normal runtime job (the weights' SHA-256 is still checked there by
+//! `tests/train.rs` and by `hashlib`).
+//!
 //! The recorded training run (results/r4-training.* and
 //! results/r4-trained-weights.bin): retrains with the default settings and
 //! requires every byte to match, and the weights' SHA-256 to be the pinned one.
@@ -13,6 +17,7 @@ fn record() -> &'static TrainingRecord {
 }
 
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn recorded_training_is_reproduced_bit_for_bit() {
     let r = record();
     assert_eq!(
@@ -36,6 +41,7 @@ fn recorded_training_is_reproduced_bit_for_bit() {
 }
 
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn the_trained_model_solves_the_task() {
     let r = record();
     let last = r.result.steps.last().unwrap();

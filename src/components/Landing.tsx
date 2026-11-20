@@ -146,7 +146,6 @@ export function Landing() {
                 window.dispatchEvent(new Event('hashchange'))
             }}
             key={experience.id}
-            aria-labelledby={`experience-${experience.id}`}
           >
             <span className="eyebrow">{experience.number} / INTERACTIVE</span>
             <h3 id={`experience-${experience.id}`}>{experience.title}</h3>

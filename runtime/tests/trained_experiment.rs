@@ -1,3 +1,5 @@
+//! Slow: reruns R3 and R4 on two models; run by the trained-model workflow.
+//!
 //! The reruns on the trained model (results/r3-trained.*, results/r4-trained.*):
 //! stale checks on the committed weights, and the properties their text relies on.
 
@@ -39,6 +41,7 @@ fn recorded(name: &str) -> String {
 }
 
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn recorded_r3_rerun_is_current() {
     assert!(
         r3_to_json(r3(), COMMAND).to_pretty() == recorded("r3-trained.json"),
@@ -51,6 +54,7 @@ fn recorded_r3_rerun_is_current() {
 }
 
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn recorded_r4_rerun_is_current() {
     assert!(
         r4_to_json(r4(), COMMAND).to_pretty() == recorded("r4-trained.json"),
@@ -78,6 +82,7 @@ fn copy_prompts_share_group_prefixes() {
 /// The batch-invariance prediction holds for both models, and the facts the
 /// R3 report states (flips imply being within reach) hold by construction.
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn r3_rerun_properties() {
     let r = r3();
     for d in [&r.random, &r.trained] {
@@ -92,6 +97,7 @@ fn r3_rerun_properties() {
 }
 
 #[test]
+#[ignore = "slow: runs in .github/workflows/runtime-trained.yml (cargo test -- --include-ignored)"]
 fn r4_rerun_properties() {
     let r = r4();
     for p in [&r.random, &r.trained] {

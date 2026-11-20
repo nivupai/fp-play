@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — cleanup
+
+- CI: the slow trained-model stale tests moved to `.github/workflows/runtime-trained.yml` (path-filtered, and on demand); the normal runtime job is back to a 15-minute limit and still checks the weights' SHA-256.
+- Accessibility: the landing cards' and Bit Explorer buttons' accessible names now contain their visible text (`label-content-name-mismatch`); no visual change; the axe audit reports 0 violations on the landing page.
+- `docs/RUNTIME_CASE_STUDY.md`: R4 as worst (random weights) and best (trained model) cases, and an updated R5.
+
 ## Unreleased — runtime R6 completion: workspaces, landing refresh, accessibility
 
 - New lazy workspaces `#serving` (R2 scenarios), `#decode` (R3 divergence, margins and batch invariance, random against trained weights), `#precision` (R4 levels including FP8/INT8, the one-site table, the training run) and `#dataflow` (R5 cycle breakdown and ops), each reading committed JSON from `runtime/results/` with an exact table after every chart.

@@ -21,8 +21,10 @@ Rust 1.97.0, pinned in [`rust-toolchain.toml`](rust-toolchain.toml) (rustup inst
 
 ```sh
 cd runtime
-cargo test --release                              # 178 tests, including the recorded-artifact checks
-cargo run --release -- experiment --out results   # regenerates results/ byte for byte (~18 s on 10 cores)
+cargo test --release                              # 172 tests, including the recorded-artifact checks;
+                                                  # 6 slow trained-model tests are ignored; add
+                                                  # `--test train_experiment --test trained_experiment -- --include-ignored`
+cargo run --release -- experiment --out results   # regenerates results/ byte for byte (about 4 min on 10 cores, mostly training and the reruns)
 cargo run --release -- schedule --algorithm ring --world 4 --len 8
 cargo run --release -- schedule --algorithm ring --world 4 --len 8 --policy fp32-rs/bf16-ag
 ```

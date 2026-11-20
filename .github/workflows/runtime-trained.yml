@@ -1,0 +1,78 @@
+name: Runtime trained model (slow)
+
+# Retrains the copy-task model and reruns R3 and R4 on it, comparing every
+# byte of results/r4-training.*, r4-trained-weights.bin, r3-trained.* and
+# r4-trained.* with a fresh run. These tests are #[ignore]d in the normal
+# runtime job (which still checks the committed weights' SHA-256) and run
+# here when the code they execute changes, or on request.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/runtime-trained.yml'
+      - 'runtime/Cargo.toml'
+      - 'runtime/Cargo.lock'
+      - 'runtime/rust-toolchain.toml'
+      - 'runtime/src/train/**'
+      - 'runtime/src/precision/**'
+      - 'runtime/src/decoder/**'
+      - 'runtime/src/serving/**'
+      - 'runtime/src/collectives.rs'
+      - 'runtime/src/shard_tree.rs'
+      - 'runtime/src/ops.rs'
+      - 'runtime/src/exact.rs'
+      - 'runtime/src/format.rs'
+      - 'runtime/src/rng.rs'
+      - 'runtime/src/json.rs'
+      - 'runtime/src/sha256.rs'
+      - 'runtime/results/r4-training.*'
+      - 'runtime/results/r4-trained*'
+      - 'runtime/results/r3-trained.*'
+      - 'runtime/tests/train_experiment.rs'
+      - 'runtime/tests/trained_experiment.rs'
+  pull_request:
+    paths:
+      - '.github/workflows/runtime-trained.yml'
+      - 'runtime/Cargo.toml'
+      - 'runtime/Cargo.lock'
+      - 'runtime/rust-toolchain.toml'
+      - 'runtime/src/train/**'
+      - 'runtime/src/precision/**'
+      - 'runtime/src/decoder/**'
+      - 'runtime/src/serving/**'
+      - 'runtime/src/collectives.rs'
+      - 'runtime/src/shard_tree.rs'
+      - 'runtime/src/ops.rs'
+      - 'runtime/src/exact.rs'
+      - 'runtime/src/format.rs'
+      - 'runtime/src/rng.rs'
+      - 'runtime/src/json.rs'
+      - 'runtime/src/sha256.rs'
+      - 'runtime/results/r4-training.*'
+      - 'runtime/results/r4-trained*'
+      - 'runtime/results/r3-trained.*'
+      - 'runtime/tests/train_experiment.rs'
+      - 'runtime/tests/trained_experiment.rs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trained:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: runtime
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the toolchain pinned in runtime/rust-toolchain.toml (preinstalled rustup, no third-party action)
+        run: |
+          rustup toolchain install
+          rustup show active-toolchain | grep -F "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)-"
+          cargo --version
+      - name: Retrain and rerun; every recorded byte must match
+        run: cargo test --release --locked --test train_experiment --test trained_experiment -- --include-ignored

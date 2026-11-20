@@ -52,7 +52,8 @@ export function BitFields({
                     <button
                       type="button"
                       className="bit-button"
-                      aria-label={`${field.label} bit ${position}`}
+                      // The name starts with the visible digit (WCAG 2.5.3, label in name).
+                      aria-label={`${value}, ${field.label} bit ${position}`}
                       aria-pressed={value === '1'}
                       onClick={() => onToggle(position)}
                     >

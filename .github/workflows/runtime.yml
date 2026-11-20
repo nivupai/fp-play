@@ -11,7 +11,7 @@ permissions:
 jobs:
   runtime:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: runtime
@@ -27,7 +27,7 @@ jobs:
           cargo clippy --version
       - run: cargo fmt --check
       - run: cargo clippy --all-targets --locked -- -D warnings
-      - name: Tests, including the recorded-artifact check
+      - name: Tests, including the recorded-artifact checks (the slow trained-model stale tests run in runtime-trained.yml)
         run: cargo test --release --locked
       - name: Planted-bug tests (compile-time planted-bugs feature; recording commands refuse to run in this build)
         run: |
