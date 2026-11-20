@@ -405,3 +405,29 @@ Started 2026-11-19 under the same rules and authority. Order and PRs:
   minutes (#37): with retraining and the two trained-model reruns, the
   hosted runner needed more than 15 minutes, and the first run was
   cancelled at the limit with every completed step passing.
+
+## Cleanup (after #39)
+
+- **RD-36 CI split.** The six slow trained-model stale tests
+  (`tests/train_experiment.rs`, `tests/trained_experiment.rs`: retraining and
+  the R3/R4 reruns) are `#[ignore]`d in the normal runtime job, which keeps
+  the fast stale tests, the weights' SHA-256 test and the `hashlib` check and
+  is back to a 15-minute limit. `.github/workflows/runtime-trained.yml` runs
+  them with `--include-ignored` on `workflow_dispatch` and on pushes and pull
+  requests touching the code they execute: training, the model (decoder),
+  quantization (precision), and also the serving engine, collectives, shard
+  tree and numeric core, because the R3 rerun runs through them and a
+  narrower filter could leave `r3-trained` stale unnoticed. The local check
+  script still runs them before every commit.
+- **RD-37 Accessible names.** Landing cards: `aria-labelledby` removed, so
+  each card's name is its whole visible text. Bit Explorer buttons: the name
+  starts with the visible digit (`0, Sign bit 15`). The historical tests'
+  exact-name queries were updated to patterns of the new names (their
+  assertions are otherwise unchanged); the user's instruction overrides
+  AGENTS.md's "historical tests unchanged" for these names. Before/after
+  screenshots (12 pairs) are byte-identical; the axe audit reports 0
+  violations on the landing page.
+- **RD-38 Case study.** R4 is presented as a worst case (random weights) and
+  a best case (the trained copy model) that bracket a language model in terms
+  of top-2 margins; the bracket is a framing, since no language model's
+  margins are measured. R5 is weight-independent, so it is not bracketed.

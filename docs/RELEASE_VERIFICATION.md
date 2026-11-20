@@ -257,21 +257,27 @@ headless Chromium driven by Playwright-compatible automation on macOS.
   and on each workspace, in the light and dark color schemes. The full report
   is [`experiments/runtime-browser-audit.json`](experiments/runtime-browser-audit.json).
 
-| Page                 | Violations (light / dark) | Needs review (axe "incomplete")                                         |
-| -------------------- | ------------------------- | ----------------------------------------------------------------------- |
-| `#serving`           | 0 / 0                     | link-in-text-block (1 node)                                             |
-| `#decode`            | 0 / 0                     | link-in-text-block (2)                                                  |
-| `#precision`         | 0 / 0                     | color-contrast (18: SVG text of the loss chart), link-in-text-block (3) |
-| `#dataflow`          | 0 / 0                     | link-in-text-block (1)                                                  |
-| `#collectives`       | 0 / 0                     | color-contrast (37)                                                     |
-| Landing (whole main) | 1 rule, 19 nodes / same   | aria-prohibited-attr (56), color-contrast (45)                          |
+| Page                 | Violations (light / dark)   | Needs review (axe "incomplete")                                         |
+| -------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| `#serving`           | 0 / 0                       | link-in-text-block (1 node)                                             |
+| `#decode`            | 0 / 0                       | link-in-text-block (2)                                                  |
+| `#precision`         | 0 / 0                       | color-contrast (18: SVG text of the loss chart), link-in-text-block (3) |
+| `#dataflow`          | 0 / 0                       | link-in-text-block (1)                                                  |
+| `#collectives`       | 0 / 0                       | color-contrast (37)                                                     |
+| Landing (whole main) | 0 / 0 (after the fix below) | aria-prohibited-attr (56), color-contrast (45)                          |
 
-The landing violation is `label-content-name-mismatch` (serious) on elements
-that predate this milestone: the four original experience cards (their
-accessible name is the card title, their visible text is longer) and the Bit
-Explorer's bit buttons (`Sign bit 15`, …). None is in the new two-part block.
-They were not changed here because the four landing entries are kept as they
-are; this is open for the maintainer. "Needs review" items are cases axe could
+The first audit found `label-content-name-mismatch` (serious, 19 elements on
+`main`) on elements that predate the runtime work: the four landing cards
+(named only by their titles, while their visible text is longer) and the Bit
+Explorer's bit buttons (named `Sign bit 15` while showing `0` or `1`). Fixed
+in the cleanup PR: each card's name is now its whole visible text, and each
+bit button's name starts with its visible digit (`0, Sign bit 15`). The
+cards' look and order did not change: before/after screenshots of the card
+grid, the bit board and the first screen at 1280 and 390 px in both color
+schemes are byte-identical (12 pairs), and the committed screenshots
+regenerated unchanged. Rerun: 0 violations on the landing page and on every
+workspace, in both schemes; the keyboard walkthrough results are unchanged.
+"Needs review" items are cases axe could
 not decide (for example text over an SVG or a link distinguished by an
 underline axe cannot measure); they were not reviewed further.
 

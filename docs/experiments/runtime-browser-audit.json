@@ -5,20 +5,7 @@
       "page": "landing",
       "scheme": "light",
       "axe": "4.14.0",
-      "violations": [
-        {
-          "id": "label-content-name-mismatch",
-          "impact": "serious",
-          "nodes": 19,
-          "targets": [
-            "a[aria-labelledby=\"experience-explorer\"]",
-            "a[aria-labelledby=\"experience-microscope\"]",
-            "a[aria-labelledby=\"experience-arithmetic\"]",
-            "a[aria-labelledby=\"experience-fma\"]",
-            "button[aria-label=\"Sign bit 15\"]"
-          ]
-        }
-      ],
+      "violations": [],
       "incomplete": [
         {
           "id": "aria-prohibited-attr",
@@ -151,20 +138,7 @@
       "page": "landing",
       "scheme": "dark",
       "axe": "4.14.0",
-      "violations": [
-        {
-          "id": "label-content-name-mismatch",
-          "impact": "serious",
-          "nodes": 19,
-          "targets": [
-            "a[aria-labelledby=\"experience-explorer\"]",
-            "a[aria-labelledby=\"experience-microscope\"]",
-            "a[aria-labelledby=\"experience-arithmetic\"]",
-            "a[aria-labelledby=\"experience-fma\"]",
-            "button[aria-label=\"Sign bit 15\"]"
-          ]
-        }
-      ],
+      "violations": [],
       "incomplete": [
         {
           "id": "aria-prohibited-attr",

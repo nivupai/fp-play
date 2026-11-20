@@ -162,79 +162,103 @@ prompts, 48 tokens each).
 - **Verified** by a stdlib-only Python reimplementation that matches every
   logit bit for bit (P = 1, ring at P = 2 and 4, shard tree at P = 2), the
   P = 1 control, a tensor invariant on the paged K/V store, and three
-  planted bugs, each caught. The weights are random, so the divergence rates
-  do not transfer to trained models, whose margins differ.
+  planted bugs, each caught. The weights are random, the worst case for
+  margins; R4 below reruns the grid on a trained model, the best case.
 
-## R4: which layers need precision?
+## R4: precision between a worst case and a best case
 
-R4 gives each site of the same decoder (FP32 master weights) a storage and
-an accumulator format and compares it with the all-FP32 policy,
-teacher-forced on 8 prompts × 32 tokens. Every number is from
-[r4-precision](../runtime/results/r4-precision.md).
+Whether a numerical change alters a greedy token depends on how far the
+change moves the logits and how close the top two logits were. R3 and the
+first R4 study used random weights, whose logits are nearly uniform: the
+**worst case**, where small perturbations decide many tokens. The runtime
+now also trains R3's exact architecture deterministically on a copy task
+([r4-training](../runtime/results/r4-training.md): 100% held-out accuracy,
+weights pinned by SHA-256 and reproduced bit for bit by CI on a second
+platform), whose predictions are nearly certain: the **best case**. Both
+models run the same arithmetic on the same copy prompts.
 
-- **Accumulation width matters more than storage format.** BF16 storage
-  everywhere with FP32 accumulation gives a mean KL of 5.05e-5 and 253 of
-  256 top-1 agreements; adding BF16 accumulation gives 2.78e-3 and 227,
-  and 7 of 8 greedy continuations change. FP16 storage gives 7.98e-7, FP16
-  accumulation 4.45e-5.
-- **The first layer's attention is the most sensitive site** at every
-  level when lowered alone (mean KL 1.32e-3 at BF16 accumulation); the
-  second layer's sites and the KV cache are among the least.
-- **Verified** by a fast fused multiply–accumulate tested bit-identical to
-  the exact superaccumulator and to 3,600 independent Python `Fraction`
-  chains, and two planted bugs, each caught. Random weights and two layers
-  limit how far the ranking transfers.
+A language model sits between the two: some of its tokens are as certain as
+the copy model's, others are near-ties like random weights'. These results
+bound what sharding or a precision policy can do to its greedy tokens; where
+in the bracket a given model and text fall is not measured here.
 
-## R4 completion: a trained model, FP8 and INT8
+**Margins** ([r3-trained](../runtime/results/r3-trained.md)): the median
+top-2 margin at P = 1 is 0.2447 logits with random weights and 9.3781 with
+trained weights; the trained model's smallest margin, 5.5726, is 23× the
+random model's median.
 
-Random weights give near-uniform logits, so R3's flips and R4's drift say
-as much about the weights as about the arithmetic. The runtime now trains
-R3's exact architecture deterministically on a copy task
-([r4-training](../runtime/results/r4-training.md): 100% held-out
-accuracy, weights pinned by SHA-256 and reproduced bit for bit by CI on a
-second platform) and reruns both experiments on it beside the original
-random-weight models, on the same copy prompts.
+**Sharding** (R3's grid, P = 2, 4, 8 and every schedule):
 
-- **Margins.** The median top-2 margin at P = 1 is 9.3781 logits with
-  trained weights against 0.2447 with random weights; the trained model's
-  smallest margin is 5.5726
-  ([r3-trained](../runtime/results/r3-trained.md)).
-- **Flip rates dropped to zero.** With a BF16 wire, random weights flip 160
-  of 12,527 at-risk tokens across the grid and trained weights 0 of
-  14,592; with FP32 reduce-scatter, 6 of 14,484 and 0 of 14,592. The logits
-  still change (no prompt's logits match the P = 1 baseline bit for bit in
-  any run), but no trained at-risk token is within reach of a flip. The
-  batch-invariance prediction held again for the trained model.
-- **FP8 and INT8** (per-row and per-vector absmax scales, exact-quotient
-  quantization; [r4-trained](../runtime/results/r4-trained.md)). Every
-  site at `fp8-e5m2`: mean KL 4.51e-2 with random weights, 9.24e-5 with
-  trained weights; `fp8-e4m3` 1.13e-2 and 2.04e-5; `int8` 9.98e-4 and
-  1.34e-6. The trained model kept all 192 top-1 tokens and every greedy
-  continuation at every level; random weights changed up to 8 of 8. With
-  random weights the first layer's attention is the most sensitive site
-  at each 8-bit level; with trained weights it is the embedding and head.
-- **Verified** by a finite-difference check of the backward pass, a check
-  that the training forward pass is the inference model, exhaustive
-  256-pattern and midpoint checks of each 8-bit format, 16,292 independent
-  Python `Fraction` vectors, and four planted bugs, each caught.
+| Wire policy       | Random weights: flips / at-risk tokens | Trained weights |
+| ----------------- | -------------------------------------- | --------------- |
+| `bf16`            | 160 / 12,527                           | 0 / 14,592      |
+| `fp32-rs/bf16-ag` | 6 / 14,484                             | 0 / 14,592      |
+
+The logits change for both models (no prompt's logits match the P = 1
+baseline bit for bit in any run); within reach of a flip (margin at most
+twice the perturbation) are 1,784 of 27,011 random at-risk tokens and 0 of
+29,184 trained ones. The batch-invariance prediction (only the ring's bits
+depend on batch composition) held for both.
+
+**Precision levels**, every site at one level, against all-FP32 on 8 copy
+prompts ([r4-trained](../runtime/results/r4-trained.md); 192 scored
+tokens; greedy continuations changed out of 8):
+
+| Level      | Worst case (random): mean KL / top-1 / changed | Best case (trained): mean KL / top-1 / changed |
+| ---------- | ---------------------------------------------- | ---------------------------------------------- |
+| `bf16`     | 4.98e-5 / 190 / 2                              | 7.85e-8 / 192 / 0                              |
+| `bf16-acc` | 2.74e-3 / 171 / 8                              | 5.70e-5 / 192 / 0                              |
+| `fp16`     | 7.75e-7 / 192 / 0                              | 1.22e-9 / 192 / 0                              |
+| `fp16-acc` | 4.58e-5 / 190 / 2                              | 8.24e-7 / 192 / 0                              |
+| `fp8-e4m3` | 1.13e-2 / 160 / 7                              | 2.04e-5 / 192 / 0                              |
+| `fp8-e5m2` | 4.51e-2 / 124 / 8                              | 9.24e-5 / 192 / 0                              |
+| `int8`     | 9.98e-4 / 187 / 3                              | 1.34e-6 / 192 / 0                              |
+
+- **The ends of the ranking agree; the middle does not.** In both cases
+  `fp8-e5m2` moves the logits most and `fp16` least. In between, the order
+  changes: with random weights `fp8-e4m3` (1.13e-2) moves them more than
+  BF16 accumulation (2.74e-3), with trained weights less (2.04e-5 against
+  5.70e-5); `bf16` and `fp16-acc` also swap. **Lowering the accumulator
+  adds far more drift than lowering storage** at BF16 and FP16 in both
+  cases. The worst-case numbers match the original study on random prompts
+  ([r4-precision](../runtime/results/r4-precision.md): `bf16` 5.05e-5 and
+  253 of 256, `bf16-acc` 2.78e-3 and 227, with 7 of 8 continuations
+  changed).
+- **Which site matters depends on the case.** Lowered alone, the first
+  layer's attention is the most sensitive site with random weights (at
+  every level, for example 1.32e-3 at `bf16-acc` in r4-precision); with
+  trained weights the embedding and head are the most sensitive at each
+  8-bit level.
+- **Verified** by a fused multiply–accumulate tested bit-identical to the
+  exact superaccumulator and to 3,600 Python `Fraction` chains; exhaustive
+  256-pattern and midpoint checks of each 8-bit format and 16,292 Python
+  `Fraction` vectors; a finite-difference check of the training backward
+  pass and a check that the training forward pass is the inference model;
+  six planted bugs, each caught.
 
 ## R5: where a layer's cycles go
 
 R5 maps one 8B-class layer onto an illustrative accelerator (128 × 128 MAC
 array, 16 MiB SRAM, 1.5 TB/s HBM) and times it in cycles, checked against
-an independent cycle-by-cycle simulation. Every number is from
-[r5-dataflow](../runtime/results/r5-dataflow.md).
+an independent cycle-by-cycle simulation. Cycles do not depend on the
+weights' values, so the worst/best-case bracket of R4 does not apply here.
+Every number is from [r5-dataflow](../runtime/results/r5-dataflow.md).
 
 - **Prefill** uses 89.2–95.7% of the array (128–2048 tokens), within
   1.05–1.12× of the roofline bound.
-- **Decode** uses 0.8% at batch 1 and 43.3% at batch 128 (context 1024).
-  Batch 1 and 8 sit below the ridge point (21.8 FLOPs per HBM byte), but in
-  this mapping the array is the limit: tokens occupy array rows, so
-  padding takes 98.9% of batch-1 cycles, 5.88× the roofline bound. A
-  mapping built for matrix–vector products was not modeled.
+- **Decode** uses 0.8% at batch 1 and 43.3% at batch 128 (context 1024),
+  2.31–5.93× the roofline bound. Batch 1 and 8 sit below the ridge point
+  (21.8 FLOPs per HBM byte), but in this mapping the array is the limit:
+  tokens occupy array rows, so padding takes 98.9% of batch-1 cycles and
+  waiting for the DMA 0.0%. A mapping built for matrix–vector products was
+  not modeled.
 - **Assumption, not a clock:** taking FP Play's recorded FP16 FMA path
   delay (4.179512 ns) as the cycle time moves the ridge to 5.2 FLOPs per
-  byte.
+  byte; decode at batch 1 is then 24.53× its bound, with padding 99.1% of
+  its cycles.
+- **Verified** by the cycle-by-cycle reference (3,000 random chunk lists
+  and every op of five small layers), analytic MAC and traffic counts, and
+  two planted bugs, each caught.
 
 ## R6: seeing the schedules
 

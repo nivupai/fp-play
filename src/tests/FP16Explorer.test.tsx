@@ -40,7 +40,7 @@ describe('FP16 Explorer integration with the numerical engine', () => {
     setup()
     expect(
       screen.getAllByRole('button', {
-        name: /^(Sign|Exponent|Fraction) bit \d+$/,
+        name: /^[01], (Sign|Exponent|Fraction) bit \d+$/,
       }),
     ).toHaveLength(16)
     expect(
@@ -68,18 +68,21 @@ describe('FP16 Explorer integration with the numerical engine', () => {
 
   it('updates the value and sign immediately when bits change', async () => {
     const { user } = setup()
-    await user.click(screen.getByRole('button', { name: 'Fraction bit 9' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Fraction bit 9$/ }),
+    )
     expectEncoding(0x3c00)
-    await user.click(screen.getByRole('button', { name: 'Sign bit 15' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Sign bit 15$/ }),
+    )
     expectEncoding(0xbc00)
     expect(screen.getByLabelText('Sign bit')).toHaveTextContent('1 (negative)')
     expect(
       screen.getByRole('status', { name: 'FP16 selection' }),
     ).toHaveTextContent('0xbc00 · normal · -1')
-    expect(screen.getByRole('button', { name: 'Sign bit 15' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(
+      screen.getByRole('button', { name: /^[01], Sign bit 15$/ }),
+    ).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('supports Tab, Space, and Enter on native bit buttons without losing focus', async () => {
@@ -91,7 +94,7 @@ describe('FP16 Explorer integration with the numerical engine', () => {
       screen.getByRole('button', { name: 'Convert to FP16' }),
     ).toHaveFocus()
     await user.tab()
-    const sign = screen.getByRole('button', { name: 'Sign bit 15' })
+    const sign = screen.getByRole('button', { name: /^[01], Sign bit 15$/ })
     expect(sign).toHaveFocus()
     await user.keyboard(' ')
     expectEncoding(0xbe00)
@@ -100,7 +103,7 @@ describe('FP16 Explorer integration with the numerical engine', () => {
     expectEncoding(0x3e00)
     await user.tab()
     expect(
-      screen.getByRole('button', { name: 'Exponent bit 14' }),
+      screen.getByRole('button', { name: /^[01], Exponent bit 14$/ }),
     ).toHaveFocus()
     await user.keyboard('{Enter}')
     expectEncoding(0x7e00)
@@ -187,9 +190,13 @@ describe('FP16 Explorer integration with the numerical engine', () => {
     await user.click(screen.getByRole('button', { name: 'Select next' }))
     expectEncoding(0x0400)
     expect(screen.getByLabelText('Unbiased exponent')).toHaveTextContent('-14')
-    await user.click(screen.getByRole('button', { name: 'Exponent bit 10' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Exponent bit 10$/ }),
+    )
     expectEncoding(0x0000)
-    await user.click(screen.getByRole('button', { name: 'Fraction bit 0' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Fraction bit 0$/ }),
+    )
     expectEncoding(0x0001)
     expect(screen.getByLabelText('Exact decoded value').textContent).toBe(
       '0.000000059604644775390625',
@@ -275,12 +282,16 @@ describe('FP16 Explorer integration with the numerical engine', () => {
     expect(screen.getByLabelText('Value explanation')).toHaveTextContent(
       'Quiet NaN · payload 1',
     )
-    await user.click(screen.getByRole('button', { name: 'Fraction bit 9' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Fraction bit 9$/ }),
+    )
     expectEncoding(0x7c01)
     expect(screen.getByLabelText('Value explanation')).toHaveTextContent(
       'Signaling NaN · payload 1',
     )
-    await user.click(screen.getByRole('button', { name: 'Sign bit 15' }))
+    await user.click(
+      screen.getByRole('button', { name: /^[01], Sign bit 15$/ }),
+    )
     expectEncoding(0xfc01)
     expect(screen.getByLabelText('Value explanation')).toHaveTextContent(
       'Raw sign 1',
